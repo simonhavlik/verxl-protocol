@@ -593,15 +593,15 @@ export const Governance: React.FC = () => {
             <div className="bg-[#05070b] p-3.5 rounded-[3px] border border-slate-800 space-y-2">
               <div className="text-white font-bold text-xs uppercase tracking-wider">Article I: Founding Signatories & Wallets</div>
               <p className="text-slate-400">
-                1. Šimon Havlík (Founding Protocol Architect & Project Lead):{" "}
+                1. Šimon Havlík (Project Lead & Head Developer):{" "}
                 <code className="text-blue-300">0x14f10A865e277C0B1949e18Dd9856602DB11742b</code>
               </p>
               <p className="text-slate-400">
-                2. Founding Core Team Member 1 (Infrastructure Engineering):{" "}
+                2. Quality Assurance & Process Verification Lead:{" "}
                 <code className="text-blue-300">0x4E5e69DcFE7DF0D3E5bA074C7a66CE0597cF05Ab</code>
               </p>
               <p className="text-slate-400">
-                3. Founding Core Team Member 2 (Clearing & Protocol Governance):{" "}
+                3. Regulatory Compliance & Market Research Lead:{" "}
                 <code className="text-blue-300">0xE4a112C573a750b2d3Cc418CFF45FFEf9Fd1272F</code>
               </p>
             </div>

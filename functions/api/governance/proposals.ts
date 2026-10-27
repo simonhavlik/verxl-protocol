@@ -60,9 +60,9 @@ const PROPOSALS_DATA: Proposal[] = [
     txHash: "0x247d5d5b5fca30b1cfadc102322a22001e6c828e41705aafe1bb54e23921b6b6",
     postgresSynced: true,
     voters: [
-      { voter: "0x14f1...742b", name: "Šimon Havlík (Lead Dev)", vote: "YES", power: "666,667 $VRXL" },
-      { voter: "0x4E5e...05Ab", name: "Team Member 1", vote: "PENDING", power: "0 $VRXL" },
-      { voter: "0xE4a1...272F", name: "Team Member 2", vote: "PENDING", power: "0 $VRXL" },
+      { voter: "0x14f1...742b", name: "Šimon Havlík (Project Lead & Dev)", vote: "YES", power: "666,667 $VRXL" },
+      { voter: "0x4E5e...05Ab", name: "Quality Assurance & Process Lead", vote: "PENDING", power: "0 $VRXL" },
+      { voter: "0xE4a1...272F", name: "Compliance & Market Officer", vote: "PENDING", power: "0 $VRXL" },
     ],
   },
   {
@@ -86,9 +86,9 @@ const PROPOSALS_DATA: Proposal[] = [
     txHash: "0x8fa13c5e89d2011bba8f467210e7410291938fa2e01b349f8510ad6e59c1719e",
     postgresSynced: true,
     voters: [
-      { voter: "0x14f1...742b", name: "Šimon Havlík (Lead Dev)", vote: "YES", power: "333,334 $VRXL" },
-      { voter: "0x4E5e...05Ab", name: "Team Member 1", vote: "YES", power: "333,333 $VRXL" },
-      { voter: "0xE4a1...272F", name: "Team Member 2", vote: "YES", power: "333,333 $VRXL" },
+      { voter: "0x14f1...742b", name: "Šimon Havlík (Project Lead & Dev)", vote: "YES", power: "333,334 $VRXL" },
+      { voter: "0x4E5e...05Ab", name: "Quality Assurance & Process Lead", vote: "YES", power: "333,333 $VRXL" },
+      { voter: "0xE4a1...272F", name: "Compliance & Market Officer", vote: "YES", power: "333,333 $VRXL" },
     ],
   },
   {
@@ -112,9 +112,9 @@ const PROPOSALS_DATA: Proposal[] = [
     txHash: "0x51c72ae9d82bbac9810385ff210b392a83151829e20a038bfd764722881a982b",
     postgresSynced: true,
     voters: [
-      { voter: "0x14f1...742b", name: "Šimon Havlík (Lead Dev)", vote: "YES", power: "500,000 $VRXL" },
-      { voter: "0x4E5e...05Ab", name: "Team Member 1", vote: "YES", power: "250,000 $VRXL" },
-      { voter: "0xE4a1...272F", name: "Team Member 2", vote: "PENDING", power: "0 $VRXL" },
+      { voter: "0x14f1...742b", name: "Šimon Havlík (Project Lead & Dev)", vote: "YES", power: "500,000 $VRXL" },
+      { voter: "0x4E5e...05Ab", name: "Quality Assurance & Process Lead", vote: "YES", power: "250,000 $VRXL" },
+      { voter: "0xE4a1...272F", name: "Compliance & Market Officer", vote: "PENDING", power: "0 $VRXL" },
     ],
   },
   {
@@ -138,7 +138,7 @@ const PROPOSALS_DATA: Proposal[] = [
     txHash: "0x247d5d5b5fca30b1cfadc102322a22001e6c828e41705aafe1bb54e23921b6b6",
     postgresSynced: true,
     voters: [
-      { voter: "0x14f1...742b", name: "Šimon Havlík (Lead Dev)", vote: "YES", power: "1,000,000 $VRXL" },
+      { voter: "0x14f1...742b", name: "Šimon Havlík (Project Lead & Dev)", vote: "YES", power: "1,000,000 $VRXL" },
     ],
   },
 ];

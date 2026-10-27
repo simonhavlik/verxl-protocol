@@ -688,13 +688,13 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* PROTOCOL CORE TEAM & SEMINAR PROJECT ASSEMBLY */}
+      {/* PROTOCOL EXECUTIVE ASSEMBLY & PROJECT TEAM */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
           <div className="space-y-0.5">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Users className="w-4 h-4 text-blue-400" />
-              <span>Protocol Engineering Assembly & Project Team</span>
+              <span>Protocol Executive Assembly & Project Team</span>
             </h2>
             <p className="text-[11px] text-slate-400 font-sans">
               Founded at Prague University of Economics and Business (VŠE Praha) · Course 2SE307 Bitcoin and Blockchain.
@@ -748,75 +748,77 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Card 2: Systems & Edge Infrastructure Contributor */}
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
+          {/* Card 2: Quality Assurance & Process Verification Lead */}
+          <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-slate-700 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden">
-                  <Terminal className="w-6 h-6 text-blue-400" />
-                  <span className="text-[7.5px] text-slate-400 font-mono tracking-tighter mt-1">PHOTO INCOMING</span>
+                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-blue-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
+                  <ShieldCheck className="w-6 h-6 text-blue-400 mb-0.5" />
+                  <span className="text-[6.5px] text-blue-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
+                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE 2SE307</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <span>Project Teammate</span>
+                    <span>Quality Control Lead</span>
                     <span className="px-1 py-0.1 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px]">2SE307</span>
                   </div>
                   <div className="text-[10.5px] text-blue-400 font-bold">
-                    Distributed Systems & Edge Proxy
+                    Quality Assurance & Process Verification
                   </div>
                   <div className="text-[9.5px] text-slate-400 font-mono">
-                    Founding Core Engineer
+                    Founding Partner · VŠE Praha
                   </div>
                 </div>
               </div>
 
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Engineered the Cloudflare edge streaming reverse proxy at <code className="text-blue-300">verxl.com/v1</code>, Charizard IONOS VPS port 11645 tunnel daemon forwarding to Prague bare-metal host, and SMTPS direct socket integration.
+                Directs protocol quality control frameworks, independent process audit verification, and empirical SLA benchmarking across European compute hosting providers. Establishes verification methodologies ensuring deterministic output fidelity, Time-to-First-Token (TTFT) compliance, and academic evaluation rigor.
               </p>
             </div>
 
             <div className="border-t border-slate-800/80 pt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
               <span className="flex items-center gap-1 text-emerald-400 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Founding Contributor · 33.33%</span>
+                <span>Founding Partner · 33.33% Tranche</span>
               </span>
-              <span className="text-slate-400">Photo pending</span>
+              <span className="text-slate-400">Quality & Audit Lead</span>
             </div>
           </div>
 
-          {/* Card 3: Autonomous Oracle & Protocol Economics Contributor */}
-          <div className="bg-[#0a0e17] border border-purple-500/20 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
+          {/* Card 3: Regulatory Compliance & Market Research Officer */}
+          <div className="bg-[#0a0e17] border border-purple-500/25 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-slate-700 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden">
-                  <Activity className="w-6 h-6 text-purple-400" />
-                  <span className="text-[7.5px] text-slate-400 font-mono tracking-tighter mt-1">PHOTO INCOMING</span>
+                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-purple-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
+                  <Compass className="w-6 h-6 text-purple-400 mb-0.5" />
+                  <span className="text-[6.5px] text-purple-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
+                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE 2SE307</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <span>Project Teammate</span>
+                    <span>Compliance & Vision Lead</span>
                     <span className="px-1 py-0.1 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px]">2SE307</span>
                   </div>
                   <div className="text-[10.5px] text-purple-400 font-bold">
-                    Autonomous Oracle & Tokenomics
+                    Regulatory Compliance & Market Research
                   </div>
                   <div className="text-[9.5px] text-slate-400 font-mono">
-                    Founding Core Engineer
+                    Founding Partner · VŠE Praha
                   </div>
                 </div>
               </div>
 
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Authored deterministic inference quality probe telemetry, Aragon OSx token voting distribution, Arbitrum USDC escrow settlement, and the 10% Nash collateral slashing rules for model adulteration.
+                Heads competitive market intelligence, macroeconomic cost benchmarking against legacy centralized cloud aggregators, and regulatory compliance alignment (EU AI Act &amp; MiCA non-custodial boundaries). Oversees institutional risk governance, charter alignment, and stakeholder relations for enterprise compute buyers.
               </p>
             </div>
 
             <div className="border-t border-slate-800/80 pt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
               <span className="flex items-center gap-1 text-emerald-400 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Founding Contributor · 33.33%</span>
+                <span>Founding Partner · 33.33% Tranche</span>
               </span>
-              <span className="text-slate-400">Photo pending</span>
+              <span className="text-slate-400">Compliance & Strategy Lead</span>
             </div>
           </div>
         </div>

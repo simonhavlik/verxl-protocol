@@ -53,16 +53,14 @@
 
 ## Slide 4: What is your role in the project?
 * **Slide Title:** **What is your role in the project?**
-* **Team Responsibilities & Division of Labor:**
-  * **Šimon Havlík — Project Lead & Smart Contract Architecture:**
-    * Aragon OSx DAO deployment on Sepolia, `$VRXL` ERC-20 contract, on-chain governance proposal engineering (VIP-001), and `VerxlStakingRegistry.sol` development.
-  * **Team Member 2 — Edge Proxy & Systems Engineering:**
-    * High-throughput Cloudflare Worker (`verxl.com/v1/chat/completions`), Server-Sent Events (SSE) streaming engine, sub-25ms routing pipeline, and OpenAI SDK compatibility.
-  * **Team Member 3 — Autonomous AI Verification & Data Pipeline:**
-    * PostgreSQL telemetry database architecture, scheduled deterministic AI audit probes, latency tracking (TTFT), and output perplexity verification engines.
-  * **Team Member 4 — Frontend Engineering & Tokenomics Design:**
-    * Web3 dashboard development (`wagmi`/`viem`), provider staking portal, fee-switch economic modeling, and presentation delivery.
-* **Visual Elements:** Team photos / role badges with assigned technical deliverables.
+* **Team Responsibilities & Division of Labor (Founding Trio · VŠE Praha 2SE307):**
+  * **Šimon Havlík — Project Lead & Head Developer (Lead Protocol Architect):**
+    * End-to-end technical system architecture: Aragon OSx DAO deployment on Sepolia, `VerxlStakingRegistry.sol` smart contract, Cloudflare edge proxy (`verxl.com/v1`), Charizard VPS socat tunnel, Arbitrum USDC escrow settlement, and deterministic consensus probing.
+  * **Founding Partner — Quality Assurance & Process Verification Lead:**
+    * Directs protocol quality control frameworks, independent process audit verification, empirical SLA benchmarking across European GPU providers, and academic evaluation rigor for 2SE307.
+  * **Founding Partner — Regulatory Compliance & Market Research Lead:**
+    * Heads competitive market intelligence, macroeconomic cost benchmarking against legacy hyperscaler cloud aggregators, regulatory compliance alignment (EU AI Act & MiCA non-custodial boundaries), and institutional risk governance.
+* **Visual Elements:** Executive portraits and leadership credentials aligned with 33.34% / 33.33% / 33.33% governance tranches.
 
 ---
 
