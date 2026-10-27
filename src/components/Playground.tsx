@@ -15,6 +15,10 @@ import {
   Server,
   ShieldAlert,
   Lock,
+  MessageSquare,
+  KeyRound,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 marked.setOptions({
@@ -34,7 +38,11 @@ const renderMarkdown = (content: string): string => {
   }
 };
 
-export const Playground: React.FC = () => {
+interface PlaygroundProps {
+  onNavigate?: (tab: string) => void;
+}
+
+export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
@@ -507,27 +515,51 @@ main();`,
           <Terminal className="w-3 h-3" />
           <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TESTNET</span>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Inference Terminal & Streaming Interface</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-normal">
-              LIVE BULBASAUR HOST · 32K RESIDENT CONTEXT
-            </span>
-          </h2>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex flex-wrap items-center gap-2">
+              <span>Free Inference Playground</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-normal">
+                LIVE BULBASAUR HOST · 32K RESIDENT CONTEXT
+              </span>
+            </h2>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
+              Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (32k context resident) via Verxl 50 bps decentralized clearinghouse.
+            </p>
+          </div>
 
-          {/* Precautions / Disclaimer Trigger */}
-          <button
-            onClick={() => setShowDisclaimer(!showDisclaimer)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded-[2px] bg-[#0a0e17] border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition cursor-pointer self-start sm:self-auto"
-            title="Read Model & Protocol Policy Disclaimer"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>Compute & Safety Disclaimer (?)</span>
-          </button>
+          {/* Quick Access to API and Chat */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => onNavigate?.("chat")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white font-mono text-[11px] font-bold uppercase tracking-wider shadow-sm shadow-blue-500/20 transition cursor-pointer"
+              title="Open full interactive chat interface"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Interactive Chat</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+
+            <button
+              onClick={() => onNavigate?.("console")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-[#0c1220] hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-mono text-[11px] font-bold uppercase tracking-wider transition cursor-pointer"
+              title="Open Developer API, Keys & Balance Management"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Developer API</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+
+            <button
+              onClick={() => setShowDisclaimer(!showDisclaimer)}
+              className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1.5 rounded-[3px] bg-[#0a0e17] border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition cursor-pointer"
+              title="Read Model & Protocol Policy Disclaimer"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+              <span>Policy Notice</span>
+            </button>
+          </div>
         </div>
-        <p className="text-xs text-slate-400 font-mono mt-0.5">
-          Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (32k context resident) via Verxl 50 bps decentralized clearinghouse.
-        </p>
       </div>
 
       {/* Precautions & Policy Disclaimer Modal/Banner */}
@@ -894,6 +926,37 @@ main();`,
               <code>{codeSnippets[activeCodeTab]}</code>
             </pre>
           </div>
+        </div>
+      </div>
+
+      {/* Direct Transition to Developer API or Chat */}
+      <div className="p-4 rounded-[4px] bg-gradient-to-r from-blue-950/40 via-[#0a0e17] to-indigo-950/40 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="space-y-1">
+          <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+            <span>Ready for Production? Integrate via API or Open Full Chat</span>
+          </div>
+          <p className="text-[11.5px] text-slate-300 font-sans leading-relaxed">
+            Use Verxl's OpenAI-compatible endpoint with 50 bps protocol clearing on Arbitrum One, or continue in our rich multi-turn conversation suite.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => onNavigate?.("chat")}
+            className="px-4 py-2 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-500/25 transition cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Open Chat</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => onNavigate?.("console")}
+            className="px-4 py-2 rounded-[3px] bg-[#0c1220] hover:bg-slate-800 text-emerald-300 hover:text-white border border-emerald-500/40 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition cursor-pointer"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Developer API & Keys</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

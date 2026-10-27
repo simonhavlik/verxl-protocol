@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   ArrowRight,
-  Terminal,
-  Cpu,
   ShieldCheck,
   Server,
   Activity,
   Sliders,
   MessageSquare,
+  Sparkles,
+  KeyRound,
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 
@@ -375,36 +375,45 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               statelessly to independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
             </p>
 
-            {/* Sharp Action Buttons — Strictly Square (rounded-[3px]), zero pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-0.5">
-              <button
-                onClick={() => onNavigate("chat")}
-                className="hero-btn hero-btn--primary"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Launch Verxl Chat</span>
-                <ArrowRight className="w-3 h-3 ml-0.5" />
-              </button>
-
+            {/* Primary Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
                 onClick={() => onNavigate("playground")}
-                className="hero-btn hero-btn--ghost"
+                className="relative group px-5 py-3 rounded-[3px] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-mono text-xs sm:text-[13px] font-bold uppercase tracking-wider flex items-center gap-2.5 shadow-xl shadow-blue-600/30 border border-blue-400/50 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.99] transition-all overflow-hidden cursor-pointer"
               >
-                <Terminal className="w-3.5 h-3.5 text-blue-400" />
-                <span>Terminal</span>
+                {/* Animated sheen highlight */}
+                <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-[-20deg] translate-x-[-200%] group-hover:translate-x-[300%] transition-transform duration-1000 ease-in-out pointer-events-none" />
+
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                </span>
+
+                <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+                <span>Try Free Playground Demo</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
-                onClick={() => onNavigate("registry")}
-                className="hero-btn hero-btn--ghost"
+                onClick={() => onNavigate("chat")}
+                className="hero-btn hero-btn--primary !py-2.5 !px-4"
               >
-                <Cpu className="w-3.5 h-3.5 text-blue-400" />
-                <span>Compute Fleet</span>
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Launch Chat</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate("console")}
+                className="hero-btn hero-btn--ghost !py-2.5 !px-3.5"
+                title="Developer API, Keys & Balance Management"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-blue-400" />
+                <span>Developer API</span>
               </button>
 
               <button
                 onClick={() => onNavigate("whitepaper")}
-                className="hero-btn hero-btn--ghost"
+                className="hero-btn hero-btn--ghost !py-2.5 !px-3.5 hidden sm:inline-flex"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Whitepaper</span>

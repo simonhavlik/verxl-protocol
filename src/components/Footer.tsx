@@ -23,7 +23,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 VERXL<span className="text-blue-500">.COM</span>
               </span>
               <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                v1.0.0-SEPOLIA-TEST-RUN
+                v1.0.0-SEPOLIA-TESTNET
               </span>
             </div>
             <p className="text-slate-400 max-w-md text-[10px]">
@@ -50,7 +50,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[#080c14] border border-slate-800 text-slate-300 hover:text-amber-400 hover:border-amber-500/40 text-[10.5px] transition"
             >
               <ShieldCheck className="w-3 h-3 text-amber-400" />
-              <span>Sepolia DAO Test Run</span>
+              <span>Sepolia DAO Testnet</span>
             </a>
 
             <a

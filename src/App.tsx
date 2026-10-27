@@ -124,7 +124,7 @@ export default function App() {
         <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
           <Suspense fallback={<TabLoadingFallback />}>
             {activeTab === "chat" && <Chat />}
-            {activeTab === "playground" && <Playground />}
+            {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
             {activeTab === "registry" && (
               <Registry
                 walletAddress={walletAddress}
