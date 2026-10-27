@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../context/AuthContext";
 import { marked } from "marked";
 import {
   Plus,
@@ -18,6 +19,12 @@ import {
   Terminal,
   Cpu,
   X,
+  LogIn,
+  LogOut,
+  User,
+  Mail,
+  KeyRound,
+  ShieldCheck,
 } from "lucide-react";
 
 marked.setOptions({
@@ -128,7 +135,37 @@ const STARTER_PROMPTS = [
 
 const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 
-export const Chat: React.FC = () => {
+interface ChatProps {
+  onNavigate?: (tab: string) => void;
+}
+
+export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
+  // Shared Auth State across Chat & API
+  const {
+    token: authToken,
+    user,
+    logout,
+    refreshSession,
+    loginWithApiKey,
+    loginWithToken,
+    customApiKey,
+    setCustomApiKey,
+  } = useAuth();
+
+  const balanceUsd = user ? Number(user.balance_usd) : 0.0;
+  const userEmail = user ? user.email : null;
+
+  // Auth Modal State
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authTab, setAuthTab] = useState<"key" | "email">("key");
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [otpInput, setOtpInput] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
+
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     if (typeof window !== "undefined") {
@@ -155,15 +192,86 @@ export const Chat: React.FC = () => {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
 
-  // User & Balance State
-  const [authToken, setAuthToken] = useState<string | null>(() => {
-    return typeof window !== "undefined" ? localStorage.getItem("vrxl_auth_token") : null;
-  });
-  const [customApiKey, setCustomApiKey] = useState<string>(() => {
-    return typeof window !== "undefined" ? localStorage.getItem("vrxl_custom_api_key") || "" : "";
-  });
-  const [balanceUsd, setBalanceUsd] = useState<number>(0.0);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const handleAuthModalLoginWithApiKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!apiKeyInput.trim() || !apiKeyInput.startsWith("vrxl_live_")) {
+      setAuthError("Valid production API key required (vrxl_live_...)");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthSuccess(null);
+    const result = await loginWithApiKey(apiKeyInput.trim());
+    setAuthLoading(false);
+    if (result.success) {
+      setAuthSuccess("Authenticated successfully!");
+      setApiKeyInput("");
+      setTimeout(() => setShowAuthModal(false), 700);
+    } else {
+      setAuthError(result.error || "Authentication failed. Key may be invalid or inactive.");
+    }
+  };
+
+  const handleAuthModalSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim() || !emailInput.includes("@")) {
+      setAuthError("Please enter a valid email address.");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthSuccess(null);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim() }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok) {
+        setOtpSent(true);
+        setAuthSuccess("Verification code sent to " + emailInput.trim());
+      } else {
+        setAuthError(data.error || "Failed to send verification code.");
+      }
+    } catch (err: any) {
+      setAuthError("Network error: " + err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleAuthModalVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpInput.trim() || otpInput.trim().length !== 6) {
+      setAuthError("Enter the 6-digit verification code.");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthSuccess(null);
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim(), code: otpInput.trim() }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.token) {
+        await loginWithToken(data.token);
+        setAuthSuccess("Logged in successfully!");
+        setOtpSent(false);
+        setOtpInput("");
+        setTimeout(() => setShowAuthModal(false), 700);
+      } else {
+        setAuthError(data.error || "Invalid or expired verification code.");
+      }
+    } catch (err: any) {
+      setAuthError("Verification failed: " + err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   // Streaming & Message Generation State
   const [inputPrompt, setInputPrompt] = useState("");
@@ -200,29 +308,10 @@ export const Chat: React.FC = () => {
     } catch {}
   }, [sessions]);
 
-  // Fetch user profile & balance
-  const fetchBalance = async (tokenToUse?: string) => {
-    const activeToken = tokenToUse || authToken;
-    if (!activeToken) return;
-    try {
-      const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
-      if (res.ok) {
-        const data = (await res.json()) as any;
-        if (data?.user) {
-          setBalanceUsd(Number(data.user.balance_usd || 0.0));
-          setUserEmail(data.user.email || null);
-        }
-      }
-    } catch {
-      // offline/mock
-    }
-  };
-
+  // Refresh user profile & balance
   useEffect(() => {
-    fetchBalance();
-  }, [authToken]);
+    refreshSession();
+  }, []);
 
   // Auto-resize textarea as user types
   useEffect(() => {
@@ -320,18 +409,15 @@ export const Chat: React.FC = () => {
       const data = (await res.json()) as any;
       if (res.ok && data.success) {
         const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? 0);
-        const newBal = Number(data.new_balance_usd ?? data.deposit?.new_balance_usd ?? balanceUsd);
         setDepositStatus(`Deposit confirmed! +$${added.toFixed(2)} USD added.`);
-        setBalanceUsd(newBal);
         if (data.token) {
-          localStorage.setItem("vrxl_auth_token", data.token);
-          setAuthToken(data.token);
+          await loginWithToken(data.token);
+        } else {
+          await refreshSession();
         }
         if (data.new_api_key) {
-          localStorage.setItem("vrxl_custom_api_key", data.new_api_key);
           setCustomApiKey(data.new_api_key);
         }
-        fetchBalance(data.token || authToken);
         setDepositTxHash("");
       } else {
         setDepositStatus(`Verification note: ${data.error || "Transaction pending confirmation on Arbitrum."}`);
@@ -522,9 +608,8 @@ export const Chat: React.FC = () => {
         )
       );
 
-      // Deduct locally and refresh balance from backend
-      setBalanceUsd((prev) => Math.max(0, prev - totalCost));
-      setTimeout(() => fetchBalance(), 1000);
+      // Refresh balance from backend
+      setTimeout(() => refreshSession(), 1000);
 
       setIsStreaming(false);
       setStreamingContent("");
@@ -709,19 +794,47 @@ export const Chat: React.FC = () => {
             </button>
           </div>
 
-          {/* User ID / Address */}
-          <div className="flex items-center justify-between text-[10.5px] font-mono text-slate-400 px-1 pt-1">
-            <div className="truncate max-w-[170px]" title={userEmail || "Anonymous Session"}>
-              {userEmail || "Testnet Session"}
+          {/* User ID / Sign In */}
+          {user ? (
+            <div className="flex items-center justify-between text-[10.5px] font-mono text-slate-400 px-1 pt-1">
+              <div className="truncate max-w-[140px] text-slate-300 font-medium" title={user.email || user.id}>
+                {user.email || user.id}
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowSettingsModal(true)}
+                  className="p-1 hover:text-white transition"
+                  title="Settings"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={logout}
+                  className="p-1 hover:text-rose-400 transition"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setShowSettingsModal(true)}
-              className="p-1 hover:text-white transition"
-              title="Settings"
-            >
-              <Settings className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between gap-1 pt-1">
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[3px] bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 text-[11px] font-mono font-medium transition"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In / Key</span>
+              </button>
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="p-1.5 hover:text-white text-slate-400 border border-slate-800 rounded-[3px] bg-[#0c1220] transition"
+                title="Settings"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -806,6 +919,29 @@ export const Chat: React.FC = () => {
               <span className="text-slate-400 text-[10px] uppercase">Balance:</span>
               <span className="text-emerald-400 font-bold">${balanceUsd.toFixed(4)}</span>
             </div>
+
+            {/* Auth Button or User Badge */}
+            {user ? (
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300">
+                <User className="w-3.5 h-3.5 text-blue-400" />
+                <span className="truncate max-w-[130px] font-medium">{user.email || user.id}</span>
+                <button
+                  onClick={logout}
+                  className="ml-1 p-0.5 text-slate-500 hover:text-rose-400 transition"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-semibold transition active:scale-95"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+            )}
 
             {/* Export Dropdown */}
             <button
@@ -1192,6 +1328,23 @@ export const Chat: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Already have an account prompt */}
+            <div className="pt-2 border-t border-slate-800/80 text-center">
+              <p className="text-[10.5px] text-slate-400">
+                Already have an account or API key?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDepositModal(false);
+                    setShowAuthModal(true);
+                  }}
+                  className="text-blue-400 hover:text-blue-300 underline font-semibold transition"
+                >
+                  Sign In with API Key or Email
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -1254,7 +1407,21 @@ export const Chat: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+              {onNavigate ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSettingsModal(false);
+                    onNavigate("api");
+                  }}
+                  className="text-blue-400 hover:text-blue-300 underline text-[11px] font-semibold"
+                >
+                  Manage API Keys &rarr;
+                </button>
+              ) : (
+                <div />
+              )}
               <button
                 onClick={() => setShowSettingsModal(false)}
                 className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-[3px] font-bold tracking-wider"
@@ -1262,6 +1429,185 @@ export const Chat: React.FC = () => {
                 Save & Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 5. SHARED AUTH & LOGIN MODAL (API KEY & EMAIL OTP)            */}
+      {/* ============================================================== */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
+          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] max-w-md w-full p-6 space-y-4 shadow-2xl relative font-mono text-xs">
+            <button
+              onClick={() => {
+                setShowAuthModal(false);
+                setAuthError(null);
+                setAuthSuccess(null);
+              }}
+              className="absolute top-3 right-3 text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2 text-white">
+              <ShieldCheck className="w-5 h-5 text-blue-400" />
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  Verxl Account Login
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Shared across Interactive Chat and Developer API
+                </p>
+              </div>
+            </div>
+
+            {/* Tabs: API Key vs Email */}
+            <div className="flex border-b border-slate-800">
+              <button
+                onClick={() => {
+                  setAuthTab("key");
+                  setAuthError(null);
+                  setAuthSuccess(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  authTab === "key"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>API Key (Sovereign)</span>
+              </button>
+              <button
+                onClick={() => {
+                  setAuthTab("email");
+                  setAuthError(null);
+                  setAuthSuccess(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  authTab === "email"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Email Magic Code</span>
+              </button>
+            </div>
+
+            {/* Error / Success Banners */}
+            {authError && (
+              <div className="text-[11px] text-rose-300 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-[2px]">
+                {authError}
+              </div>
+            )}
+            {authSuccess && (
+              <div className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 p-2.5 rounded-[2px]">
+                {authSuccess}
+              </div>
+            )}
+
+            {/* Tab 1: API Key Login */}
+            {authTab === "key" && (
+              <form onSubmit={handleAuthModalLoginWithApiKey} className="space-y-3">
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Log in instantaneously using your private production key (<span className="text-blue-300 font-mono">vrxl_live_...</span>). Your account, USDC balance, and history load instantly without email.
+                </p>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                    Production API Key:
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="vrxl_live_..."
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                    autoFocus
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={authLoading || !apiKeyInput.trim()}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2"
+                >
+                  {authLoading ? "Authenticating..." : "Authenticate with Key"}
+                </button>
+              </form>
+            )}
+
+            {/* Tab 2: Email OTP Login */}
+            {authTab === "email" && (
+              <div className="space-y-3">
+                {!otpSent ? (
+                  <form onSubmit={handleAuthModalSendOtp} className="space-y-3">
+                    <p className="text-slate-400 text-[11px] leading-relaxed">
+                      Enter your email address to receive a 6-digit one-time access code.
+                    </p>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                        Email Address:
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="you@domain.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                        autoFocus
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={authLoading || !emailInput.trim()}
+                      className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2"
+                    >
+                      {authLoading ? "Sending Code..." : "Send Verification Code"}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleAuthModalVerifyOtp} className="space-y-3">
+                    <p className="text-slate-400 text-[11px] leading-relaxed">
+                      Enter the 6-digit code sent to <span className="text-white font-semibold">{emailInput}</span>.
+                    </p>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                        6-Digit Verification Code:
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="123456"
+                        value={otpInput}
+                        onChange={(e) => setOtpInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-center text-lg tracking-[0.3em] text-white outline-none focus:border-blue-500 font-mono font-bold"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtpInput("");
+                        }}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-[3px] transition"
+                      >
+                        Change Email
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={authLoading || otpInput.trim().length !== 6}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition"
+                      >
+                        {authLoading ? "Verifying..." : "Verify & Sign In"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

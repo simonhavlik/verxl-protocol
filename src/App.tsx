@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { AuthProvider } from "./context/AuthContext";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { Footer } from "./components/Footer";
@@ -35,7 +36,7 @@ function getTabFromPath(): string {
   if (path.includes("chat")) return "chat";
   if (path.includes("whitepaper")) return "whitepaper";
   if (path.includes("vision")) return "vision";
-  if (path.includes("console") || path.includes("billing") || path.includes("keys")) return "console";
+  if (path.includes("api") || path.includes("console") || path.includes("billing") || path.includes("keys")) return "console";
   if (path.includes("playground") || path.includes("terminal")) return "playground";
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
@@ -103,56 +104,58 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
-      {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
-      {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
+    <AuthProvider>
+      <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
+        {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
+        {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
 
-      {/* Sticky Institutional Header */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={handleTabChange}
-        walletAddress={walletAddress}
-        onConnectWallet={handleConnectWallet}
-      />
+        {/* Sticky Institutional Header */}
+        <Header
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          walletAddress={walletAddress}
+          onConnectWallet={handleConnectWallet}
+        />
 
-      {/* Main Content Area */}
-      {activeTab === "overview" ? (
-        <div className="flex-1 flex flex-col relative z-10">
-          <Hero onNavigate={handleTabChange} />
-        </div>
-      ) : (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
-          <Suspense fallback={<TabLoadingFallback />}>
-            {activeTab === "chat" && <Chat />}
-            {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
-            {activeTab === "registry" && (
-              <Registry
-                walletAddress={walletAddress}
-                onConnectWallet={handleConnectWallet}
-              />
-            )}
-            {activeTab === "oracle" && <Oracle />}
-            {activeTab === "whitepaper" && <Whitepaper />}
-            {activeTab === "governance" && <Governance />}
-            {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
-            {activeTab === "console" && <Console />}
-            {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
-              <Legal
-                initialTab={
-                  activeTab === "privacy" ? "privacy" :
-                  activeTab === "terms" ? "terms" :
-                  activeTab === "mica" ? "mica" :
-                  activeTab === "charter" ? "charter" :
-                  getLegalSubTab()
-                }
-              />
-            )}
-          </Suspense>
-        </main>
-      )}
+        {/* Main Content Area */}
+        {activeTab === "overview" ? (
+          <div className="flex-1 flex flex-col relative z-10">
+            <Hero onNavigate={handleTabChange} />
+          </div>
+        ) : (
+          <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
+            <Suspense fallback={<TabLoadingFallback />}>
+              {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
+              {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
+              {activeTab === "registry" && (
+                <Registry
+                  walletAddress={walletAddress}
+                  onConnectWallet={handleConnectWallet}
+                />
+              )}
+              {activeTab === "oracle" && <Oracle />}
+              {activeTab === "whitepaper" && <Whitepaper />}
+              {activeTab === "governance" && <Governance />}
+              {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
+              {activeTab === "console" && <Console />}
+              {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
+                <Legal
+                  initialTab={
+                    activeTab === "privacy" ? "privacy" :
+                    activeTab === "terms" ? "terms" :
+                    activeTab === "mica" ? "mica" :
+                    activeTab === "charter" ? "charter" :
+                    getLegalSubTab()
+                  }
+                />
+              )}
+            </Suspense>
+          </main>
+        )}
 
-      {/* Institutional Footer */}
-      <Footer onNavigate={handleTabChange} />
-    </div>
+        {/* Institutional Footer */}
+        <Footer onNavigate={handleTabChange} />
+      </div>
+    </AuthProvider>
   );
 }

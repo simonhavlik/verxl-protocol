@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ExternalLink, ShieldCheck, Wallet, Check, Copy } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface HeaderProps {
   activeTab: string;
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   walletAddress,
   onConnectWallet,
 }) => {
+  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const daoAddress = "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a";
@@ -103,6 +105,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-2.5">
+          {user && (
+            <div
+              onClick={() => setActiveTab("console")}
+              className="cursor-pointer hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-blue-500/40 text-blue-300 hover:border-blue-400 transition"
+              title={`Logged in as ${user.email} · Click to manage API & balance`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-bold text-white">${user.balance_usd.toFixed(2)}</span>
+              <span className="text-[10px] text-slate-400">USD</span>
+            </div>
+          )}
           {/* DAO Address Copy Badge */}
           <button
             onClick={copyAddress}

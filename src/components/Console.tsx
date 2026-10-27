@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   Key,
   Wallet,
@@ -26,19 +27,6 @@ import {
   KeyRound,
 } from "lucide-react";
 
-interface UserProfile {
-  id: string;
-  email: string;
-  wallet_address: string | null;
-  balance_usd: number;
-  total_deposited_usd: number;
-  total_spent_usd: number;
-  has_active_key: boolean;
-  has_password?: boolean;
-  two_factor_enabled?: boolean;
-  is_admin?: boolean;
-}
-
 interface GrantKeyItem {
   id: string;
   name: string;
@@ -50,14 +38,6 @@ interface GrantKeyItem {
   request_count: number;
   created_at: string;
   deactivated_at: string | null;
-}
-
-interface ApiKeyItem {
-  id: string;
-  key_prefix: string;
-  name: string;
-  is_active: number;
-  created_at: string;
 }
 
 interface UsageItem {
@@ -73,14 +53,19 @@ interface UsageItem {
 const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 
 export const Console: React.FC = () => {
-  // Session & Auth State
-  const [token, setToken] = useState<string | null>(() => {
-    return typeof window !== "undefined" ? localStorage.getItem("vrxl_auth_token") : null;
-  });
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
-  const [usage, setUsage] = useState<UsageItem[]>([]);
+  // Shared Auth State across Chat & API
+  const {
+    token,
+    user,
+    keys,
+    loginWithToken,
+    logout,
+    refreshSession,
+    setUser,
+    setKeys,
+  } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [usage, setUsage] = useState<UsageItem[]>([]);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   // Auth Inputs
@@ -274,10 +259,7 @@ export const Console: React.FC = () => {
           fetchGrantKeys(currentToken);
         }
       } else {
-        // Token expired
-        localStorage.removeItem("vrxl_auth_token");
-        setToken(null);
-        setUser(null);
+        logout();
       }
     } catch {
       // offline or mock
@@ -358,9 +340,7 @@ export const Console: React.FC = () => {
       });
       const data = (await res.json()) as any;
       if (res.ok) {
-        localStorage.setItem("vrxl_auth_token", data.token);
-        setToken(data.token);
-        setUser(data.user);
+        await loginWithToken(data.token);
         setStatusMsg({ type: "success", text: "Authenticated successfully." });
         setOtpSent(false);
         setOtpInput("");
@@ -406,9 +386,7 @@ export const Console: React.FC = () => {
       }
 
       // Authenticated directly
-      localStorage.setItem("vrxl_auth_token", data.token);
-      setToken(data.token);
-      setUser(data.user);
+      await loginWithToken(data.token);
       setPasswordInput("");
       setStatusMsg({ type: "success", text: "Authenticated successfully." });
       fetchSessionData(data.token);
@@ -455,9 +433,7 @@ export const Console: React.FC = () => {
         return;
       }
 
-      localStorage.setItem("vrxl_auth_token", data.token);
-      setToken(data.token);
-      setUser(data.user);
+      await loginWithToken(data.token);
       setLoginRequires2fa(false);
       setLoginChallengeToken(null);
       setLoginTotpInput("");
@@ -617,10 +593,7 @@ export const Console: React.FC = () => {
 
   // Handlers: Logout
   const handleLogout = () => {
-    localStorage.removeItem("vrxl_auth_token");
-    setToken(null);
-    setUser(null);
-    setKeys([]);
+    logout();
     setUsage([]);
     setStatusMsg({ type: "info", text: "Logged out." });
   };
@@ -703,8 +676,9 @@ export const Console: React.FC = () => {
           text: `Deposit confirmed! Credited $${added.toFixed(2)} USD. Your balance is now $${newBal.toFixed(2)} USD.`,
         });
         if (data.token && !token) {
-          localStorage.setItem("vrxl_auth_token", data.token);
-          setToken(data.token);
+          await loginWithToken(data.token);
+        } else {
+          await refreshSession();
         }
         if (data.new_api_key) {
           setGeneratedKeySecret(data.new_api_key);
