@@ -302,7 +302,7 @@ add_speaker_note(prs.slides[5],
 # ==============================================================================
 slide7 = prs.slides[6]
 clear_content_shapes(slide7, keep_indices=[0])
-add_header(slide7, "Technical Architecture & Core Protocol Engine", "Engineered by Šimon Havlík (Lead Architect) · Academic Collaboration with VŠE Partners")
+add_header(slide7, "Technical Architecture & Core Protocol Engine", "Engineered by Šimon Havlík, Daniel Kolárovský & Miroslava Valová · Founding Assembly at VŠE Praha")
 
 # Top Team Attribution Strip
 team_banner = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.6), Inches(1.42), Inches(11.8), Inches(0.48))
@@ -314,7 +314,7 @@ tbtf = team_banner.text_frame
 tbtf.word_wrap = True
 tbtf.margin_left = tbtf.margin_top = tbtf.margin_right = tbtf.margin_bottom = Inches(0.08)
 tbp = tbtf.paragraphs[0]
-tbp.text = "👥 CORE TEAM: Šimon Havlík (Lead Protocol Architect & Full-Stack Developer)  |  Academic Project Partners: VŠE Praha"
+tbp.text = "👥 CORE TEAM: Šimon Havlík (Lead Architect & Dev)  |  Daniel Kolárovský (QA & Process Audit)  |  Miroslava Valová (Regulatory & Strategy)"
 tbp.font.bold = True
 tbp.font.size = Pt(10)
 tbp.font.color.rgb = ACCENT_BLUE
@@ -379,7 +379,7 @@ add_speaker_note(slide7,
     "Second, our stateless edge router dispatches requests in 3.8 milliseconds with zero proxy latency. "
     "Third, our seed=42 canary oracle continuously audits provider output, slashing degraded nodes by 10%. "
     "And fourth, our Charizard PostgreSQL ledger manages real-time balance clearing with 2FA security. "
-    "We note our core team: Šimon Havlík leading architecture and full-stack engineering, collaborating with academic project partners at VŠE."
+    "Our core team comprises Šimon Havlík leading architecture and full-stack engineering, Daniel Kolárovský directing empirical SLA testing and process verification, and Miroslava Valová leading regulatory compliance, market research, and institutional governance."
 )
 
 # ==============================================================================

@@ -53,12 +53,12 @@
 
 ## Slide 4: What is your role in the project?
 * **Slide Title:** **What is your role in the project?**
-* **Team Responsibilities & Division of Labor (Founding Trio · VŠE Praha 2SE307):**
+* **Team Responsibilities & Division of Labor (Founding Trio · VŠE Praha):**
   * **Šimon Havlík — Project Lead & Head Developer (Lead Protocol Architect):**
     * End-to-end technical system architecture: Aragon OSx DAO deployment on Sepolia, `VerxlStakingRegistry.sol` smart contract, Cloudflare edge proxy (`verxl.com/v1`), Charizard VPS socat tunnel, Arbitrum USDC escrow settlement, and deterministic consensus probing.
-  * **Founding Partner — Quality Assurance & Process Verification Lead:**
-    * Directs protocol quality control frameworks, independent process audit verification, empirical SLA benchmarking across European GPU providers, and academic evaluation rigor for 2SE307.
-  * **Founding Partner — Regulatory Compliance & Market Research Lead:**
+  * **Daniel Kolárovský — Quality Assurance & Process Verification Lead:**
+    * Directs protocol quality control frameworks, independent process audit verification, empirical SLA benchmarking across European GPU providers, and deterministic TTFT testing.
+  * **Miroslava Valová — Regulatory Compliance & Market Strategy Lead:**
     * Heads competitive market intelligence, macroeconomic cost benchmarking against legacy hyperscaler cloud aggregators, regulatory compliance alignment (EU AI Act & MiCA non-custodial boundaries), and institutional risk governance.
 * **Visual Elements:** Executive portraits and leadership credentials aligned with 33.34% / 33.33% / 33.33% governance tranches.
 

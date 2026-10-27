@@ -363,7 +363,7 @@ const PITCH_SLIDES: PitchSlide[] = [
     id: 4,
     badge: "4. TECHNICAL ARCHITECTURE & EXECUTION",
     title: "Proprietary Protocol Architecture: Edge Routing, Canary Oracle & L2 Settlement",
-    subtitle: "Engineered by Šimon Havlík (Lead Architect) · Academic Collaboration with VŠE Partners",
+    subtitle: "Engineered by Šimon Havlík, Daniel Kolárovský & Miroslava Valová · Founding Assembly at VŠE Praha",
     timeEstimate: "2:15 - 2:55",
     bullets: [
       { title: "Stateless Sub-4ms Edge Switch", desc: "Cloudflare Pages Functions dynamically inspect tokens and route requests to lowest-latency clusters with zero RAM storage." },
@@ -376,7 +376,7 @@ const PITCH_SLIDES: PitchSlide[] = [
       desc: "Zero hardware CapEx depreciation risk with live sub-4ms proxy execution.",
     },
     speakerScript:
-      "Moving to technical architecture and our team: Verxl is engineered around three proprietary pillars. First, our sub-4ms stateless edge switch dynamically matches prompts to lowest-latency nodes without GPU lock-in. Second, our deterministic canary oracle continuously tests provider quality using seed=42 SLA probes, slashing malicious nodes by 10%. And third, non-custodial smart contracts on Arbitrum settle payments in USDC in seconds. We note our core team: Šimon Havlík leading architecture and full-stack engineering, collaborating with academic project partners at VŠE.",
+      "Moving to technical architecture and our team: Verxl is engineered around three proprietary pillars. First, our sub-4ms stateless edge switch dynamically matches prompts to lowest-latency nodes without GPU lock-in. Second, our deterministic canary oracle continuously tests provider quality using seed=42 SLA probes, slashing malicious nodes by 10%. And third, non-custodial smart contracts on Arbitrum settle payments in USDC in seconds. Our core team comprises Šimon Havlík leading architecture and full-stack engineering, Daniel Kolárovský directing empirical SLA testing and process verification, and Miroslava Valová leading regulatory compliance, market research, and institutional governance.",
   },
   {
     id: 5,
@@ -619,6 +619,45 @@ const BENCHMARK_DIMENSIONS: { key: keyof CompetitorMetric; label: string }[] = [
   { key: "slaVerification", label: "Quality SLA Verification" },
 ];
 
+const HERO_TEAM_MEMBERS = {
+  simon: {
+    id: "simon",
+    name: "Šimon Havlík",
+    role: "Project Lead & Head Developer",
+    domain: "Lead Protocol Architect · Smart Contracts & Core Infrastructure",
+    photo: "/team/simon-havlik.jpg",
+    location: "Prague, Czech Republic",
+    tranche: "33.34% Genesis Voting Tranche",
+    badge: "Head Developer",
+    badgeColor: "bg-blue-600 text-white",
+    academicAttribution: "Lead Architect · VŠE Praha",
+  },
+  daniel: {
+    id: "daniel",
+    name: "Daniel Kolárovský",
+    role: "Quality Assurance & Process Verification",
+    domain: "Empirical SLA Benchmarking & Deterministic Invariant Probing",
+    photo: "/team/daniel-kolarovsky.jpg",
+    location: "Prague · VŠE Partner",
+    tranche: "33.33% Genesis Voting Tranche",
+    badge: "QA & Audit Lead",
+    badgeColor: "bg-blue-600 text-white",
+    academicAttribution: "Founding Partner · VŠE Praha",
+  },
+  miroslava: {
+    id: "miroslava",
+    name: "Miroslava Valová",
+    role: "Regulatory Compliance & Market Strategy",
+    domain: "EU AI Act, MiCA Compliance & Institutional Market Sizing",
+    photo: "/team/miroslava-valova.jpg",
+    location: "Prague · VŠE Partner",
+    tranche: "33.33% Genesis Voting Tranche",
+    badge: "Strategy Lead",
+    badgeColor: "bg-purple-600 text-white",
+    academicAttribution: "Founding Partner · VŠE Praha",
+  },
+};
+
 export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -733,6 +772,9 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   );
   const simActiveNodes = Math.max(12, Math.round(simDailyReqsM * 18));
   const simStakedTvlUsd = simActiveNodes * 1000 * simTokenPriceUsd; // 1,000 $VRXL min stake per node
+
+  // Core Founding Team State in Hero
+  const [activeHeroMember, setActiveHeroMember] = useState<"simon" | "daniel" | "miroslava">("simon");
 
   // Mouse interaction state for 3D parallax
   const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
@@ -1212,49 +1254,107 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Right Column: Founder Portrait in FULL VIBRANT COLOR */}
+          {/* Right Column: Core Executive Assembly in FULL VIBRANT COLOR */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-sm bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-3 relative backdrop-blur-md group hover:border-blue-400 transition-all duration-300">
-              {/* Top Card Badge */}
+            <div className="w-full max-w-md bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-3 relative backdrop-blur-md group hover:border-blue-400 transition-all duration-300">
+              {/* Top Bar with Member Switcher Tabs */}
               <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
-                <span className="text-blue-400 font-bold flex items-center gap-1">
+                <span className="text-blue-400 font-bold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                  Lead Protocol Architect
+                  <span>Protocol Executive Assembly</span>
                 </span>
-                <span className="text-slate-300">VŠE Praha</span>
+                <span className="text-slate-300 font-mono text-[9.5px]">VŠE Praha</span>
               </div>
 
-              {/* Full Color Pudong Photo Frame */}
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[2px] border border-slate-700 shadow-inner">
-                <img
-                  src="/simon-pudong.jpg"
-                  alt="Šimon Havlík in Pudong, Shanghai"
-                  className="w-full h-full object-cover transition duration-700 transform group-hover:scale-105"
-                  loading="eager"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#05070b] via-transparent to-transparent opacity-75" />
-
-                <div className="absolute bottom-3 left-3 right-3 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-extrabold text-white uppercase tracking-wider">
-                      Šimon Havlík
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded-[2px] bg-blue-600 text-white font-bold text-[9px] uppercase tracking-wider shadow">
-                      Head Developer
-                    </span>
-                  </div>
-                  <div className="text-[10.5px] text-slate-300 font-sans">
-                    Project Lead · Smart Contract & Clearinghouse Architect
-                  </div>
-                  <div className="text-[9px] text-blue-300 font-mono flex items-center justify-between pt-0.5">
-                    <span>Pudong, Shanghai</span>
-                    <span>33.34% Genesis Voting Tranche</span>
-                  </div>
-                </div>
+              {/* Member Selector Pills */}
+              <div className="grid grid-cols-3 gap-1 bg-[#090d16] p-1 rounded-[3px] border border-slate-800 text-[10.5px] font-mono">
+                {(["simon", "daniel", "miroslava"] as const).map((key) => {
+                  const m = HERO_TEAM_MEMBERS[key];
+                  const isSelected = activeHeroMember === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveHeroMember(key)}
+                      className={`py-1 px-1.5 rounded-[2px] transition truncate text-center font-bold tracking-tight ${
+                        isSelected
+                          ? "bg-blue-600 text-white shadow"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/40"
+                      }`}
+                    >
+                      {m.name.split(" ")[0]}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Active Member Full Color Portrait Frame */}
+              {(() => {
+                const current = HERO_TEAM_MEMBERS[activeHeroMember];
+                return (
+                  <div className="space-y-2.5">
+                    <div className="relative aspect-[4/3] sm:aspect-[16/11] overflow-hidden rounded-[2px] border border-slate-700 shadow-inner bg-[#080c14]">
+                      <img
+                        key={current.id}
+                        src={current.photo}
+                        alt={current.name}
+                        className="w-full h-full object-cover object-top transition duration-500 transform group-hover:scale-[1.02]"
+                        loading="eager"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#05070b] via-[#05070b]/30 to-transparent opacity-90" />
+
+                      <div className="absolute bottom-2.5 left-3 right-3 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-extrabold text-white uppercase tracking-wider">
+                            {current.name}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded-[2px] font-bold text-[9px] uppercase tracking-wider shadow ${current.badgeColor}`}>
+                            {current.badge}
+                          </span>
+                        </div>
+                        <div className="text-[10.5px] text-blue-300 font-sans font-medium line-clamp-1">
+                          {current.role}
+                        </div>
+                        <div className="text-[9px] text-slate-300 font-mono flex items-center justify-between pt-0.5">
+                          <span>{current.academicAttribution}</span>
+                          <span className="text-emerald-400 font-bold">{current.tranche}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* All 3 Member Thumbnails Row for 100% Simultaneous Visibility */}
+                    <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                      {(["simon", "daniel", "miroslava"] as const).map((key) => {
+                        const item = HERO_TEAM_MEMBERS[key];
+                        const isFocus = activeHeroMember === key;
+                        return (
+                          <div
+                            key={key}
+                            onClick={() => setActiveHeroMember(key)}
+                            className={`flex items-center gap-1.5 p-1 rounded-[2px] border cursor-pointer transition ${
+                              isFocus
+                                ? "bg-blue-600/20 border-blue-500 text-white"
+                                : "bg-[#090d16] border-slate-800 text-slate-400 hover:text-slate-200"
+                            }`}
+                          >
+                            <img
+                              src={item.photo}
+                              alt={item.name}
+                              className="w-6 h-6 rounded-[2px] object-cover shrink-0 border border-slate-700"
+                            />
+                            <div className="truncate text-[9.5px] font-mono leading-tight">
+                              <div className="font-bold truncate text-slate-200">{item.name.split(" ")[0]}</div>
+                              <div className="text-[8px] text-slate-400 truncate">{item.badge}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Bottom Card Footer */}
-              <div className="px-1 text-[10.5px] text-slate-300 flex items-center justify-between font-mono">
+              <div className="px-1 text-[10px] text-slate-300 flex items-center justify-between font-mono border-t border-slate-800/80 pt-2">
                 <span className="text-slate-400">Academic Project Initiative</span>
                 <span className="text-emerald-400 font-bold">VŠE Praha</span>
               </div>
@@ -2495,19 +2595,23 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Card 2: Quality Assurance & Process Verification Lead */}
-          <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
+          {/* Card 2: Daniel Kolárovský (QA & Process Verification Lead) in FULL COLOR */}
+          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden group hover:border-blue-400 transition-all">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-blue-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
-                  <ShieldCheck className="w-6 h-6 text-blue-400 mb-0.5" />
-                  <span className="text-[6.5px] text-blue-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
-                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE Praha</span>
+                <div className="w-16 h-16 rounded-[3px] overflow-hidden border-2 border-blue-500/50 shadow-lg shrink-0 bg-[#05070b]">
+                  <img
+                    src="/team/daniel-kolarovsky.jpg"
+                    alt="Daniel Kolárovský"
+                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <span>Quality Control Lead</span>
-                    <span className="px-1 py-0.1 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px]">VŠE Partner</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-extrabold text-white uppercase tracking-wider">
+                      Daniel Kolárovský
+                    </span>
+                    <span className="px-1 py-0.2 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px] font-mono">VŠE Partner</span>
                   </div>
                   <div className="text-[10.5px] text-blue-400 font-bold">
                     Quality Assurance & Process Verification
@@ -2528,26 +2632,30 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Founding Partner · 33.33% Tranche</span>
               </span>
-              <span className="text-slate-400">Quality & Audit Lead</span>
+              <span className="text-slate-300">QA & Audit Lead</span>
             </div>
           </div>
 
-          {/* Card 3: Regulatory Compliance & Market Research Officer */}
-          <div className="bg-[#0a0e17] border border-purple-500/25 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden">
+          {/* Card 3: Miroslava Valová (Regulatory Compliance & Market Strategy Lead) in FULL COLOR */}
+          <div className="bg-[#0a0e17] border border-purple-500/40 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden group hover:border-purple-400 transition-all">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-purple-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
-                  <Compass className="w-6 h-6 text-purple-400 mb-0.5" />
-                  <span className="text-[6.5px] text-purple-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
-                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE Praha</span>
+                <div className="w-16 h-16 rounded-[3px] overflow-hidden border-2 border-purple-500/50 shadow-lg shrink-0 bg-[#05070b]">
+                  <img
+                    src="/team/miroslava-valova.jpg"
+                    alt="Miroslava Valová"
+                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <span>Compliance & Vision Lead</span>
-                    <span className="px-1 py-0.1 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px]">VŠE Partner</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-extrabold text-white uppercase tracking-wider">
+                      Miroslava Valová
+                    </span>
+                    <span className="px-1 py-0.2 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px] font-mono">VŠE Partner</span>
                   </div>
                   <div className="text-[10.5px] text-purple-400 font-bold">
-                    Regulatory Compliance & Market Research
+                    Regulatory Compliance & Market Strategy
                   </div>
                   <div className="text-[9.5px] text-slate-400 font-mono">
                     Founding Partner · VŠE Praha
@@ -2565,7 +2673,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Founding Partner · 33.33% Tranche</span>
               </span>
-              <span className="text-slate-400">Compliance & Strategy Lead</span>
+              <span className="text-slate-300">Strategy & Compliance Lead</span>
             </div>
           </div>
         </div>

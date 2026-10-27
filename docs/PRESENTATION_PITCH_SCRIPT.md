@@ -64,15 +64,13 @@
 ### [1:55 – 2:30] Slide 4: What is your role in the project?
 *(Slide 4 displayed: Team Members & Responsibilities)*
 
-> "To deliver a production-grade protocol, our team divided responsibilities across four distinct pillars:
+> "To execute Verxl, our founding team at VŠE Praha combines engineering, empirical verification, and institutional strategy:
 > 
-> As Team Lead, I architected our Aragon OSx DAO on Sepolia, drafted our on-chain Founders Agreement, and developed the `VerxlStakingRegistry` smart contract.  
+> As Project Lead and Head Developer, I designed and coded our core architecture: the Aragon OSx DAO, the `VerxlStakingRegistry` smart contract, the sub-4ms Cloudflare edge proxy, and Arbitrum USDC settlement.  
 > 
-> Co-Founder 2 leads our Systems Engineering, deploying the Cloudflare Worker streaming proxy at `verxl.com/v1`.  
+> Daniel Kolárovský directs Quality Assurance and Process Verification, leading our empirical SLA benchmarking, deterministic canary probe audits, and node latency validation.  
 > 
-> Co-Founder 3 engineered our PostgreSQL telemetry database and autonomous AI audit probe.  
-> 
-> And Co-Founder 4 developed our Web3 frontend dashboard and modeled our tokenomic fee distribution."
+> And Miroslava Valová heads Regulatory Compliance and Market Strategy, overseeing macroeconomic cost benchmarking against hyperscalers, institutional governance, and non-custodial compliance under the EU AI Act and MiCA."
 
 *(Advance to Slide 5 at 2:30)*
 
