@@ -9,10 +9,14 @@ import {
   Code2,
   DollarSign,
   Terminal,
+  HelpCircle,
+  X,
+  Server,
+  ShieldAlert,
 } from "lucide-react";
 
 export const Playground: React.FC = () => {
-  const [model, setModel] = useState("meta-llama/llama-3-70b-instruct");
+  const [model, setModel] = useState("qwen3.5-4b-uncensored-8k");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
   );
@@ -22,21 +26,23 @@ export const Playground: React.FC = () => {
   const [temperature, setTemperature] = useState(0.2);
   const [maxTokens, setMaxTokens] = useState(512);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [reasoningOutput, setReasoningOutput] = useState("");
   const [output, setOutput] = useState("");
   const [activeCodeTab, setActiveCodeTab] = useState<"curl" | "python" | "typescript">("curl");
   const [copied, setCopied] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   // Telemetry metrics
   const [metrics, setMetrics] = useState({
-    ttft: 46,
-    totalLatency: 680,
-    tps: 82.4,
+    ttft: 38,
+    totalLatency: 520,
+    tps: 52.4,
     promptTokens: 42,
     completionTokens: 184,
-    protocolFeeUsd: 0.00067,
-    traditionalSaaSUsd: 0.01273,
-    provider: "Prague Tier-3 Cluster 01 (8x H100 SXM5)",
+    protocolFeeUsd: 0.00005,
+    traditionalSaaSUsd: 0.00095,
+    provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 8k)",
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -62,6 +68,7 @@ export const Playground: React.FC = () => {
   const handleRunInference = async () => {
     setIsStreaming(true);
     setOutput("");
+    setReasoningOutput("");
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -93,6 +100,7 @@ export const Playground: React.FC = () => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        let fullReasoning = "";
         let tokenCount = 0;
 
         while (true) {
@@ -106,7 +114,21 @@ export const Playground: React.FC = () => {
             if (line.startsWith("data: ") && line !== "data: [DONE]") {
               try {
                 const parsed = JSON.parse(line.slice(6));
-                const content = parsed.choices[0]?.delta?.content || "";
+                const delta = parsed.choices[0]?.delta;
+                const content = delta?.content || "";
+                const reasoning = delta?.reasoning || "";
+
+                if (reasoning) {
+                  if (!firstTokenReceived) {
+                    firstTokenReceived = true;
+                    const ttftMs = Math.round(performance.now() - startTime);
+                    setMetrics((prev) => ({ ...prev, ttft: ttftMs }));
+                  }
+                  fullReasoning += reasoning;
+                  tokenCount++;
+                  setReasoningOutput(fullReasoning);
+                }
+
                 if (content) {
                   if (!firstTokenReceived) {
                     firstTokenReceived = true;
@@ -129,8 +151,10 @@ export const Playground: React.FC = () => {
         setMetrics((prev) => ({
           ...prev,
           totalLatency: totalLatencyMs,
-          tps: tpsCalc || 84.5,
+          tps: tpsCalc || 52.4,
           completionTokens: tokenCount || 160,
+          protocolFeeUsd: ((tokenCount || 160) * 0.0000005),
+          traditionalSaaSUsd: ((tokenCount || 160) * 0.0000095),
         }));
         setIsStreaming(false);
         return;
@@ -147,19 +171,19 @@ export const Playground: React.FC = () => {
       `### Verxl Protocol Fee Efficiency Analysis\n\n` +
       `**1. Gross Compute Cost Comparison:**\n` +
       `- Monthly Inference Volume: 500,000,000 tokens (approx. 250M prompt + 250M completion).\n` +
-      `- Baseline Raw Compute (Llama-3-70B @ $0.68/1M blended):\n` +
-      `  $$\\text{Base Hardware Cost} = 500 \\times \\$0.68 = \\$340,000 / \\text{month}$$\n\n` +
+      `- Baseline Raw Compute (Qwen 3.5 4B Uncensored @ $0.06/1M blended):\n` +
+      `  $$\\text{Base Hardware Cost} = 500 \\times \\$0.06 = \\$30,000 / \\text{month}$$\n\n` +
       `**2. Fee Structure & Protocol Spread:**\n` +
       `- **Centralized SaaS Aggregators (950 bps / 9.50% markup):**\n` +
-      `  $$\\text{Aggregator Fee} = \\$340,000 \\times 0.0950 = \\mathbf{\\$32,300} / \\text{month}$$\n` +
-      `  $$\\text{Total Invoice} = \\$372,300 / \\text{month}$$\n\n` +
+      `  $$\\text{Aggregator Markup} = \\$30,000 \\times 0.0950 = \\mathbf{\\$2,850} / \\text{month}$$\n` +
+      `  $$\\text{Total Invoice} = \\$32,850 / \\text{month}$$\n\n` +
       `- **Verxl Protocol Non-Custodial Router (50 bps / 0.50% clearing fee):**\n` +
-      `  $$\\text{Verxl Protocol Fee} = \\$340,000 \\times 0.0050 = \\mathbf{\\$1,700} / \\text{month}$$\n` +
-      `  $$\\text{Total Invoice} = \\$341,700 / \\text{month}$$\n\n` +
+      `  $$\\text{Verxl Protocol Fee} = \\$30,000 \\times 0.0050 = \\mathbf{\\$150} / \\text{month}$$\n` +
+      `  $$\\text{Total Invoice} = \\$30,150 / \\text{month}$$\n\n` +
       `**3. Financial Take-Away:**\n` +
-      `- **Net Monthly Capital Retained:** $\\mathbf{\\$30,600}$ saved per month.\n` +
-      `- **Net Annualized Capital Retained:** $\\mathbf{\\$367,200}$ in operational runway preserved.\n` +
-      `- **Percentage Fee Reduction:** $94.74\\%$ take-rate compression delivered directly to the consumer without sacrificing SLA or hardware parity.`;
+      `- **Net Monthly Capital Retained:** $\\mathbf{\\$2,700}$ saved per month.\n` +
+      `- **Net Annualized Capital Retained:** $\\mathbf{\\$32,400}$ in operational runway preserved.\n` +
+      `- **Percentage Fee Reduction:** $94.74\\%$ take-rate compression delivered directly to consumer without sacrificing SLA or hardware parity.`;
 
     const words = targetText.split(" ");
     let currentText = "";
@@ -176,7 +200,7 @@ export const Playground: React.FC = () => {
 
       if (i === 0) {
         const ttftMs = Math.round(performance.now() - startSimTime);
-        setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 44) }));
+        setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 38) }));
       }
 
       await new Promise((r) => setTimeout(r, 20));
@@ -186,7 +210,7 @@ export const Playground: React.FC = () => {
     setMetrics((prev) => ({
       ...prev,
       totalLatency: simTotalLatency,
-      tps: 84.2,
+      tps: 52.4,
       completionTokens: words.length * 2,
     }));
     setIsStreaming(false);
@@ -200,7 +224,8 @@ export const Playground: React.FC = () => {
   };
 
   const copyOutput = () => {
-    navigator.clipboard.writeText(output);
+    const fullCopied = reasoningOutput ? `[Reasoning Process]\n${reasoningOutput}\n\n[Response]\n${output}` : output;
+    navigator.clipboard.writeText(fullCopied);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -247,7 +272,6 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="", flush=True)`,
     typescript: `import OpenAI from "openai";
 
-// Drop-in OpenAI SDK pointing to Verxl Edge Router
 const openai = new OpenAI({
   baseURL: "https://verxl.com/v1",
   apiKey: "vrxl_live_8f3a2b1c",
@@ -280,13 +304,54 @@ main();`,
           <Terminal className="w-3 h-3" />
           <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TEST RUN</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Inference Terminal
-        </h2>
-        <p className="text-xs text-slate-400 font-mono">
-          Sub-50ms TTFT streaming inference directly through Verxl's non-custodial decentralized clearinghouse (Sepolia Testnet Pilot).
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>Inference Terminal</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-normal">
+              LIVE BULBASAUR HOST · 8K CONTEXT
+            </span>
+          </h2>
+
+          {/* Precautions / Disclaimer Trigger */}
+          <button
+            onClick={() => setShowDisclaimer(!showDisclaimer)}
+            className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded-[2px] bg-[#0a0e17] border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition cursor-pointer self-start sm:self-auto"
+            title="Read Model & Protocol Policy Disclaimer"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Compute & Safety Disclaimer (?)</span>
+          </button>
+        </div>
+        <p className="text-xs text-slate-400 font-mono mt-0.5">
+          Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (8k context) via Verxl 50 bps decentralized clearinghouse.
         </p>
       </div>
+
+      {/* Precautions & Policy Disclaimer Modal/Banner */}
+      {showDisclaimer && (
+        <div className="bg-[#0c0f18] border border-amber-500/40 rounded-[3px] p-3 text-xs font-mono text-slate-300 space-y-2 relative shadow-lg">
+          <div className="flex items-center justify-between border-b border-amber-500/20 pb-1.5 text-amber-300">
+            <span className="font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[11px]">
+              <ShieldAlert className="w-4 h-4 text-amber-400" />
+              <span>Neutral Compute Routing & Safety Policy Notice</span>
+            </span>
+            <button
+              onClick={() => setShowDisclaimer(false)}
+              className="text-slate-400 hover:text-white p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="text-[11px] leading-relaxed text-slate-300 space-y-1.5">
+            <p>
+              <strong>Deterministic Research Parity:</strong> Verxl Protocol provides decentralized, permissionless inference clearing. This terminal connects directly to our bare-metal Prague cluster (Bulbasaur) serving <strong>Qwen 3.5 4B Uncensored (8k Context)</strong> as-is without corporate guardrail filtering or synthetic alignment penalties, intended for deterministic benchmarking and open research.
+            </p>
+            <p className="text-slate-400">
+              <strong>Precaution Notice:</strong> If Verxl Protocol receives verified notification of harmful, unlawful, or malicious exploitation violating statutory regulations or network safety standards, node routing guarantees will be revoked and node operators remain subject to automated 10% collateral slashing via Aragon DAO governance (VIP-1). The protocol operates in parity with open-source model repositories (Hugging Face / Apache 2.0).
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         {/* Left Column: Configuration & Controls */}
@@ -299,27 +364,25 @@ main();`,
 
             {/* Model Selector */}
             <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                Model Identifier
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-mono text-slate-400">
+                  Active Testing Model
+                </label>
+                <span className="text-[10px] font-mono text-emerald-400">PRAGUE HOST: BULBASAUR</span>
+              </div>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500 transition"
               >
-                <option value="meta-llama/llama-3-70b-instruct">
-                  meta-llama/llama-3-70b-instruct ($0.65 / $0.70 per 1M)
-                </option>
-                <option value="meta-llama/llama-3-8b-instruct">
-                  meta-llama/llama-3-8b-instruct ($0.08 / $0.10 per 1M)
-                </option>
-                <option value="deepseek-ai/deepseek-v3">
-                  deepseek-ai/deepseek-v3 ($0.45 / $0.55 per 1M)
-                </option>
-                <option value="mistralai/mixtral-8x7b-instruct">
-                  mistralai/mixtral-8x7b-instruct ($0.22 / $0.26 per 1M)
+                <option value="qwen3.5-4b-uncensored-8k">
+                  qwen3.5-4b-uncensored-8k · Bulbasaur Prague Node (Active Test Model)
                 </option>
               </select>
+              <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+                <Server className="w-3 h-3 text-blue-400 shrink-0" />
+                <span>Production Fleet (32k Qwen, Xiaomi Mi MIMO 2.6 Flash/Pro & DeepSeek v4.1 Bridges) listed in Registry.</span>
+              </div>
             </div>
 
             {/* System Prompt */}
@@ -410,7 +473,7 @@ main();`,
                   className="w-full hero-btn hero-btn--primary !justify-center !py-2.5"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Execute Inference Stream</span>
+                  <span>Execute Bulbasaur Live Stream</span>
                 </button>
               ) : (
                 <button
@@ -463,11 +526,11 @@ main();`,
                   }`}
                 />
                 <span className="text-[10px] font-mono text-slate-300 uppercase tracking-wider">
-                  {isStreaming ? "STREAMING INFERENCE CHUNKS..." : "INFERENCE STREAM TERMINAL"}
+                  {isStreaming ? "STREAMING FROM BULBASAUR NODE..." : "BULBASAUR INFERENCE TERMINAL"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {output && (
+                {(output || reasoningOutput) && (
                   <button
                     onClick={copyOutput}
                     className="flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono bg-[#080c14] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition"
@@ -490,6 +553,18 @@ main();`,
 
             {/* Output Scrollable Body */}
             <div className="flex-1 p-3 sm:p-4 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap select-text bg-[#05070b]/60">
+              {reasoningOutput && (
+                <div className="mb-3 p-2.5 rounded-[2px] bg-slate-900/60 border border-slate-800/80 text-slate-400 text-[10.5px]">
+                  <div className="text-[9px] uppercase tracking-wider text-blue-400/80 font-bold mb-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-[1px] bg-blue-400 animate-pulse" />
+                    <span>Thought Process / Reasoning Protocol (Seed=42 Invariant)</span>
+                  </div>
+                  <div className="text-slate-400 font-mono italic whitespace-pre-wrap">
+                    {reasoningOutput}
+                  </div>
+                </div>
+              )}
+
               {output ? (
                 <div>
                   {output}
@@ -497,14 +572,14 @@ main();`,
                     <span className="inline-block w-2 h-4 bg-blue-400 ml-1 animate-pulse align-middle" />
                   )}
                 </div>
-              ) : (
+              ) : !reasoningOutput ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
                   <Terminal className="w-8 h-8 opacity-30 text-blue-400" />
                   <p className="text-xs font-mono text-slate-400">
-                    Terminal idle. Press "Execute Inference Stream" to test latency & throughput.
+                    Terminal idle. Press "Execute Bulbasaur Live Stream" to query Qwen 3.5 4B Uncensored (8k Context).
                   </p>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Telemetry Footer Bar */}
@@ -526,7 +601,7 @@ main();`,
                   Tokens: <span className="text-white">{metrics.completionTokens}</span>
                 </span>
               </div>
-              <div className="text-[10px] text-slate-400 hidden md:block truncate max-w-[240px]">
+              <div className="text-[10px] text-slate-400 hidden md:block truncate max-w-[280px]">
                 Node: {metrics.provider}
               </div>
             </div>
@@ -538,7 +613,7 @@ main();`,
               <div className="flex items-center gap-1.5">
                 <Code2 className="w-3.5 h-3.5 text-blue-400" />
                 <span className="text-[11px] font-mono text-slate-300 uppercase tracking-wider">
-                  Code Integration
+                  Code Integration (OpenAI SDK Compatible)
                 </span>
               </div>
 

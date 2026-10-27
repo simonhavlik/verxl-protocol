@@ -1,5 +1,5 @@
 // Cloudflare Pages Function: /api/providers
-// Returns active GPU Compute Provider fleet
+// Returns active GPU Compute Provider fleet & Official Bridges
 
 interface Env {}
 
@@ -19,22 +19,64 @@ export const onRequestOptions: PagesFunction<Env> = async () => {
 export const onRequestGet: PagesFunction<Env> = async () => {
   const providers = [
     {
-      id: "prague-node-1",
-      name: "Prague Tier-3 Cluster 01",
+      id: "bulbasaur-prague-1",
+      name: "Prague Bare-Metal Cluster 01 (Bulbasaur / Verxl Team)",
       location: "Prague, Czechia",
       region: "EU-Central",
-      endpointUrl: "https://prg-node1.verxl.network/v1",
-      modelIdentifier: "meta-llama/llama-3-70b-instruct",
-      hardware: "8x NVIDIA H100 SXM5",
-      latencyMs: 18,
-      ttftMs: 142,
-      throughputTps: 84.5,
-      pricePromptUsd: 0.65,
-      priceCompletionUsd: 0.70,
+      endpointUrl: "https://node1.verxl.com/v1",
+      modelIdentifier: "qwen-3.5-4b-uncensored-32k",
+      hardware: "Dedicated Bare-Metal Vulkan GPU",
+      latencyMs: 12,
+      ttftMs: 38,
+      throughputTps: 52.4,
+      pricePromptUsd: 0.06,
+      priceCompletionUsd: 0.09,
       stakedAmountVrxl: 35000,
       status: "ACTIVE",
-      lastAuditScore: 99.4,
-      uptimePercent: 99.98,
+      lastAuditScore: 99.8,
+      uptimePercent: 99.99,
+      providerType: "SELF_HOSTED",
+      notes: "Verxl Foundation self-hosted cluster serving uncensored 32k context model.",
+    },
+    {
+      id: "xiaomi-bridge-1",
+      name: "Xiaomi Cloud Official Bridge Gateway",
+      location: "Global Edge / Frankfurt & Beijing",
+      region: "GLOBAL",
+      endpointUrl: "https://api.xiaomimimo.com/v1 (via Verxl Bridge)",
+      modelIdentifier: "xiaomi/mimo-2.6-flash / pro",
+      hardware: "Xiaomi Mi Distributed Tensor Cluster",
+      latencyMs: 22,
+      ttftMs: 85,
+      throughputTps: 110.0,
+      pricePromptUsd: 0.12,
+      priceCompletionUsd: 0.18,
+      stakedAmountVrxl: 45000,
+      status: "ACTIVE",
+      lastAuditScore: 99.6,
+      uptimePercent: 99.95,
+      providerType: "OFFICIAL_BRIDGE",
+      notes: "Official non-custodial bridge to Xiaomi Mi MIMO 2.6 Flash (64k) & Pro (128k) public APIs.",
+    },
+    {
+      id: "deepseek-bridge-1",
+      name: "DeepSeek Official Bridge Gateway",
+      location: "Global Edge / Hangzhou & Tokyo",
+      region: "GLOBAL",
+      endpointUrl: "https://api.deepseek.com/v1 (via Verxl Bridge)",
+      modelIdentifier: "deepseek/deepseek-v4.1-flash",
+      hardware: "DeepSeek MoE Inference Engine",
+      latencyMs: 28,
+      ttftMs: 92,
+      throughputTps: 135.0,
+      pricePromptUsd: 0.14,
+      priceCompletionUsd: 0.28,
+      stakedAmountVrxl: 50000,
+      status: "ACTIVE",
+      lastAuditScore: 99.5,
+      uptimePercent: 99.92,
+      providerType: "OFFICIAL_BRIDGE",
+      notes: "Official non-custodial bridge to DeepSeek v4.1 Flash high-concurrency MoE public API.",
     },
     {
       id: "brno-gpu-2",
@@ -53,6 +95,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       status: "ACTIVE",
       lastAuditScore: 98.9,
       uptimePercent: 99.85,
+      providerType: "COMMUNITY_NODE",
+      notes: "Independent Czech GPU mining transition facility.",
     },
     {
       id: "frankfurt-dc-0",
@@ -71,32 +115,27 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       status: "ACTIVE",
       lastAuditScore: 99.8,
       uptimePercent: 100.0,
-    },
-    {
-      id: "warsaw-hpc-1",
-      name: "Warsaw Secondary Compute Hub",
-      location: "Warsaw, Poland",
-      region: "EU-East",
-      endpointUrl: "https://waw-node1.verxl.network/v1",
-      modelIdentifier: "deepseek-ai/deepseek-v3",
-      hardware: "8x NVIDIA H800",
-      latencyMs: 29,
-      ttftMs: 165,
-      throughputTps: 76.1,
-      pricePromptUsd: 0.45,
-      priceCompletionUsd: 0.55,
-      stakedAmountVrxl: 30000,
-      status: "ACTIVE",
-      lastAuditScore: 99.1,
-      uptimePercent: 99.91,
+      providerType: "COMMUNITY_NODE",
+      notes: "Low-latency Frankfurt hosting for fast 8B completion.",
     },
   ];
 
-  return new Response(JSON.stringify({ count: providers.length, providers }, null, 2), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      ...CORS_HEADERS,
-    },
-  });
+  return new Response(
+    JSON.stringify(
+      {
+        totalNodes: providers.length,
+        totalStakedVrxl: providers.reduce((acc, p) => acc + p.stakedAmountVrxl, 0),
+        providers,
+      },
+      null,
+      2
+    ),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...CORS_HEADERS,
+      },
+    }
+  );
 };

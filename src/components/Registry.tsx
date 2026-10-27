@@ -139,7 +139,7 @@ export const Registry: React.FC<RegistryProps> = ({
             <Filter className="w-3 h-3" />
             <span className="hidden sm:inline">Region:</span>
           </div>
-          {["ALL", "EU-Central", "EU-West", "EU-East"].map((r) => (
+          {["ALL", "GLOBAL", "EU-Central", "EU-West", "EU-East"].map((r) => (
             <button
               key={r}
               onClick={() => setRegionFilter(r)}
@@ -201,8 +201,20 @@ export const Registry: React.FC<RegistryProps> = ({
                 >
                   {/* Provider & Hardware */}
                   <td className="py-3 px-4">
-                    <div className="font-semibold text-slate-100 group-hover:text-blue-400 transition">
-                      {p.name}
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-100 group-hover:text-blue-400 transition">
+                        {p.name}
+                      </span>
+                      {p.providerType === "SELF_HOSTED" && (
+                        <span className="px-1.5 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[9px] text-blue-400 font-bold uppercase tracking-wider">
+                          Self-Hosted
+                        </span>
+                      )}
+                      {p.providerType === "OFFICIAL_BRIDGE" && (
+                        <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/10 border border-purple-500/30 text-[9px] text-purple-300 font-bold uppercase tracking-wider">
+                          Official Bridge
+                        </span>
+                      )}
                     </div>
                     <div className="text-[10.5px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                       <Cpu className="w-3 h-3 text-slate-400" />
@@ -218,9 +230,16 @@ export const Registry: React.FC<RegistryProps> = ({
 
                   {/* Model */}
                   <td className="py-3 px-4">
-                    <span className="px-1.5 py-0.5 rounded-[2px] bg-[#05070b] border border-slate-800 text-[10.5px] text-blue-300">
-                      {p.modelIdentifier.split("/")[1] || p.modelIdentifier}
-                    </span>
+                    <div className="inline-flex flex-col gap-0.5">
+                      <span className="px-1.5 py-0.5 rounded-[2px] bg-[#05070b] border border-slate-800 text-[10.5px] text-blue-300">
+                        {p.modelIdentifier}
+                      </span>
+                      {p.contextWindow && (
+                        <span className="text-[9.5px] text-slate-400">
+                          {p.contextWindow >= 1024 ? `${p.contextWindow / 1024}k` : p.contextWindow} context window
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Perf */}
