@@ -8,6 +8,7 @@ import {
   Server,
   Activity,
   Sliders,
+  MessageSquare,
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 
@@ -377,12 +378,20 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             {/* Sharp Action Buttons — Strictly Square (rounded-[3px]), zero pills */}
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
               <button
-                onClick={() => onNavigate("playground")}
+                onClick={() => onNavigate("chat")}
                 className="hero-btn hero-btn--primary"
               >
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Launch Inference Terminal</span>
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Launch Verxl Chat</span>
                 <ArrowRight className="w-3 h-3 ml-0.5" />
+              </button>
+
+              <button
+                onClick={() => onNavigate("playground")}
+                className="hero-btn hero-btn--ghost"
+              >
+                <Terminal className="w-3.5 h-3.5 text-blue-400" />
+                <span>Terminal</span>
               </button>
 
               <button

@@ -16,6 +16,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
+        chatDir: path.resolve(__dirname, "chat/index.html"),
         whitepaperDir: path.resolve(__dirname, "whitepaper/index.html"),
         whitepaperFile: path.resolve(__dirname, "whitepaper.html"),
         visionDir: path.resolve(__dirname, "vision/index.html"),

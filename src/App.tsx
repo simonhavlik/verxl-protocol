@@ -5,6 +5,7 @@ import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 
 // Code-split interior tabs for instant mobile initial page loads & sub-200ms TTI
+const Chat = lazy(() => import("./components/Chat").then((m) => ({ default: m.Chat })));
 const Playground = lazy(() => import("./components/Playground").then((m) => ({ default: m.Playground })));
 const Registry = lazy(() => import("./components/Registry").then((m) => ({ default: m.Registry })));
 const Oracle = lazy(() => import("./components/Oracle").then((m) => ({ default: m.Oracle })));
@@ -31,6 +32,7 @@ const TabLoadingFallback = () => (
 function getTabFromPath(): string {
   if (typeof window === "undefined") return "overview";
   const path = window.location.pathname.toLowerCase();
+  if (path.includes("chat")) return "chat";
   if (path.includes("whitepaper")) return "whitepaper";
   if (path.includes("vision")) return "vision";
   if (path.includes("console") || path.includes("billing") || path.includes("keys")) return "console";
@@ -120,6 +122,7 @@ export default function App() {
       ) : (
         <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
           <Suspense fallback={<TabLoadingFallback />}>
+            {activeTab === "chat" && <Chat />}
             {activeTab === "playground" && <Playground />}
             {activeTab === "registry" && (
               <Registry

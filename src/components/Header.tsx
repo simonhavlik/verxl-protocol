@@ -36,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     { id: "overview", label: "Overview" },
+    { id: "chat", label: "Chat" },
     { id: "playground", label: "Terminal" },
     { id: "registry", label: "Registry" },
     { id: "oracle", label: "Oracle" },
