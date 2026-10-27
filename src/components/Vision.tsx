@@ -11,7 +11,11 @@ import {
   Activity,
   Zap,
   Users,
-  Sparkles,
+  BarChart3,
+  Scale,
+  Play,
+  Pause,
+  Sliders,
 } from "lucide-react";
 
 interface VisionProps {
@@ -26,85 +30,155 @@ interface HorizonPhase {
   status: "OPERATIONAL" | "IN_DEVELOPMENT" | "PLANNED";
   progressPct: number;
   tagline: string;
+  layer: "SMART_CONTRACTS" | "EDGE_ROUTING" | "HARDWARE" | "ZERO_KNOWLEDGE" | "ALL";
   coreDeliverables: string[];
   techStack: string[];
   colorHex: string;
   orbitInclination: number;
 }
 
-const HORIZONS: HorizonPhase[] = [
+const ROADMAP_PHASES: HorizonPhase[] = [
   {
     id: "h1",
     horizon: "Horizon 1",
-    phaseName: "Live Non-Custodial Pilot",
+    phaseName: "Live Non-Custodial Clearing Switch",
     quarter: "Q4 2026",
     status: "OPERATIONAL",
     progressPct: 100,
-    tagline: "Stateless 50 bps edge clearing switch, seed=42 invariant probing, and Aragon OSx DAO settlement on Ethereum Sepolia & Arbitrum.",
+    layer: "EDGE_ROUTING",
+    tagline: "Stateless 50 bps edge clearing switch, seed=42 invariant canary probing, and Aragon OSx DAO settlement on Ethereum Sepolia & Arbitrum.",
     coreDeliverables: [
-      "Dual-redundant tunnel routing (Charizard IONOS port 11645 + Cloudflare Edge)",
-      "Bare-metal Prague GPU host (Bulbasaur Qwen 3.5 4B Uncensored 32k Resident)",
+      "Dual-redundant tunnel routing (Charizard IONOS port 11645 + Cloudflare Edge proxy)",
+      "Bare-metal Prague GPU cluster 01 (Bulbasaur Qwen 3.5 4B Uncensored 32k Resident)",
       "Official public API bridges for Xiaomi Mi MIMO 2.6 Flash/Pro & DeepSeek v4.1",
       "Automated 10% collateral slashing via VerxlStakingRegistry smart contract",
       "Passwordless institutional email OTP auth via automated@verxl.com on Seznam SMTP",
-      "Arbitrum USDC deposit clearing and provider payout settlement (min $1.00 USD)",
+      "Arbitrum One Mainnet USDC commercial escrow settlement (minimum $1.00 deposit / payout)",
     ],
-    techStack: ["Ethereum Sepolia", "Arbitrum One / Sepolia", "Aragon OSx", "Cloudflare D1 / Workers", "socat Tunnel", "Vulkan GPU"],
+    techStack: ["Ethereum Sepolia", "Arbitrum One", "Aragon OSx", "Cloudflare Workers", "socat Daemon", "Vulkan GPU"],
     colorHex: "#10b981", // Emerald
     orbitInclination: 0.35,
   },
   {
-    id: "h2",
-    horizon: "Horizon 2",
-    phaseName: "State Channels & zk-Attestation",
-    quarter: "Q1–Q3 2027",
+    id: "h2a",
+    horizon: "Horizon 2A",
+    phaseName: "Bilateral State Channels & Micro-Settlement",
+    quarter: "Q1–Q2 2027",
     status: "IN_DEVELOPMENT",
-    progressPct: 40,
-    tagline: "Dynamic bilateral micro-streaming state channels allowing continuous token-by-token settlement without gas friction, coupled with lightweight zk-STARK compute proofs.",
+    progressPct: 45,
+    layer: "SMART_CONTRACTS",
+    tagline: "Dynamic bilateral micro-streaming state channels allowing continuous token-by-token clearing without per-request gas friction, settled asynchronously on Arbitrum.",
     coreDeliverables: [
       "Bilateral state-channel escrows for per-token streaming clearing",
-      "Lightweight zero-knowledge output attestation (zk-STARK execution trace proofs)",
+      "Sub-millisecond off-chain signature exchange via EIP-712 typed data vouchers",
       "Automated provider node registration CLI with one-click Docker daemon",
-      "Fractional community staking pools backing verified independent hosts",
+      "Fractional community staking pools backing verified independent GPU hosts",
       "Continuous hardware performance indexing (TTFT, memory bandwidth, thermal drift)",
-      "Dynamic gas-minimized settlement batching to Arbitrum L2 rollup",
+      "Dynamic gas-minimized settlement batching to Arbitrum Nitro L2 rollup",
     ],
-    techStack: ["zk-STARK Proofs", "State Channels", "Docker Daemon CLI", "Arbitrum Nitro", "EigenLayer AVS (Research)", "OpenAPI 3.1"],
+    techStack: ["EIP-712 Channels", "Arbitrum Nitro", "Docker CLI", "Go Routing Node", "WebSockets", "Rust Tokio"],
     colorHex: "#3b82f6", // Electric Blue
     orbitInclination: -0.55,
+  },
+  {
+    id: "h2b",
+    horizon: "Horizon 2B",
+    phaseName: "Lightweight zk-STARK Compute Attestation",
+    quarter: "Q3–Q4 2027",
+    status: "IN_DEVELOPMENT",
+    progressPct: 25,
+    layer: "ZERO_KNOWLEDGE",
+    tagline: "Cryptographic output verification utilizing lightweight zero-knowledge execution trace proofs, verifying honest FP16 matrix multiplication without running re-inference.",
+    coreDeliverables: [
+      "Lightweight zero-knowledge output attestation (zk-STARK execution trace proofs)",
+      "RISC Zero / SP1 zkVM verification of quantization kernel integrity",
+      "Secondary compute mobilization (European Tier-3 co-los, data centers, amortized mining rigs)",
+      "Automated on-chain slash execution without centralized validator intervention",
+      "Decentralized telemetry database synchronization across Charizard and edge relays",
+      "Standardized OpenAPI 3.1 & Model Context Protocol (MCP) server daemon",
+    ],
+    techStack: ["zk-STARK Proofs", "SP1 zkVM", "RISC Zero", "EigenLayer AVS (Research)", "OpenAPI 3.1", "MCP SDK"],
+    colorHex: "#06b6d4", // Cyan
+    orbitInclination: 0.75,
   },
   {
     id: "h3",
     horizon: "Horizon 3",
     phaseName: "Sovereign Autonomous Agent Grid",
-    quarter: "2027+",
+    quarter: "2028+",
     status: "PLANNED",
-    progressPct: 15,
-    tagline: "Peer-to-peer libp2p agent swarms clearing machine-to-machine inference transactions without humans, credit cards, or centralized banking rails.",
+    progressPct: 10,
+    layer: "HARDWARE",
+    tagline: "Peer-to-peer libp2p agent swarms autonomously negotiating spot compute contracts and clearing machine-to-machine transactions without human operators or fiat banking rails.",
     coreDeliverables: [
       "P2P libp2p mesh routing replacing centralized reverse proxy infrastructure",
-      "Autonomous AI agent swarms autonomously negotiating spot compute contracts",
-      "Secondary compute mobilization (enterprise co-los, datacenters, amortized mining rigs)",
+      "Autonomous AI agent swarms negotiating spot compute auctions via cryptographic bids",
       "Cross-chain liquidity routing via LayerZero and Chainlink CCIP",
       "Self-sovereign cryptographic node identities (ERC-721 hardware attestations)",
-      "Complete immutable governance handoff to on-chain $VRXL holders",
+      "Complete immutable governance handoff to on-chain $VRXL token holders",
+      "Universal AI inference settlement rail for sovereign autonomous agents",
     ],
-    techStack: ["libp2p Mesh", "ERC-721 Node IDs", "LayerZero CCIP", "Autonomous AI Agents", "Decentralized Physical Infra (DePIN)"],
+    techStack: ["libp2p Mesh", "ERC-721 Node IDs", "LayerZero CCIP", "Autonomous Agents", "DePIN Mesh"],
     colorHex: "#a855f7", // Purple
     orbitInclination: 1.15,
   },
+];
+
+// Token Volume Data Points for Comparative Macroeconomic Chart
+const VOLUME_POINTS = [
+  { volumeLabel: "100M", volumeNum: 100, promptM: 50, complM: 50 },
+  { volumeLabel: "250M", volumeNum: 250, promptM: 125, complM: 125 },
+  { volumeLabel: "500M", volumeNum: 500, promptM: 250, complM: 250 },
+  { volumeLabel: "1B", volumeNum: 1000, promptM: 500, complM: 500 },
+  { volumeLabel: "2.5B", volumeNum: 2500, promptM: 1250, complM: 1250 },
+  { volumeLabel: "5B", volumeNum: 5000, promptM: 2500, complM: 2500 },
+  { volumeLabel: "10B", volumeNum: 10000, promptM: 5000, complM: 5000 },
 ];
 
 export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Active Horizon selection in interactive roadmap
-  const [selectedHorizon, setSelectedHorizon] = useState<string>("h1");
-  const activePhase = HORIZONS.find((h) => h.id === selectedHorizon) || HORIZONS[0];
+  // 3D HUD & Controls State
+  const [is3DPlaying, setIs3DPlaying] = useState(true);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
+  const [cameraPreset, setCameraPreset] = useState<"overview" | "prague" | "zenith">("overview");
+  const [highlightedNode, setHighlightedNode] = useState<{
+    name: string;
+    region: string;
+    latency: number;
+    ttft: number;
+    hardware: string;
+    status: string;
+  } | null>({
+    name: "bulbasaur-prague-01",
+    region: "Prague, Czechia (Bare-Metal Vulkan)",
+    latency: 12,
+    ttft: 38,
+    hardware: "Dedicated Bare-Metal Vulkan GPU",
+    status: "OPERATIONAL · 32K RESIDENT",
+  });
+
+  // Roadmap State
+  const [selectedHorizonId, setSelectedHorizonId] = useState<string>("h1");
+  const [layerFilter, setLayerFilter] = useState<string>("ALL");
+  const activePhase = ROADMAP_PHASES.find((h) => h.id === selectedHorizonId) || ROADMAP_PHASES[0];
+
+  // Interactive Macroeconomic Volume Slider State (Tokens in Millions, default 500M)
+  const [tokenVolumeM, setTokenVolumeM] = useState<number>(500);
+
+  // Financial calculations
+  const rawComputeCostUsd = tokenVolumeM * 0.06; // $0.06 blended / 1M tokens
+  const centralizedAggregatorFeeUsd = rawComputeCostUsd * 0.095; // 950 bps drag
+  const hyperscalerCloudFeeUsd = rawComputeCostUsd * 0.075; // 750 bps drag
+  const verxlProtocolFeeUsd = rawComputeCostUsd * 0.005; // 50 bps switch
+  const netMonthlySavedUsd = centralizedAggregatorFeeUsd - verxlProtocolFeeUsd;
+  const netAnnualizedSavedUsd = netMonthlySavedUsd * 12;
+  const percentageSaved = ((centralizedAggregatorFeeUsd - verxlProtocolFeeUsd) / centralizedAggregatorFeeUsd) * 100;
 
   // Mouse interaction state for 3D parallax
   const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
 
   // Three.js Interactive 3D Machine Intelligence Clearing Hyper-Lattice
   useEffect(() => {
@@ -128,32 +202,33 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x05070b, 0.05);
+    scene.fog = new THREE.FogExp2(0x05070b, 0.04);
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(0, 0, 7.2);
+    camera.position.set(0, 0, 7.5);
+    cameraRef.current = camera;
 
     const rootGroup = new THREE.Group();
     scene.add(rootGroup);
 
-    // 1. Central Geodesic Settlement Engine Core
-    const coreGeo = new THREE.IcosahedronGeometry(1.15, 1);
+    // 1. Central Geodesic Settlement Engine Core (Icosahedron + Glowing Core)
+    const coreGeo = new THREE.IcosahedronGeometry(1.2, 1);
     const coreMat = new THREE.MeshBasicMaterial({
       color: 0x3b82f6,
       wireframe: true,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
     });
     const coreMesh = new THREE.Mesh(coreGeo, coreMat);
     rootGroup.add(coreMesh);
 
     // Inner glowing core
-    const innerCoreGeo = new THREE.OctahedronGeometry(0.65, 0);
+    const innerCoreGeo = new THREE.OctahedronGeometry(0.7, 0);
     const innerCoreMat = new THREE.MeshBasicMaterial({
       color: 0x60a5fa,
       wireframe: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.75,
     });
     const innerCoreMesh = new THREE.Mesh(innerCoreGeo, innerCoreMat);
     rootGroup.add(innerCoreMesh);
@@ -166,8 +241,8 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       if (ctx) {
         const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
         grad.addColorStop(0, colorStr);
-        grad.addColorStop(0.3, "rgba(59, 130, 246, 0.8)");
-        grad.addColorStop(0.7, "rgba(37, 99, 235, 0.2)");
+        grad.addColorStop(0.25, "rgba(59, 130, 246, 0.9)");
+        grad.addColorStop(0.65, "rgba(37, 99, 235, 0.25)");
         grad.addColorStop(1, "rgba(0, 0, 0, 0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 64, 64);
@@ -178,14 +253,14 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
     };
 
     // 3. Decentralized Host Constellation Nodes
-    const nodeCount = 260;
+    const nodeCount = 280;
     const nodePositions = new Float32Array(nodeCount * 3);
     const nodeVectors: THREE.Vector3[] = [];
 
     for (let i = 0; i < nodeCount; i++) {
       const phi = Math.acos(-1 + (2 * i) / nodeCount);
       const theta = Math.sqrt(nodeCount * Math.PI) * phi;
-      const radius = 2.4 + Math.random() * 0.9;
+      const radius = 2.45 + Math.random() * 0.95;
 
       const x = radius * Math.cos(theta) * Math.sin(phi);
       const y = radius * Math.sin(theta) * Math.sin(phi);
@@ -203,10 +278,10 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
     const nodeMat = new THREE.PointsMaterial({
       color: 0x60a5fa,
-      size: 0.18,
+      size: 0.22,
       map: createNodeSprite("#93c5fd"),
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.95,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -233,49 +308,66 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
     const lineMat = new THREE.LineBasicMaterial({
       color: 0x2563eb,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.28,
       blending: THREE.AdditiveBlending,
     });
     const lineMesh = new THREE.LineSegments(lineGeo, lineMat);
     rootGroup.add(lineMesh);
 
-    // 5. Three Inclined Architectural Horizon Rings
+    // 5. Highlight Prague Anchor Node with Pulsing Beacon
+    const pragueGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const pragueMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+    const pragueMesh = new THREE.Mesh(pragueGeo, pragueMat);
+    pragueMesh.position.set(2.0, 0.8, 1.4);
+    rootGroup.add(pragueMesh);
+
+    // Prague halo
+    const pragueHaloGeo = new THREE.RingGeometry(0.16, 0.24, 32);
+    const pragueHaloMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.8,
+    });
+    const pragueHaloMesh = new THREE.Mesh(pragueHaloGeo, pragueHaloMat);
+    pragueHaloMesh.position.copy(pragueMesh.position);
+    rootGroup.add(pragueHaloMesh);
+
+    // 6. Three Inclined Architectural Horizon Rings
     const createHorizonRing = (radius: number, color: number, inclination: number, thickness: number) => {
       const ringGroup = new THREE.Group();
       ringGroup.rotation.x = inclination;
 
       const curve = new THREE.EllipseCurve(0, 0, radius, radius * 0.95, 0, 2 * Math.PI, false, 0);
-      const pts = curve.getPoints(96);
-      const ringGeo = new THREE.BufferGeometry().setFromPoints(
-        pts.map((p) => new THREE.Vector3(p.x, 0, p.y))
-      );
+      const pts = curve.getPoints(128);
+      const ringGeo = new THREE.BufferGeometry().setFromPoints(pts.map((p) => new THREE.Vector3(p.x, 0, p.y)));
       const ringMat = new THREE.LineBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.55,
       });
       const ringLine = new THREE.Line(ringGeo, ringMat);
       ringGroup.add(ringLine);
 
       // Orbital circulating packet
-      const packetGeo = new THREE.SphereGeometry(thickness, 8, 8);
-      const packetMat = new THREE.MeshBasicMaterial({ color, wireframe: false });
+      const packetGeo = new THREE.SphereGeometry(thickness, 12, 12);
+      const packetMat = new THREE.MeshBasicMaterial({ color });
       const packetMesh = new THREE.Mesh(packetGeo, packetMat);
       ringGroup.add(packetMesh);
 
       return { ringGroup, packetMesh, radius };
     };
 
-    // Horizon 1: Green Live Pilot Ring
-    const h1Orbit = createHorizonRing(3.1, 0x10b981, 0.45, 0.06);
+    // Horizon 1: Emerald Live Pilot Ring
+    const h1Orbit = createHorizonRing(3.1, 0x10b981, 0.45, 0.08);
     rootGroup.add(h1Orbit.ringGroup);
 
     // Horizon 2: Blue State Channels Ring
-    const h2Orbit = createHorizonRing(3.6, 0x3b82f6, -0.65, 0.05);
+    const h2Orbit = createHorizonRing(3.65, 0x3b82f6, -0.65, 0.07);
     rootGroup.add(h2Orbit.ringGroup);
 
     // Horizon 3: Purple Sovereign Agent Grid Ring
-    const h3Orbit = createHorizonRing(4.1, 0xa855f7, 1.25, 0.07);
+    const h3Orbit = createHorizonRing(4.2, 0xa855f7, 1.25, 0.08);
     rootGroup.add(h3Orbit.ringGroup);
 
     // Resize Handler
@@ -306,7 +398,10 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      if (!is3DPlaying) return;
+
+      clock.getDelta();
+      const t = clock.getElapsedTime() * speedMultiplier;
 
       // Smooth mouse lerp
       mousePos.current.x += (mousePos.current.targetX - mousePos.current.x) * 0.05;
@@ -317,7 +412,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       rootGroup.rotation.x = Math.sin(t * 0.08) * 0.1 + mousePos.current.y * 0.5;
 
       // Core pulsing
-      const coreScale = 1 + Math.sin(t * 2) * 0.06;
+      const coreScale = 1 + Math.sin(t * 2.2) * 0.06;
       coreMesh.scale.set(coreScale, coreScale, coreScale);
       coreMesh.rotation.y = -t * 0.25;
       coreMesh.rotation.z = t * 0.15;
@@ -325,14 +420,18 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       innerCoreMesh.rotation.x = t * 0.4;
       innerCoreMesh.rotation.y = t * 0.3;
 
+      // Prague halo pulse
+      const haloScale = 1 + Math.sin(t * 4) * 0.3;
+      pragueHaloMesh.scale.set(haloScale, haloScale, haloScale);
+
       // Orbit packet motions
-      const a1 = t * 0.8;
+      const a1 = t * 0.85;
       h1Orbit.packetMesh.position.set(Math.cos(a1) * h1Orbit.radius, 0, Math.sin(a1) * h1Orbit.radius * 0.95);
 
-      const a2 = -t * 0.65;
+      const a2 = -t * 0.7;
       h2Orbit.packetMesh.position.set(Math.cos(a2) * h2Orbit.radius, 0, Math.sin(a2) * h2Orbit.radius * 0.95);
 
-      const a3 = t * 0.5;
+      const a3 = t * 0.55;
       h3Orbit.packetMesh.position.set(Math.cos(a3) * h3Orbit.radius, 0, Math.sin(a3) * h3Orbit.radius * 0.95);
 
       renderer.render(scene, camera);
@@ -352,8 +451,57 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       nodeMat.dispose();
       lineGeo.dispose();
       lineMat.dispose();
+      pragueGeo.dispose();
+      pragueMat.dispose();
+      pragueHaloGeo.dispose();
+      pragueHaloMat.dispose();
     };
-  }, []);
+  }, [is3DPlaying, speedMultiplier]);
+
+  // Handle Camera Presets
+  const setCameraView = (preset: "overview" | "prague" | "zenith") => {
+    setCameraPreset(preset);
+    if (!cameraRef.current) return;
+    if (preset === "overview") {
+      cameraRef.current.position.set(0, 0, 7.5);
+      cameraRef.current.lookAt(0, 0, 0);
+      setHighlightedNode({
+        name: "bulbasaur-prague-01",
+        region: "Prague, Czechia (Bare-Metal Vulkan)",
+        latency: 12,
+        ttft: 38,
+        hardware: "Dedicated Bare-Metal Vulkan GPU",
+        status: "OPERATIONAL · 32K RESIDENT",
+      });
+    } else if (preset === "prague") {
+      cameraRef.current.position.set(2.4, 1.2, 4.2);
+      cameraRef.current.lookAt(2.0, 0.8, 1.4);
+      setHighlightedNode({
+        name: "bulbasaur-prague-01",
+        region: "Prague Host · 100.64.0.3 (Ollama / Qwen 3.5 4B)",
+        latency: 11,
+        ttft: 36,
+        hardware: "Prague Bare-Metal GPU Host",
+        status: "TARGET LOCKED · ZERO OVERHEAD TUNNEL",
+      });
+    } else if (preset === "zenith") {
+      cameraRef.current.position.set(0, 7.8, 1.8);
+      cameraRef.current.lookAt(0, 0, 0);
+      setHighlightedNode({
+        name: "global-constellation-280",
+        region: "Global Decentralized Fleet (Europe & Asia Edge)",
+        latency: 18,
+        ttft: 45,
+        hardware: "280 Bonded GPU Clusters",
+        status: "TOPOLOGICAL OVERVIEW",
+      });
+    }
+  };
+
+  const filteredRoadmap = ROADMAP_PHASES.filter((phase) => {
+    if (layerFilter === "ALL") return true;
+    return phase.layer === layerFilter;
+  });
 
   return (
     <div className="space-y-8 font-mono text-slate-200">
@@ -362,12 +510,12 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-2 text-xs">
           <Compass className="w-3.5 h-3.5 text-blue-400" />
           <span className="font-semibold text-white uppercase tracking-wider">
-            Architecture Vision & Protocol Roadmap
+            Architecture Vision & Macroeconomic Blueprint
           </span>
           <span className="text-slate-400">·</span>
           <span className="text-blue-400 text-[11px]">2026–2028</span>
         </div>
-        <div className="text-[10px] text-slate-400 flex items-center gap-2">
+        <div className="text-[10px] text-slate-400 flex flex-wrap items-center gap-2">
           <span>Prague University of Economics and Business (VŠE Praha)</span>
           <span className="text-slate-700">|</span>
           <span>2SE307 Bitcoin & Blockchain</span>
@@ -376,39 +524,72 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* HERO SECTION WITH THREE.JS INTERACTIVE 3D MACHINE INTELLIGENCE HYPER-LATTICE */}
+      {/* HERO SECTION WITH THREE.JS 3D WEBGL LATTICE + HUD VIEWPORT CONTROLS */}
       <div
         ref={containerRef}
-        className="relative min-h-[520px] lg:min-h-[580px] bg-[#070b13] border border-blue-500/30 rounded-[4px] p-6 sm:p-8 lg:p-10 shadow-2xl overflow-hidden flex flex-col justify-between"
+        className="relative min-h-[580px] lg:min-h-[640px] bg-[#070b13] border border-blue-500/30 rounded-[4px] p-5 sm:p-7 lg:p-9 shadow-2xl overflow-hidden flex flex-col justify-between"
       >
         {/* Three.js 3D WebGL Canvas Background */}
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-80"
+          className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-85"
         />
 
-        {/* Cybernetic Ambient Glow Gradient Overlays */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#070b13]/90 via-[#070b13]/70 to-transparent pointer-events-none z-0" />
+        {/* Ambient Radial Gradient Overlays */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#070b13]/95 via-[#070b13]/75 to-transparent pointer-events-none z-0" />
 
-        {/* Top Badges Row */}
+        {/* Top Badges & Interactive HUD Controls */}
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[11px] text-blue-400 uppercase tracking-wider backdrop-blur-sm shadow-sm">
             <span className="w-2 h-2 status-dot bg-blue-400 animate-pulse" />
             <span>Interactive 3D Machine Intelligence Clearing Lattice</span>
           </div>
 
-          <div className="flex items-center gap-2 text-[10px]">
-            <span className="px-2 py-0.5 rounded-[2px] bg-[#05070b]/90 border border-slate-700 text-slate-300 backdrop-blur-sm">
-              50 bps Fixed Switch
-            </span>
-            <span className="px-2 py-0.5 rounded-[2px] bg-[#05070b]/90 border border-emerald-500/40 text-emerald-400 backdrop-blur-sm">
-              Zero Custodial Float
-            </span>
-            <span className="px-2 py-0.5 rounded-[2px] bg-[#05070b]/90 border border-purple-500/40 text-purple-300 backdrop-blur-sm">
-              Ethereum Sepolia + Arbitrum L2
-            </span>
+          {/* 3D Viewport Controls Pill */}
+          <div className="flex items-center gap-1.5 bg-[#05070b]/90 border border-slate-700/80 p-1 rounded-[3px] text-[10px] backdrop-blur-md">
+            <button
+              onClick={() => setIs3DPlaying(!is3DPlaying)}
+              className="p-1 rounded-[2px] hover:bg-slate-800 text-slate-300 transition"
+              title={is3DPlaying ? "Pause Animation" : "Play Animation"}
+            >
+              {is3DPlaying ? <Pause className="w-3 h-3 text-amber-400" /> : <Play className="w-3 h-3 text-emerald-400" />}
+            </button>
+            <div className="h-3 w-[1px] bg-slate-700" />
+            <button
+              onClick={() => setSpeedMultiplier(speedMultiplier === 1 ? 2 : 1)}
+              className={`px-1.5 py-0.5 rounded-[2px] transition ${
+                speedMultiplier === 2 ? "bg-blue-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {speedMultiplier}x
+            </button>
+            <div className="h-3 w-[1px] bg-slate-700" />
+            <button
+              onClick={() => setCameraView("overview")}
+              className={`px-1.5 py-0.5 rounded-[2px] transition ${
+                cameraPreset === "overview" ? "bg-blue-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setCameraView("prague")}
+              className={`px-1.5 py-0.5 rounded-[2px] transition ${
+                cameraPreset === "prague" ? "bg-emerald-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Prague Node
+            </button>
+            <button
+              onClick={() => setCameraView("zenith")}
+              className={`px-1.5 py-0.5 rounded-[2px] transition ${
+                cameraPreset === "zenith" ? "bg-purple-600 text-white font-bold" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Zenith
+            </button>
           </div>
         </div>
 
@@ -428,20 +609,20 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </p>
 
             <p className="text-xs sm:text-[13.5px] text-slate-300 leading-relaxed font-sans max-w-xl">
-              Verxl replaces the intermediary with an automated 50 bps non-custodial clearing switch and cryptographic performance bonding on Ethereum Sepolia and Arbitrum. Independent GPU clusters and enterprise consumers transact directly at near-zero marginal friction.
+              Verxl replaces the intermediary with an automated 50 bps non-custodial clearing switch and cryptographic performance bonding on Ethereum Sepolia and Arbitrum One. Independent GPU clusters and enterprise consumers transact directly at near-zero marginal friction.
             </p>
 
             {/* Core Covenants Badges */}
-            <div className="flex flex-wrap gap-2 pt-2 text-[11px]">
-              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/80 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5">
+            <div className="flex flex-wrap gap-2 pt-1 text-[11px]">
+              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/85 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5 shadow">
                 <Cpu className="w-3.5 h-3.5 text-blue-400" />
                 <span>Agency Over Principal</span>
               </div>
-              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/80 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5">
+              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/85 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5 shadow">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Deterministic Slashing (10%)</span>
               </div>
-              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/80 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5">
+              <div className="px-2.5 py-1 rounded-[2px] bg-[#05070b]/85 border border-slate-800 text-slate-300 backdrop-blur-sm flex items-center gap-1.5 shadow">
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
                 <span>50 bps Hardcoded Rate</span>
               </div>
@@ -450,7 +631,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
           {/* Right Column: Founder Portrait in FULL VIBRANT COLOR */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-sm bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3 shadow-2xl space-y-3 relative backdrop-blur-md group hover:border-blue-400 transition-all duration-300">
+            <div className="w-full max-w-sm bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-3 relative backdrop-blur-md group hover:border-blue-400 transition-all duration-300">
               {/* Top Card Badge */}
               <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
                 <span className="text-blue-400 font-bold flex items-center gap-1">
@@ -468,7 +649,6 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                   className="w-full h-full object-cover transition duration-700 transform group-hover:scale-105"
                   loading="eager"
                 />
-                {/* Subtle vignette gradient only at very bottom for label legibility */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#05070b] via-transparent to-transparent opacity-75" />
 
                 <div className="absolute bottom-3 left-3 right-3 space-y-1">
@@ -480,7 +660,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                       Head Developer
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-300 font-sans">
+                  <div className="text-[10.5px] text-slate-300 font-sans">
                     Project Lead · Smart Contract & Clearinghouse Architect
                   </div>
                   <div className="text-[9px] text-blue-300 font-mono flex items-center justify-between pt-0.5">
@@ -499,13 +679,27 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Bottom Three.js Dynamic Status Ticker */}
+        {/* Bottom Three.js Dynamic Status Ticker + Prague Telemetry Badge */}
         <div className="relative z-10 border-t border-slate-800/80 pt-3 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>WebGL Engine Active: <strong className="text-slate-200">260 Distributed Clusters Mapped</strong></span>
+            <span>WebGL Engine Active: <strong className="text-slate-200">280 Distributed Clusters Mapped</strong></span>
           </div>
-          <div className="flex items-center gap-4 text-[10.5px]">
+
+          {highlightedNode && (
+            <div className="px-2.5 py-1 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-300 flex items-center gap-2 shadow">
+              <span className="font-bold uppercase tracking-wider">Target Node:</span>
+              <span>{highlightedNode.name}</span>
+              <span>•</span>
+              <span>{highlightedNode.latency}ms ping</span>
+              <span>•</span>
+              <span>TTFT: {highlightedNode.ttft}ms</span>
+              <span>•</span>
+              <span className="text-emerald-400 font-bold">{highlightedNode.status}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 text-[10px]">
             <span>Orbit Green: <strong className="text-emerald-400">Horizon 1 Live</strong></span>
             <span>Orbit Blue: <strong className="text-blue-400">Horizon 2 Channels</strong></span>
             <span>Orbit Purple: <strong className="text-purple-400">Horizon 3 Sovereign</strong></span>
@@ -513,115 +707,436 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* CORE PROTOCOL PREMISE QUOTE BANNER */}
-      <div className="bg-[#05070b] border-l-4 border-blue-500 p-5 rounded-[2px] shadow-lg relative overflow-hidden">
-        <div className="relative z-10 space-y-1.5">
-          <div className="text-blue-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>The Fundamental Protocol Axiom</span>
+      {/* SECTION 2: COMPLEX QUANTITATIVE MACROECONOMIC & NASH EQUILIBRIUM CHARTS */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+          <div className="space-y-0.5">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-blue-400" />
+              <span>Comparative Macroeconomic Clearing Engine & Cost Drag Model</span>
+            </h2>
+            <p className="text-[11px] text-slate-400 font-sans">
+              Mathematical proof of fee compression: 950 bps legacy aggregator take-rate vs Verxl 50 bps flat non-custodial switch.
+            </p>
           </div>
-          <p className="text-xs sm:text-[13.5px] text-slate-200 leading-relaxed font-sans">
-            Every centralized model aggregator is an unnecessary counterparty credit risk and an institutional margin tax. Verxl strips out the middleman, binds independent compute hosts with on-chain collateral, and settles inference atomically at cost.
-          </p>
+          <span className="text-[10px] text-emerald-400 font-mono font-bold">
+            Interactive Financial Model
+          </span>
+        </div>
+
+        {/* Dynamic Token Volume Slider Card */}
+        <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[4px] p-5 shadow-xl space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Slider Controls */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Monthly Inference Workload</span>
+                </span>
+                <span className="text-base font-extrabold text-blue-400 tabular font-mono">
+                  {tokenVolumeM >= 1000 ? `${(tokenVolumeM / 1000).toFixed(1)} Billion` : `${tokenVolumeM} Million`} Tokens
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min="100"
+                max="10000"
+                step="100"
+                value={tokenVolumeM}
+                onChange={(e) => setTokenVolumeM(parseInt(e.target.value))}
+                className="w-full accent-blue-500 bg-slate-800 rounded-[2px] h-2 cursor-pointer"
+              />
+
+              <div className="flex justify-between text-[9.5px] text-slate-500 font-mono">
+                <span>100M Tokens</span>
+                <span>1B Tokens</span>
+                <span>5B Tokens</span>
+                <span>10B Tokens</span>
+              </div>
+
+              {/* Volume Preset Chips */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {VOLUME_POINTS.map((vp) => (
+                  <button
+                    key={vp.volumeNum}
+                    onClick={() => setTokenVolumeM(vp.volumeNum)}
+                    className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono transition ${
+                      tokenVolumeM === vp.volumeNum
+                        ? "bg-blue-600 text-white font-bold"
+                        : "bg-[#05070b] border border-slate-800 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    {vp.volumeLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Financial Summary Badges */}
+            <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-slate-800 space-y-1">
+                <div className="text-[9px] text-slate-400 uppercase tracking-wider">Aggregator (950 bps)</div>
+                <div className="text-xs sm:text-sm font-extrabold text-rose-400 font-mono">
+                  ${centralizedAggregatorFeeUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
+                </div>
+                <div className="text-[8.5px] text-slate-500">5.5% + 4.0% processing</div>
+              </div>
+
+              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-slate-800 space-y-1">
+                <div className="text-[9px] text-amber-400 uppercase tracking-wider">Hyperscaler (750 bps)</div>
+                <div className="text-xs sm:text-sm font-extrabold text-amber-300 font-mono">
+                  ${hyperscalerCloudFeeUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
+                </div>
+                <div className="text-[8.5px] text-slate-500">AWS / Bedrock</div>
+              </div>
+
+              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-blue-500/30 space-y-1">
+                <div className="text-[9px] text-blue-400 uppercase tracking-wider">Verxl (50 bps)</div>
+                <div className="text-xs sm:text-sm font-extrabold text-blue-300 font-mono">
+                  ${verxlProtocolFeeUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
+                </div>
+                <div className="text-[8.5px] text-slate-400">Fixed switch</div>
+              </div>
+
+              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-emerald-500/40 space-y-1 shadow-md">
+                <div className="text-[9px] text-emerald-400 uppercase tracking-wider font-bold">Capital Saved</div>
+                <div className="text-xs sm:text-sm font-black text-emerald-400 font-mono">
+                  +${netMonthlySavedUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
+                </div>
+                <div className="text-[8.5px] text-emerald-300/80 font-bold">
+                  ${netAnnualizedSavedUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })} / yr ({percentageSaved.toFixed(0)}%)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* COMPLEX MULTI-CURVE SVG COMPARATIVE CHART */}
+          <div className="space-y-2 pt-2 border-t border-slate-800/80">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+              <span className="uppercase tracking-wider">Annualized Protocol Fee Drag Across Token Volume ($USD)</span>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-0.5 bg-rose-500 rounded-full" />
+                  <span className="text-rose-400">Centralized Aggregator (950 bps)</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-0.5 bg-amber-400 rounded-full" />
+                  <span className="text-amber-400">Hyperscalers (750 bps)</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-0.5 bg-emerald-400 rounded-full" />
+                  <span className="text-emerald-400">Verxl Protocol (50 bps)</span>
+                </span>
+              </div>
+            </div>
+
+            {/* SVG Visualizer Canvas */}
+            <div className="w-full h-56 bg-[#05070b] border border-slate-800 rounded-[3px] p-3 relative overflow-hidden">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 800 180" preserveAspectRatio="none">
+                <defs>
+                  {/* Shaded Green Area for Saved Delta */}
+                  <linearGradient id="savingsAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="roseGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Lines */}
+                <line x1="40" y1="20" x2="780" y2="20" stroke="#1e293b" strokeDasharray="3 3" />
+                <line x1="40" y1="60" x2="780" y2="60" stroke="#1e293b" strokeDasharray="3 3" />
+                <line x1="40" y1="100" x2="780" y2="100" stroke="#1e293b" strokeDasharray="3 3" />
+                <line x1="40" y1="140" x2="780" y2="140" stroke="#1e293b" strokeDasharray="3 3" />
+
+                {/* Y-Axis Value Labels */}
+                <text x="35" y="24" textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">$684k/yr</text>
+                <text x="35" y="64" textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">$456k/yr</text>
+                <text x="35" y="104" textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">$228k/yr</text>
+                <text x="35" y="144" textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">$0</text>
+
+                {/* Shaded Area of Capital Retained */}
+                <polygon
+                  points="40,140 40,140 180,118 360,92 540,58 780,18 780,134 540,137 360,138 180,139 40,140"
+                  fill="url(#savingsAreaGradient)"
+                />
+
+                {/* Curve 1: Centralized SaaS (950 bps) in Rose */}
+                <path
+                  d="M 40,140 Q 200,120 360,92 T 780,18"
+                  fill="none"
+                  stroke="#f43f5e"
+                  strokeWidth="2.5"
+                />
+
+                {/* Curve 2: Hyperscalers (750 bps) in Amber */}
+                <path
+                  d="M 40,140 Q 200,125 360,102 T 780,44"
+                  fill="none"
+                  stroke="#fbbf24"
+                  strokeWidth="2"
+                  strokeDasharray="4 2"
+                />
+
+                {/* Curve 3: Verxl Protocol (50 bps) in Emerald */}
+                <path
+                  d="M 40,140 Q 200,139 360,138 T 780,134"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="3"
+                />
+
+                {/* Active Slider Indicator Pin */}
+                {(() => {
+                  const ratio = Math.min(1, Math.max(0, (tokenVolumeM - 100) / 9900));
+                  const pinX = 40 + ratio * 740;
+                  const saasY = 140 - ratio * 122;
+                  const verxlY = 140 - ratio * 6;
+                  return (
+                    <g>
+                      <line x1={pinX} y1="15" x2={pinX} y2="155" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="2 2" />
+                      <circle cx={pinX} cy={saasY} r="4.5" fill="#f43f5e" />
+                      <circle cx={pinX} cy={verxlY} r="4.5" fill="#10b981" />
+                    </g>
+                  );
+                })()}
+
+                {/* X-Axis Milestone Labels */}
+                <text x="40" y="165" fill="#64748b" fontSize="9" fontFamily="monospace">100M</text>
+                <text x="180" y="165" fill="#64748b" fontSize="9" fontFamily="monospace">1B</text>
+                <text x="360" y="165" fill="#64748b" fontSize="9" fontFamily="monospace">2.5B</text>
+                <text x="540" y="165" fill="#64748b" fontSize="9" fontFamily="monospace">5B</text>
+                <text x="780" y="165" textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">10B Tokens/Mo</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* SECOND COMPLEX CHART: NASH EQUILIBRIUM COLLATERAL SLASHING PAYOFF DISTRIBUTION */}
+        <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[4px] p-5 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Scale className="w-3.5 h-3.5 text-blue-400" />
+                <span>Deterministic Quality Verification & Nash Slashing Payoff Function</span>
+              </h3>
+              <p className="text-[10.5px] text-slate-400 font-sans">
+                Game-theoretic equilibrium ensures serving degraded or quantized weights is strictly negative expected value ($E[\Pi] &lt; 0$).
+              </p>
+            </div>
+            <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[9.5px]">
+              NASH EQUILIBRIUM: HONEST FP16 DOMINANT STRATEGY
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+            {/* Payoff Formula Matrix */}
+            <div className="md:col-span-5 space-y-2.5 text-xs">
+              <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800 space-y-1.5">
+                <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Honest FP16 Inference Payoff:</span>
+                </div>
+                <div className="text-[11px] text-white font-mono bg-black/40 p-2 rounded-[2px] border border-slate-800">
+                  {"Π(honest) = R - C_FP16 = +18.5% Net Margin"}
+                </div>
+                <p className="text-[10px] text-slate-400 font-sans">
+                  Host earns agreed $0.06/1M token fee, collateral remains 100% bonded, and reputation multiplier escalates.
+                </p>
+              </div>
+
+              <div className="bg-[#05070b] p-3 rounded-[3px] border border-rose-500/30 space-y-1.5">
+                <div className="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Activity className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Spoofed INT4 Fraud Expected Payoff:</span>
+                </div>
+                <div className="text-[11px] text-white font-mono bg-black/40 p-2 rounded-[2px] border border-slate-800">
+                  {"E[Π(cheat)] = R - C_INT4 - (p_audit × S_slash) = -34.8%"}
+                </div>
+                <p className="text-[10px] text-slate-400 font-sans">
+                  Even saving 30% GPU power, consecutive failed canary probes trigger irreversible 10% collateral slashing routed to the DAO Vault.
+                </p>
+              </div>
+            </div>
+
+            {/* Visual SVG Payoff Distribution Curve */}
+            <div className="md:col-span-7 h-52 bg-[#05070b] border border-slate-800 rounded-[3px] p-3 relative">
+              <div className="flex items-center justify-between text-[9.5px] text-slate-400 mb-1">
+                <span>Output Token Fidelity Score (F &isin; [0, 1.0])</span>
+                <span className="text-rose-400 font-bold">Slashing Threshold: &tau; = 0.95</span>
+              </div>
+
+              <svg className="w-full h-40 overflow-visible" viewBox="0 0 500 130" preserveAspectRatio="none">
+                {/* Zero profit horizontal axis line */}
+                <line x1="30" y1="75" x2="480" y2="75" stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
+                <text x="25" y="78" textAnchor="end" fill="#64748b" fontSize="8" fontFamily="monospace">$0</text>
+
+                {/* Threshold vertical line */}
+                <line x1="340" y1="10" x2="340" y2="120" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4 2" />
+                <text x="340" y="8" textAnchor="middle" fill="#f87171" fontSize="8" fontFamily="monospace">&tau; = 95.0%</text>
+
+                {/* Red Slashing Region */}
+                <rect x="30" y="10" width="310" height="110" fill="#ef4444" fillOpacity="0.08" />
+                <text x="185" y="30" textAnchor="middle" fill="#ef4444" fontSize="9" fontWeight="bold" fontFamily="monospace">
+                  10% COLLATERAL SLASHING ZONE
+                </text>
+
+                {/* Green Compliant Region */}
+                <rect x="340" y="10" width="140" height="110" fill="#10b981" fillOpacity="0.08" />
+                <text x="410" y="30" textAnchor="middle" fill="#10b981" fontSize="9" fontWeight="bold" fontFamily="monospace">
+                  COMPLIANT
+                </text>
+
+                {/* Expected Return Curve */}
+                <path
+                  d="M 30,115 C 150,110 280,100 340,75 C 380,50 430,35 480,30"
+                  fill="none"
+                  stroke="#38bdf8"
+                  strokeWidth="2.5"
+                />
+
+                {/* Points */}
+                <circle cx="160" cy="110" r="4" fill="#f43f5e" />
+                <text x="160" y="125" textAnchor="middle" fill="#f43f5e" fontSize="8" fontFamily="monospace">INT4 (-35%)</text>
+
+                <circle cx="450" cy="32" r="4.5" fill="#10b981" />
+                <text x="450" y="24" textAnchor="middle" fill="#10b981" fontSize="8" fontFamily="monospace">FP16 (+18.5%)</text>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* FANCY EXECUTIVE THREE-HORIZON ROADMAP WITH INTERACTIVE CIRCUIT SELECTOR */}
+      {/* SECTION 3: REAL ARCHITECTURAL ROADMAP HIGHWAY (NOT AI SLOP BLOCKS) */}
       <div className="space-y-4 bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-5 sm:p-7 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
           <div className="space-y-0.5">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-400" />
-              <span>Executive Three-Horizon Architectural Roadmap</span>
+              <span>Architectural Execution Highway & Chronological Trajectory</span>
             </h2>
             <p className="text-[11px] text-slate-400 font-sans">
-              Strategic execution timeline spanning live testnet pilot, state-channel attestation, and the sovereign machine grid.
+              Connected multi-horizon engineering roadmap across core protocol layers.
             </p>
           </div>
-          <div className="text-[10px] text-slate-400 font-mono">
-            <span>Current Stage: </span>
-            <span className="text-emerald-400 font-bold">Horizon 1 Shipped</span>
+
+          {/* Layer Filter Toolbar */}
+          <div className="flex flex-wrap items-center gap-1 text-[10px]">
+            <span className="text-slate-500 mr-1 uppercase">Filter Layer:</span>
+            {[
+              { id: "ALL", label: "All Layers" },
+              { id: "EDGE_ROUTING", label: "Edge Proxy" },
+              { id: "SMART_CONTRACTS", label: "Contracts" },
+              { id: "ZERO_KNOWLEDGE", label: "zk-Proofs" },
+              { id: "HARDWARE", label: "Hardware Grid" },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setLayerFilter(f.id)}
+                className={`px-2 py-0.5 rounded-[2px] transition ${
+                  layerFilter === f.id
+                    ? "bg-blue-600 text-white font-bold"
+                    : "bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Phase Timeline Spine Track */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-          {HORIZONS.map((h) => {
-            const isSelected = selectedHorizon === h.id;
-            return (
-              <button
-                key={h.id}
-                onClick={() => setSelectedHorizon(h.id)}
-                className={`p-4 rounded-[3px] border text-left transition-all relative overflow-hidden ${
-                  isSelected
-                    ? "bg-[#0c1424] border-blue-500 shadow-lg shadow-blue-500/10"
-                    : "bg-[#05070b] border-slate-800 hover:border-slate-700"
-                }`}
-              >
-                {/* Top Header of Card */}
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
-                  <span
-                    style={{ color: h.colorHex }}
-                    className="flex items-center gap-1.5"
-                  >
-                    <span>{h.horizon}</span>
-                    <span className="text-slate-400 font-normal">·</span>
-                    <span className="text-slate-300">{h.quarter}</span>
-                  </span>
+        {/* ROADMAP HIGHWAY CONNECTIVE TIMELINE SPINE */}
+        <div className="relative py-4">
+          {/* Horizontal Connective Bus Line */}
+          <div className="hidden md:block absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 via-cyan-500 to-purple-500 -translate-y-1/2 rounded-full opacity-60 pointer-events-none" />
 
-                  <span
-                    className={`px-1.5 py-0.5 rounded-[2px] text-[8.5px] font-bold border ${
-                      h.status === "OPERATIONAL"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                        : h.status === "IN_DEVELOPMENT"
-                        ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                        : "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                    }`}
-                  >
-                    {h.status}
-                  </span>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
+            {filteredRoadmap.map((phase) => {
+              const isSelected = selectedHorizonId === phase.id;
+              return (
+                <div
+                  key={phase.id}
+                  onClick={() => setSelectedHorizonId(phase.id)}
+                  className={`p-4 rounded-[3px] border cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
+                    isSelected
+                      ? "bg-[#0c1424] border-blue-500 shadow-xl shadow-blue-500/15 ring-1 ring-blue-500/40"
+                      : "bg-[#05070b] border-slate-800 hover:border-slate-700"
+                  }`}
+                >
+                  {/* Highway Checkpoint Milestone Node */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      style={{ color: phase.colorHex }}
+                      className="text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5"
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border-2"
+                        style={{
+                          backgroundColor: phase.status === "OPERATIONAL" ? phase.colorHex : "transparent",
+                          borderColor: phase.colorHex,
+                        }}
+                      />
+                      <span>{phase.horizon}</span>
+                    </span>
 
-                <div className="text-xs font-bold text-white mb-2">
-                  {h.phaseName}
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1 mb-2">
-                  <div className="flex justify-between text-[9px] text-slate-400 font-mono">
-                    <span>Progress</span>
-                    <span style={{ color: h.colorHex }} className="font-bold">
-                      {h.progressPct}%
+                    <span
+                      className="px-1.5 py-0.2 text-[8px] font-bold rounded-[2px] border uppercase"
+                      style={{
+                        color: phase.colorHex,
+                        borderColor: `${phase.colorHex}40`,
+                        backgroundColor: `${phase.colorHex}15`,
+                      }}
+                    >
+                      {phase.status}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${h.progressPct}%`,
-                        backgroundColor: h.colorHex,
-                      }}
-                    />
+
+                  <div className="space-y-1 mb-3">
+                    <div className="text-xs font-bold text-white leading-snug">
+                      {phase.phaseName}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      Target: <strong className="text-slate-200">{phase.quarter}</strong>
+                    </div>
                   </div>
+
+                  {/* Progress Bar with Metric */}
+                  <div className="space-y-1 mt-auto">
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <span>Maturity</span>
+                      <span style={{ color: phase.colorHex }} className="font-bold">
+                        {phase.progressPct}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${phase.progressPct}%`,
+                          backgroundColor: phase.colorHex,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1"
+                      style={{ backgroundColor: phase.colorHex }}
+                    />
+                  )}
                 </div>
-
-                <p className="text-[10.5px] text-slate-400 leading-relaxed font-sans line-clamp-2">
-                  {h.tagline}
-                </p>
-
-                {isSelected && (
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-0.5"
-                    style={{ backgroundColor: h.colorHex }}
-                  />
-                )}
-              </button>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Selected Horizon Deep-Dive Architectural Panel */}
-        <div className="bg-[#05070b] border border-blue-500/30 rounded-[3px] p-5 space-y-4 mt-2 shadow-inner">
+        {/* Selected Horizon Deep-Dive Architectural Specification Panel */}
+        <div className="bg-[#05070b] border border-blue-500/30 rounded-[3px] p-5 space-y-4 shadow-inner">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
             <div className="space-y-0.5">
               <div className="text-[10px] uppercase tracking-wider font-bold" style={{ color: activePhase.colorHex }}>
@@ -632,7 +1147,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               </h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-400">Architectural Status:</span>
+              <span className="text-[10px] text-slate-400">Layer Architecture:</span>
               <span
                 className="px-2 py-0.5 rounded-[2px] text-[9.5px] font-bold border"
                 style={{
@@ -641,7 +1156,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                   backgroundColor: `${activePhase.colorHex}15`,
                 }}
               >
-                {activePhase.status} ({activePhase.progressPct}%)
+                {activePhase.layer} · {activePhase.progressPct}% READY
               </span>
             </div>
           </div>
@@ -655,17 +1170,17 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
               Core Technical Deliverables & Milestones
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
               {activePhase.coreDeliverables.map((item, i) => (
                 <div
                   key={i}
-                  className="bg-[#080c14] border border-slate-800/80 rounded-[2px] p-2.5 flex items-start gap-2"
+                  className="bg-[#080c14] border border-slate-800/80 rounded-[2px] p-2.5 flex items-start gap-2 shadow-sm"
                 >
                   <CheckCircle2
                     className="w-3.5 h-3.5 mt-0.5 shrink-0"
                     style={{ color: activePhase.colorHex }}
                   />
-                  <span className="text-[11px] text-slate-300 font-sans">{item}</span>
+                  <span className="text-[11px] text-slate-300 font-sans leading-relaxed">{item}</span>
                 </div>
               ))}
             </div>
@@ -688,7 +1203,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* PROTOCOL EXECUTIVE ASSEMBLY & PROJECT TEAM */}
+      {/* SECTION 4: PROTOCOL EXECUTIVE ASSEMBLY & PROJECT TEAM */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
           <div className="space-y-0.5">
@@ -735,7 +1250,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               </div>
 
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Led end-to-end design and coding of the decentralized clearing architecture: Aragon OSx DAO settlement on Ethereum Sepolia, the <code className="text-blue-300">VerxlStakingRegistry.sol</code> smart contract, deterministic <code className="text-blue-300">seed=42</code> invariant verification, and the Arbitrum USDC clearing pipeline.
+                Led end-to-end design and coding of the decentralized clearing architecture: Aragon OSx DAO settlement on Ethereum Sepolia, the <code className="text-blue-300">VerxlStakingRegistry.sol</code> smart contract, deterministic <code className="text-blue-300">seed=42</code> invariant verification, and the Arbitrum One USDC clearing pipeline.
               </p>
             </div>
 
@@ -824,8 +1339,8 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* ARCHITECTURAL DESIGN CONSTRAINTS */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-5 space-y-3 shadow-md">
+      {/* SECTION 5: ARCHITECTURAL DESIGN CONSTRAINTS & CONTRACT REGISTRY */}
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-5 space-y-4 shadow-md">
         <h2 className="text-xs font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center justify-between">
           <span>Design Constraints That Anchor the Architecture</span>
           <span className="text-[10px] text-slate-400 font-normal">Immutable Smart Contract Covenants</span>
@@ -873,7 +1388,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* EXECUTIVE NAVIGATION CTA BAR */}
+      {/* SECTION 6: EXECUTIVE NAVIGATION CTA BAR */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0a0e17] border border-blue-500/30 rounded-[3px] p-4 shadow-lg">
         <div className="space-y-0.5">
           <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
