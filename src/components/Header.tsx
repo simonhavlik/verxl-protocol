@@ -30,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "oracle", label: "Oracle" },
     { id: "whitepaper", label: "Whitepaper" },
     { id: "governance", label: "Governance" },
+    { id: "vision", label: "Vision" },
   ];
 
   return (
@@ -41,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
         </span>
         <span className="text-amber-500/40">/</span>
         <span className="hidden sm:inline text-slate-300">
-          Academic Proof of Concept · FIR VŠE Prague (4KE404/4KE505)
+          Academic Pilot · VŠE Praha (2SE307 Bitcoin & Blockchain · M. Bok)
         </span>
         <span className="hidden sm:inline text-amber-500/40">/</span>
         <span className="text-amber-200">Not Official Mainnet Production</span>

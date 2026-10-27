@@ -57,9 +57,8 @@ export const Footer: React.FC = () => {
         {/* Academic Course Attribution & Testnet Disclaimer */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 text-[10px] text-slate-400">
           <div>
-            Prague University of Economics and Business (VŠE Praha) • Faculty of International Relations (FIR) •
-            Course: <span className="text-slate-300 font-medium">4KE404 / 4KE505 Crypto</span> • Instructor:{" "}
-            <span className="text-slate-300 font-medium">Ing. Ondřej Paruch</span> • Pitch Presentation: Nov 4, 2026, xPort VŠE
+            Prague University of Economics and Business (VŠE Praha) • 2SE307 Bitcoin and blockchain - practical seminar • Instructor:{" "}
+            <span className="text-slate-300 font-medium">M. Bok</span> • Room: SB 235
             <div className="text-amber-400/90 mt-0.5 font-mono text-[9.5px]">
               [TEST RUN ON SEPOLIA] Academic demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
             </div>

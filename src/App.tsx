@@ -6,6 +6,7 @@ import { Registry } from "./components/Registry";
 import { Oracle } from "./components/Oracle";
 import { Governance } from "./components/Governance";
 import { Whitepaper } from "./components/Whitepaper";
+import { Vision } from "./components/Vision";
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 
@@ -13,6 +14,7 @@ function getTabFromPath(): string {
   if (typeof window === "undefined") return "overview";
   const path = window.location.pathname.toLowerCase();
   if (path.includes("whitepaper")) return "whitepaper";
+  if (path.includes("vision")) return "vision";
   if (path.includes("playground") || path.includes("terminal")) return "playground";
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
@@ -98,6 +100,7 @@ export default function App() {
           {activeTab === "oracle" && <Oracle />}
           {activeTab === "whitepaper" && <Whitepaper />}
           {activeTab === "governance" && <Governance />}
+          {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
         </main>
       )}
 
