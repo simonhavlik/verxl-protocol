@@ -270,10 +270,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    if (creditedAmountUsd < 0.1) {
+    if (creditedAmountUsd < 1.0) {
       return new Response(
         JSON.stringify({
-          error: `Deposit amount of $${creditedAmountUsd.toFixed(2)} USDC is below the minimum threshold of $0.10 USD.`,
+          error: `Deposit amount of $${creditedAmountUsd.toFixed(2)} USDC is below the minimum threshold of $1.00 USD (1 USDC).`,
         }),
         { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
@@ -374,7 +374,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         .bind(userId)
         .first();
 
-      if (!existingKey && userTotalDeposited >= 0.1) {
+      if (!existingKey && userTotalDeposited >= 1.0) {
         const rawKeySecret = `vrxl_live_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "")}`.slice(0, 42);
         const keyHash = await hashSha256(rawKeySecret);
         const keyPrefix = rawKeySecret.slice(0, 14) + "...";
@@ -392,7 +392,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       console.warn("Key generation warning:", keyErr);
     }
 
-    if (!newGeneratedKey && userTotalDeposited >= 0.1) {
+    if (!newGeneratedKey && userTotalDeposited >= 1.0) {
       newGeneratedKey = `vrxl_live_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "")}`.slice(0, 42);
     }
 

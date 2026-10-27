@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   return new Response(
     JSON.stringify({
       treasury_address: treasury,
-      min_deposit_usd: 0.1,
+      min_deposit_usd: 1.0,
       protocol_fee_bps: 50,
       network: "Arbitrum One Mainnet (Chain ID 42161)",
       settlement_token: "USDC (Arbitrum Native & Bridged USDC.e)",

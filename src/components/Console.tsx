@@ -274,7 +274,15 @@ export const Console: React.FC = () => {
       });
       if (res.ok) {
         const data = (await res.json()) as any;
-        setGrantKeys(data.grant_keys || []);
+        setGrantKeys(
+          (data.grant_keys || []).map((k: any) => ({
+            ...k,
+            spend_limit_usd: Number(k.spend_limit_usd || 0),
+            total_spent_usd: Number(k.total_spent_usd || 0),
+            total_tokens: Number(k.total_tokens || 0),
+            request_count: Number(k.request_count || 0),
+          }))
+        );
       }
     } catch {
       // ignore
@@ -369,7 +377,15 @@ export const Console: React.FC = () => {
         const data = (await res.json()) as any;
         setUser(data.user);
         setKeys(data.keys || []);
-        setUsage(data.usage || []);
+        setUsage(
+          (data.usage || []).map((u: any) => ({
+            ...u,
+            prompt_tokens: Number(u.prompt_tokens || 0),
+            completion_tokens: Number(u.completion_tokens || 0),
+            total_cost_usd: Number(u.total_cost_usd || 0),
+            protocol_fee_usd: Number(u.protocol_fee_usd || 0),
+          }))
+        );
         if (data.user?.email?.toLowerCase() === "me@simonhavlik.com" || data.user?.is_admin) {
           setIsAdminUser(true);
           fetchGrantKeys(currentToken);
@@ -398,7 +414,7 @@ export const Console: React.FC = () => {
       if (res.ok) {
         const data = (await res.json()) as any;
         if (data.provider) {
-          setPayoutPendingBalance(data.provider.pending_payout_usd || 0.0);
+          setPayoutPendingBalance(Number(data.provider.pending_payout_usd || 0.0));
           setPayoutAddress(data.provider.payout_address || "");
         }
       }
@@ -978,7 +994,7 @@ export const Console: React.FC = () => {
         }
       }
 
-      setDepositStatus(`Confirming $${amountUsd.toFixed(2)} USDC transfer in MetaMask...`);
+      setDepositStatus(`Confirming $${Number(amountUsd || 0).toFixed(2)} USDC transfer in MetaMask...`);
       // Native Arbitrum USDC contract: 0xaf88d065e77c8cc2239327c5edb3a432268e5831 (6 decimals)
       const usdcContract = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
       const treasuryPadded = TREASURY_WALLET.slice(2).padStart(64, "0").toLowerCase();
@@ -1028,7 +1044,7 @@ export const Console: React.FC = () => {
           const data = (await res.json()) as any;
           if (res.ok && data.success) {
             const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? amountUsd);
-            setDepositStatus(`🎉 Deposit confirmed on Arbitrum One! +$${added.toFixed(2)} USD added.`);
+            setDepositStatus(`🎉 Deposit confirmed on Arbitrum One! +$${Number(added || 0).toFixed(2)} USD added.`);
             if (data.token && !token) {
               await loginWithToken(data.token);
             } else {
@@ -1103,12 +1119,12 @@ export const Console: React.FC = () => {
       const data = (await res.json()) as any;
       if (res.ok && data.success) {
         const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? 0);
-        const newBal = Number(data.new_balance_usd ?? data.deposit?.new_balance_usd ?? ((user?.balance_usd || 0) + added));
+        const newBal = Number(data.new_balance_usd ?? data.deposit?.new_balance_usd ?? ((Number(user?.balance_usd) || 0) + added));
         setStatusMsg({
           type: "success",
-          text: `Deposit confirmed! Credited $${added.toFixed(2)} USD. Your balance is now $${newBal.toFixed(2)} USD.`,
+          text: `Deposit confirmed! Credited $${Number(added || 0).toFixed(2)} USD. Your balance is now $${Number(newBal || 0).toFixed(2)} USD.`,
         });
-        setDepositStatus(`Deposit confirmed! +$${added.toFixed(2)} USD credited.`);
+        setDepositStatus(`Deposit confirmed! +$${Number(added || 0).toFixed(2)} USD credited.`);
         if (data.token && !token) {
           await loginWithToken(data.token);
         } else {
@@ -1156,7 +1172,7 @@ export const Console: React.FC = () => {
         setPayoutReceipt(data);
         setStatusMsg({
           type: "success",
-          text: `Payout request of $${data.amount_usd.toFixed(2)} USD queued! Net settlement: $${data.net_payout_usd.toFixed(2)} USD (50 bps fee).`,
+          text: `Payout request of $${Number(data.amount_usd || 0).toFixed(2)} USD queued! Net settlement: $${Number(data.net_payout_usd || 0).toFixed(2)} USD (50 bps fee).`,
         });
         fetchProviderStats(payoutProviderId);
       } else {
@@ -1722,7 +1738,7 @@ main();`,
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-white">
-            ${user ? user.balance_usd.toFixed(4) : "0.0000"}{" "}
+            ${user ? Number(user.balance_usd || 0).toFixed(4) : "0.0000"}{" "}
             <span className="text-xs font-normal text-emerald-400">USDC</span>
           </div>
           <div className="text-[10px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
@@ -1744,13 +1760,13 @@ main();`,
             <Wallet className="w-3.5 h-3.5 text-blue-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-100">
-            ${user ? user.total_deposited_usd.toFixed(2) : "0.00"}{" "}
+            ${user ? Number(user.total_deposited_usd || 0).toFixed(2) : "0.00"}{" "}
             <span className="text-xs font-normal text-slate-400">USD</span>
           </div>
           <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
             <span>Arbitrum L2 (<span className="text-slate-300">&lt;$0.01 gas</span>)</span>
-            <span className={user && user.total_deposited_usd >= 0.1 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
-              {user && user.total_deposited_usd >= 0.1 ? "Deposit Threshold Met" : "Min $0.10 Req to Unlock Key"}
+            <span className={user && Number(user.total_deposited_usd || 0) >= 1.0 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+              {user && Number(user.total_deposited_usd || 0) >= 1.0 ? "Deposit Threshold Met" : "Min $1.00 Req to Unlock Key"}
             </span>
           </div>
         </div>
@@ -1762,7 +1778,7 @@ main();`,
             <Activity className="w-3.5 h-3.5 text-purple-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-100">
-            ${user ? user.total_spent_usd.toFixed(4) : "0.0000"}{" "}
+            ${user ? Number(user.total_spent_usd || 0).toFixed(4) : "0.0000"}{" "}
             <span className="text-xs font-normal text-slate-400">USD</span>
           </div>
           <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
@@ -1781,7 +1797,7 @@ main();`,
               <span>Production API Keys</span>
             </h3>
             <p className="text-[11px] text-slate-400 font-sans">
-              Drop-in OpenAI compatible API keys. Minimum initial deposit of <strong className="text-white">$0.10 USD (0.10 USDC)</strong> required to generate.
+              Drop-in OpenAI compatible API keys. Minimum initial deposit of <strong className="text-white">$1.00 USD (1 USDC)</strong> required to generate.
             </p>
           </div>
 
@@ -1795,9 +1811,9 @@ main();`,
             />
             <button
               onClick={handleCreateKey}
-              disabled={!user || user.total_deposited_usd < 0.1 || creatingKey}
+              disabled={!user || Number(user.total_deposited_usd || 0) < 1.0 || creatingKey}
               className="px-3 py-1.5 rounded-[2px] bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
-              title={!user || user.total_deposited_usd < 0.1 ? "Deposit at least $0.10 to unlock key creation" : "Generate new production key"}
+              title={!user || Number(user.total_deposited_usd || 0) < 1.0 ? "Deposit at least $1.00 to unlock key creation" : "Generate new production key"}
             >
               {creatingKey ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Key className="w-3.5 h-3.5" />}
               <span>+ Create Key</span>
@@ -1841,7 +1857,7 @@ main();`,
           <div className="text-center py-6 text-xs text-slate-400">
             Authenticate with institutional email above to view and manage API keys.
           </div>
-        ) : user.total_deposited_usd < 0.1 ? (
+        ) : Number(user.total_deposited_usd || 0) < 1.0 ? (
           <div className="bg-[#05070b] border border-amber-500/30 rounded-[2px] p-4 text-center space-y-2">
             <AlertTriangle className="w-5 h-5 text-amber-400 mx-auto" />
             <div className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1849,19 +1865,19 @@ main();`,
             </div>
             <p className="text-[11px] text-slate-300 max-w-md mx-auto font-sans">
               To prevent bot spam and reserve bare-metal GPU compute, Verxl requires an initial deposit of at least{" "}
-              <strong className="text-amber-300">$0.10 USD (USDC on Arbitrum)</strong>. 100% of your deposit is credited directly to your inference balance.
+              <strong className="text-amber-300">$1.00 USD (USDC on Arbitrum)</strong>. 100% of your deposit is credited directly to your inference balance.
             </p>
             <button
               onClick={() => setShowDepositModal(true)}
               className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-[2px] transition inline-flex items-center gap-1.5"
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>Deposit $0.10 USDC to Activate</span>
+              <span>Deposit $1.00 USDC to Activate</span>
             </button>
           </div>
         ) : keys.length === 0 ? (
           <div className="text-center py-6 text-xs text-slate-400 space-y-2">
-            <p>You have met the $0.10 deposit threshold. Click "+ Create New Key" above to generate your first API key.</p>
+            <p>You have met the $1.00 deposit threshold. Click "+ Create New Key" above to generate your first API key.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1964,14 +1980,14 @@ main();`,
             <div className="bg-[#05070b] p-2.5 rounded-[2px] border border-slate-800 space-y-0.5">
               <div className="text-[9.5px] text-slate-400 uppercase">Cumulative Demo Compute Used</div>
               <div className="text-base font-bold text-purple-300">
-                ${grantKeys.reduce((acc, k) => acc + k.total_spent_usd, 0).toFixed(4)}{" "}
+                ${grantKeys.reduce((acc, k) => acc + (Number(k.total_spent_usd) || 0), 0).toFixed(4)}{" "}
                 <span className="text-[10px] text-slate-400 font-normal">USD</span>
               </div>
             </div>
             <div className="bg-[#05070b] p-2.5 rounded-[2px] border border-slate-800 space-y-0.5">
               <div className="text-[9.5px] text-slate-400 uppercase">Total Tokens Cleared</div>
               <div className="text-base font-bold text-blue-300">
-                {grantKeys.reduce((acc, k) => acc + k.total_tokens, 0).toLocaleString()}{" "}
+                {grantKeys.reduce((acc, k) => acc + (Number(k.total_tokens) || 0), 0).toLocaleString()}{" "}
                 <span className="text-[10px] text-slate-400 font-normal">Tokens</span>
               </div>
             </div>
@@ -2091,14 +2107,14 @@ main();`,
                         {new Date(k.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-2.5 px-3 text-slate-200">
-                        ${k.total_spent_usd.toFixed(4)}{" "}
+                        ${Number(k.total_spent_usd || 0).toFixed(4)}{" "}
                         <span className="text-[10px] text-slate-400">
-                          {k.spend_limit_usd > 0 ? `/ $${k.spend_limit_usd.toFixed(2)}` : "(Unlimited)"}
+                          {Number(k.spend_limit_usd || 0) > 0 ? `/ $${Number(k.spend_limit_usd || 0).toFixed(2)}` : "(Unlimited)"}
                         </span>
                       </td>
                       <td className="py-2.5 px-3 text-blue-300">
-                        {k.total_tokens.toLocaleString()}{" "}
-                        <span className="text-[10px] text-slate-400">({k.request_count} reqs)</span>
+                        {Number(k.total_tokens || 0).toLocaleString()}{" "}
+                        <span className="text-[10px] text-slate-400">({Number(k.request_count || 0)} reqs)</span>
                       </td>
                       <td className="py-2.5 px-3">
                         {k.is_active ? (
@@ -2527,10 +2543,10 @@ main();`,
                 {usage.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-900/40 text-[11px]">
                     <td className="py-2 px-3 text-white">{u.model}</td>
-                    <td className="py-2 px-3 text-slate-400">{u.prompt_tokens} tok</td>
-                    <td className="py-2 px-3 text-slate-400">{u.completion_tokens} tok</td>
-                    <td className="py-2 px-3 text-emerald-400 font-bold">${u.total_cost_usd.toFixed(6)}</td>
-                    <td className="py-2 px-3 text-blue-400">${u.protocol_fee_usd.toFixed(6)}</td>
+                    <td className="py-2 px-3 text-slate-400">{Number(u.prompt_tokens || 0)} tok</td>
+                    <td className="py-2 px-3 text-slate-400">{Number(u.completion_tokens || 0)} tok</td>
+                    <td className="py-2 px-3 text-emerald-400 font-bold">${Number(u.total_cost_usd || 0).toFixed(6)}</td>
+                    <td className="py-2 px-3 text-blue-400">${Number(u.protocol_fee_usd || 0).toFixed(6)}</td>
                     <td className="py-2 px-3 text-slate-400">{new Date(u.created_at).toLocaleTimeString()}</td>
                   </tr>
                 ))}
@@ -2788,7 +2804,7 @@ main();`,
                 <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
                   <span>Select Registered Cluster</span>
                   <span className="text-emerald-400 font-bold">
-                    Pending: ${payoutPendingBalance.toFixed(4)} USD
+                    Pending: ${Number(payoutPendingBalance || 0).toFixed(4)} USD
                   </span>
                 </div>
                 <select
@@ -2813,9 +2829,9 @@ main();`,
                   </div>
                   <div className="text-[11px] text-slate-300 space-y-1 font-mono">
                     <div>Receipt ID: <span className="text-white">{payoutReceipt.payout_id}</span></div>
-                    <div>Gross Requested: <span className="text-white">${payoutReceipt.amount_usd.toFixed(2)} USD</span></div>
-                    <div>Protocol Fee (50 bps): <span className="text-purple-400">-${payoutReceipt.protocol_fee_usd.toFixed(4)} USD</span></div>
-                    <div>Net Settlement: <span className="text-emerald-400 font-bold">${payoutReceipt.net_payout_usd.toFixed(2)} USD</span></div>
+                    <div>Gross Requested: <span className="text-white">${Number(payoutReceipt.amount_usd || 0).toFixed(2)} USD</span></div>
+                    <div>Protocol Fee (50 bps): <span className="text-purple-400">-${Number(payoutReceipt.protocol_fee_usd || 0).toFixed(4)} USD</span></div>
+                    <div>Net Settlement: <span className="text-emerald-400 font-bold">${Number(payoutReceipt.net_payout_usd || 0).toFixed(2)} USD</span></div>
                     <div>Destination: <span className="text-slate-400">{payoutReceipt.payout_address}</span></div>
                     <div>Arbitrum Ref: <span className="text-blue-400">{payoutReceipt.arbitrum_tx_ref.slice(0, 18)}...</span></div>
                   </div>
@@ -2858,17 +2874,17 @@ main();`,
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                       <span>Min: $1.00 USD</span>
-                      <span>Net: ~${Math.max(0, payoutAmount * 0.995).toFixed(4)} USDC after 50 bps</span>
+                      <span>Net: ~${Math.max(0, Number(payoutAmount || 0) * 0.995).toFixed(4)} USDC after 50 bps</span>
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    disabled={submittingPayout || payoutAmount < 1.0 || payoutAmount > payoutPendingBalance}
+                    disabled={submittingPayout || Number(payoutAmount || 0) < 1.0 || Number(payoutAmount || 0) > Number(payoutPendingBalance || 0)}
                     className="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
                   >
                     {submittingPayout ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
-                    <span>Request Payout ({payoutAmount >= 1.0 ? `$${payoutAmount.toFixed(2)} USD` : "Min $1"})</span>
+                    <span>Request Payout ({Number(payoutAmount || 0) >= 1.0 ? `$${Number(payoutAmount || 0).toFixed(2)} USD` : "Min $1"})</span>
                   </button>
                 </form>
               )}

@@ -134,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
               title={`Logged in as ${user.email} · Click to manage API & balance`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-bold text-white">${user.balance_usd.toFixed(2)}</span>
+              <span className="font-bold text-white">${Number(user.balance_usd || 0).toFixed(2)}</span>
               <span className="text-[10px] text-slate-400">USD</span>
             </div>
           )}

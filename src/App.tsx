@@ -1,4 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense, Component, type ErrorInfo } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { AuthProvider } from "./context/AuthContext";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
@@ -29,6 +30,87 @@ const TabLoadingFallback = () => (
     </div>
   </div>
 );
+
+interface TabErrorBoundaryProps {
+  children: React.ReactNode;
+  activeTab: string;
+}
+
+interface TabErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundaryState> {
+  constructor(props: TabErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): TabErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[Verxl Protocol] Instrument Rail Fault:", error, errorInfo);
+  }
+
+  componentDidUpdate(prevProps: TabErrorBoundaryProps) {
+    if (prevProps.activeTab !== this.props.activeTab && this.state.hasError) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
+  handleReload = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-[#0a0e17] border border-red-500/30 rounded-[3px] p-6 sm:p-8 max-w-2xl mx-auto my-12 text-center font-mono space-y-4 shadow-2xl">
+          <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+              Telemetry Rail Exception Intercepted
+            </h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto font-sans">
+              A temporary render fault occurred while hydrating data. Your non-custodial cryptographic keys, on-chain balances, and account session are 100% secure.
+            </p>
+          </div>
+          {this.state.error?.message && (
+            <div className="text-[11px] text-red-300/80 bg-red-950/40 border border-red-900/50 p-3 rounded font-mono text-left break-all select-all">
+              {this.state.error.message}
+            </div>
+          )}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={this.handleReload}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-[2px] transition flex items-center gap-2 uppercase tracking-wider"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reload Rail State</span>
+            </button>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.href = "/chat";
+              }}
+              className="px-4 py-2 bg-[#05070b] border border-slate-700 hover:border-slate-500 text-slate-300 text-xs font-bold rounded-[2px] transition uppercase tracking-wider"
+            >
+              Switch to Chat
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function getTabFromPath(): string {
   if (typeof window === "undefined") return "overview";
@@ -137,32 +219,34 @@ export default function App() {
           </div>
         ) : (
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
-            <Suspense fallback={<TabLoadingFallback />}>
-              {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
-              {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
-              {activeTab === "registry" && (
-                <Registry
-                  walletAddress={walletAddress}
-                  onConnectWallet={handleConnectWallet}
-                />
-              )}
-              {activeTab === "oracle" && <Oracle />}
-              {activeTab === "whitepaper" && <Whitepaper />}
-              {activeTab === "governance" && <Governance />}
-              {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
-              {activeTab === "console" && <Console />}
-              {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
-                <Legal
-                  initialTab={
-                    activeTab === "privacy" ? "privacy" :
-                    activeTab === "terms" ? "terms" :
-                    activeTab === "mica" ? "mica" :
-                    activeTab === "charter" ? "charter" :
-                    getLegalSubTab()
-                  }
-                />
-              )}
-            </Suspense>
+            <TabErrorBoundary activeTab={activeTab}>
+              <Suspense fallback={<TabLoadingFallback />}>
+                {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
+                {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
+                {activeTab === "registry" && (
+                  <Registry
+                    walletAddress={walletAddress}
+                    onConnectWallet={handleConnectWallet}
+                  />
+                )}
+                {activeTab === "oracle" && <Oracle />}
+                {activeTab === "whitepaper" && <Whitepaper />}
+                {activeTab === "governance" && <Governance />}
+                {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
+                {activeTab === "console" && <Console />}
+                {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
+                  <Legal
+                    initialTab={
+                      activeTab === "privacy" ? "privacy" :
+                      activeTab === "terms" ? "terms" :
+                      activeTab === "mica" ? "mica" :
+                      activeTab === "charter" ? "charter" :
+                      getLegalSubTab()
+                    }
+                  />
+                )}
+              </Suspense>
+            </TabErrorBoundary>
           </main>
         )}
 

@@ -398,17 +398,17 @@ export const Registry: React.FC<RegistryProps> = ({
 
                   {/* Rate */}
                   <td className="py-3 px-4 text-slate-300 tabular">
-                    <div>${p.pricePromptUsd.toFixed(2)} prompt</div>
+                    <div>${Number(p.pricePromptUsd || 0).toFixed(2)} prompt</div>
                     <div className="text-[10px] text-slate-400">
-                      ${p.priceCompletionUsd.toFixed(2)} compl
+                      ${Number(p.priceCompletionUsd || 0).toFixed(2)} compl
                     </div>
                     {p.priceCachedPromptUsd !== undefined && (
                       <div className="text-[9.5px] text-emerald-400 font-semibold">
-                        ${p.priceCachedPromptUsd.toFixed(3)} cached
+                        ${Number(p.priceCachedPromptUsd) < 0.01 ? Number(p.priceCachedPromptUsd).toFixed(4) : Number(p.priceCachedPromptUsd).toFixed(3)} cached
                       </div>
                     )}
                     {p.specialHoursDiscount && (
-                      <div className="text-[8.5px] text-purple-300 font-sans mt-0.5">
+                      <div className="text-[8.5px] text-purple-300 font-sans mt-0.5 max-w-[160px] leading-tight">
                         {p.specialHoursDiscount}
                       </div>
                     )}
@@ -417,7 +417,7 @@ export const Registry: React.FC<RegistryProps> = ({
                   {/* Staked Collateral */}
                   <td className="py-3 px-4 tabular">
                     <div className="font-semibold text-white">
-                      {p.stakedAmountVrxl.toLocaleString()} $VRXL
+                      {(Number(p.stakedAmountVrxl) || 0).toLocaleString()} $VRXL
                     </div>
                     <div className="text-[9.5px] text-slate-400">Bonded Sepolia</div>
                   </td>
@@ -444,7 +444,7 @@ export const Registry: React.FC<RegistryProps> = ({
                         </span>
                       )}
                       <span className="text-slate-400 text-[10.5px] tabular">
-                        {p.lastAuditScore.toFixed(1)}% SLA
+                        {Number(p.lastAuditScore || 0).toFixed(1)}% SLA
                       </span>
                     </div>
                   </td>

@@ -28,6 +28,8 @@ import {
   Search,
   Wallet,
   Clock,
+  Sparkles,
+  Server,
 } from "lucide-react";
 
 marked.setOptions({
@@ -265,7 +267,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   // Model Selector Search, Category Filter & Recently Used
   const [modelSearch, setModelSearch] = useState("");
-  const [modelCategory, setModelCategory] = useState<"all" | "1m" | "reasoning" | "bare-metal" | "official-bridge">("all");
+  const [modelCategory, setModelCategory] = useState<
+    "all" | "1m" | "bulbasaur" | "deepseek" | "xiaomi" | "reasoning" | "bare-metal" | "official-bridge"
+  >("all");
   const [recentModelIds, setRecentModelIds] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -297,6 +301,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const matchesCategory =
       modelCategory === "all" ||
       (modelCategory === "1m" && m.contextTokens >= 1000000) ||
+      (modelCategory === "bulbasaur" && m.provider.toLowerCase().includes("bulbasaur")) ||
+      (modelCategory === "deepseek" && m.provider.toLowerCase().includes("deepseek")) ||
+      (modelCategory === "xiaomi" && m.provider.toLowerCase().includes("xiaomi")) ||
       (modelCategory === "reasoning" && m.category === "reasoning") ||
       (modelCategory === "bare-metal" && m.category === "bare-metal") ||
       (modelCategory === "official-bridge" && m.isOfficialBridge);
@@ -972,7 +979,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         }
         content += `${m.content}\n\n`;
         if (m.metrics?.costUsd) {
-          content += `*Cost: $${m.metrics.costUsd.toFixed(6)} USD • ${m.metrics.completionTokens} tokens*\n\n`;
+          content += `*Cost: $${Number(m.metrics.costUsd || 0).toFixed(6)} USD • ${m.metrics.completionTokens} tokens*\n\n`;
         }
       }
       filename += ".md";
@@ -1196,9 +1203,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   {/* Filter Pills */}
                   <div className="flex flex-wrap gap-1 text-[10px] font-mono">
                     {[
-                      { id: "all", label: "All Models" },
+                      { id: "all", label: "All" },
                       { id: "1m", label: "1M Context" },
-                      { id: "bare-metal", label: "Bare-Metal" },
+                      { id: "bulbasaur", label: "Prague Bulbasaur" },
+                      { id: "deepseek", label: "DeepSeek" },
+                      { id: "xiaomi", label: "Xiaomi MiMo" },
                       { id: "reasoning", label: "Reasoning" },
                       { id: "official-bridge", label: "Official Bridge" },
                     ].map((tab) => (
@@ -1274,29 +1283,48 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">{m.description}</div>
 
                         {/* Specs & Fee Breakdown */}
-                        <div className="mt-2 pt-1.5 border-t border-slate-800/80 space-y-1 text-[9.5px] font-mono">
+                        <div className="mt-2 pt-1.5 border-t border-slate-800/80 space-y-1.5 text-[9.5px] font-mono">
                           <div className="flex items-center justify-between text-slate-400">
-                            <span className="text-blue-300 font-semibold">Context: {m.context}</span>
-                            <span className="text-slate-300">Prompt: ${m.promptRate} • Out: ${m.completionRate}/1M</span>
+                            <span className="text-blue-300 font-semibold flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5 text-blue-400" />
+                              <span>{m.context}</span>
+                            </span>
+                            <span className="text-slate-200">
+                              Prompt: <span className="font-bold text-white">${m.promptRate}</span> • Output: <span className="font-bold text-white">${m.completionRate}</span> / 1M
+                            </span>
                           </div>
 
-                          {/* Cached Prompt / Output Fee */}
-                          <div className="flex items-center justify-between text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-[2px] border border-emerald-500/20">
-                            <span>💾 Cached Prompt Fee:</span>
-                            <span className="font-bold">${m.cachedPromptRate}/1M (90% off)</span>
+                          {/* Cached Prompt & Output Prefix Fee */}
+                          <div className="flex items-center justify-between text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] border border-emerald-500/20">
+                            <span className="font-semibold flex items-center gap-1">
+                              <span>💾 Cached Prompt Prefix:</span>
+                            </span>
+                            <span className="font-bold">
+                              ${m.cachedPromptRate} / 1M ({Math.round((1 - m.cachedPromptRate / m.promptRate) * 100)}% off)
+                            </span>
                           </div>
 
-                          {/* Special Hours Fee */}
-                          <div className="flex items-center justify-between text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded-[2px] border border-amber-500/20">
-                            <span className="truncate mr-1">🌙 Special Hours:</span>
-                            <span className="font-bold shrink-0">${m.specialHoursPromptRate} / ${m.specialHoursCompletionRate}</span>
+                          {/* Special Hours / Off-Peak Fee */}
+                          <div className="text-amber-300 bg-amber-500/10 px-2 py-1 rounded-[2px] border border-amber-500/20 space-y-0.5">
+                            <div className="flex items-center justify-between font-bold text-[10px]">
+                              <span>🌙 Off-Peak / Special Hours:</span>
+                              <span className="text-white">${m.specialHoursPromptRate} Prompt / ${m.specialHoursCompletionRate} Output</span>
+                            </div>
+                            {m.specialHoursDesc && (
+                              <div className="text-[8.5px] text-amber-200/80 leading-snug">
+                                {m.specialHoursDesc}
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         {/* Provider Node Label */}
-                        <div className="text-[9px] text-slate-500 mt-1 flex items-center justify-between">
-                          <span>Node: {m.provider}</span>
-                          <span className="text-slate-400">Non-Custodial</span>
+                        <div className="text-[9.5px] text-slate-400 mt-1.5 pt-1 border-t border-slate-800/50 flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-slate-300">
+                            <Server className="w-3 h-3 text-purple-400" />
+                            <span>Provider: <strong className="text-white">{m.provider}</strong></span>
+                          </span>
+                          <span className="text-emerald-400 font-bold uppercase tracking-wider text-[8.5px]">Verified SLA</span>
                         </div>
                       </div>
                     ))}
@@ -1438,7 +1466,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       <>
                         <span>•</span>
                         <span className="text-emerald-400 font-semibold font-mono">
-                          -${msg.metrics.costUsd.toFixed(6)} USD
+                          -${Number(msg.metrics.costUsd || 0).toFixed(6)} USD
                         </span>
                       </>
                     )}

@@ -54,6 +54,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const normalizeUser = (rawUser: any): UserProfile | null => {
+    if (!rawUser) return null;
+    return {
+      ...rawUser,
+      balance_usd: Number(rawUser.balance_usd || 0),
+      total_deposited_usd: Number(rawUser.total_deposited_usd || 0),
+      total_spent_usd: Number(rawUser.total_spent_usd || 0),
+      has_linked_email: Boolean(
+        rawUser.has_linked_email ??
+        (rawUser.email && !rawUser.email.endsWith("@web3.verxl.user"))
+      ),
+    };
+  };
+
+  const normalizeKeys = (rawKeys: any[]): ApiKeyItem[] => {
+    if (!Array.isArray(rawKeys)) return [];
+    return rawKeys.map((k) => ({
+      ...k,
+      spend_limit_usd: Number(k.spend_limit_usd || 0),
+      total_spent_usd: Number(k.total_spent_usd || 0),
+      total_tokens: Number(k.total_tokens || 0),
+    }));
+  };
+
+  const setSafeUser: React.Dispatch<React.SetStateAction<UserProfile | null>> = (action) => {
+    if (typeof action === "function") {
+      setUser((prev) => normalizeUser((action as (prev: UserProfile | null) => UserProfile | null)(prev)));
+    } else {
+      setUser(normalizeUser(action));
+    }
+  };
+
+  const setSafeKeys: React.Dispatch<React.SetStateAction<ApiKeyItem[]>> = (action) => {
+    if (typeof action === "function") {
+      setKeys((prev) => normalizeKeys((action as (prev: ApiKeyItem[]) => ApiKeyItem[])(prev)));
+    } else {
+      setKeys(normalizeKeys(action));
+    }
+  };
+
   const setCustomApiKey = (key: string) => {
     setCustomApiKeyState(key);
     if (typeof window !== "undefined") {
@@ -73,8 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (res.ok) {
         const data = (await res.json()) as any;
-        setUser(data.user);
-        setKeys(data.keys || []);
+        setUser(normalizeUser(data.user));
+        setKeys(normalizeKeys(data.keys));
       } else {
         // Token expired or invalid
         if (typeof window !== "undefined") {
@@ -121,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         setToken(data.token);
         setCustomApiKeyState(apiKey.trim());
-        setUser(data.user);
+        setUser(normalizeUser(data.user));
         await fetchSessionData(data.token);
         return { success: true };
       } else {
@@ -155,9 +195,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.apiKey) {
           setCustomApiKey(data.apiKey);
         }
-        setUser(data.user);
+        setUser(normalizeUser(data.user));
         await fetchSessionData(data.token);
-        return { success: true, user: data.user };
+        return { success: true, user: normalizeUser(data.user) };
       } else {
         return { success: false, error: data.error || "Wallet authentication failed" };
       }
@@ -186,7 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem("vrxl_auth_token", data.token);
         }
         setToken(data.token);
-        setUser(data.user);
+        setUser(normalizeUser(data.user));
         await fetchSessionData(data.token);
         return { success: true };
       } else {
@@ -229,8 +269,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         linkEmail,
         logout,
         refreshSession,
-        setUser,
-        setKeys,
+        setUser: setSafeUser,
+        setKeys: setSafeKeys,
         customApiKey,
         setCustomApiKey,
       }}

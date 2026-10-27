@@ -1,6 +1,12 @@
 import pg from "pg";
 
-const { Client } = pg;
+const { Client, types } = pg;
+
+// Parse PostgreSQL NUMERIC (OID 1700) and BIGINT (OID 20) as JavaScript numbers
+if (types && typeof types.setTypeParser === "function") {
+  types.setTypeParser(1700, (val: string) => (val === null ? 0 : parseFloat(val)));
+  types.setTypeParser(20, (val: string) => (val === null ? 0 : parseInt(val, 10)));
+}
 
 // Charizard PostgreSQL Configuration (strictly isolated to 'verxl' schema)
 // Used across Verxl Protocol for non-custodial user balances, api keys, deposits, and usage records.

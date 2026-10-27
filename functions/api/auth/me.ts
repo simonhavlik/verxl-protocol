@@ -78,8 +78,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           user.email?.toLowerCase() === "me@simonhavlik.com" ||
           user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5",
       },
-      keys: keys.results,
-      usage: recentUsage.results,
+      keys: keys.results.map((k: any) => ({
+        ...k,
+        spend_limit_usd: Number(k.spend_limit_usd || 0),
+        total_spent_usd: Number(k.total_spent_usd || 0),
+        total_tokens: Number(k.total_tokens || 0),
+      })),
+      usage: recentUsage.results.map((u: any) => ({
+        ...u,
+        prompt_tokens: Number(u.prompt_tokens || 0),
+        completion_tokens: Number(u.completion_tokens || 0),
+        total_cost_usd: Number(u.total_cost_usd || 0),
+        protocol_fee_usd: Number(u.protocol_fee_usd || 0),
+      })),
     }),
     { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
   );
