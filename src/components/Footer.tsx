@@ -1,7 +1,18 @@
 import React from "react";
-import { ShieldCheck, Github, ExternalLink } from "lucide-react";
+import { ShieldCheck, Github, ExternalLink, Scale, Lock, FileText } from "lucide-react";
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigate?: (tab: string) => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const handleLegalClick = (e: React.MouseEvent, tab: string) => {
+    if (onNavigate) {
+      e.preventDefault();
+      onNavigate(tab);
+    }
+  };
+
   return (
     <footer className="mt-6 border-t border-blue-500/15 bg-[#05070b]/90 py-4 text-slate-400 font-mono text-xs relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
@@ -51,6 +62,42 @@ export const Footer: React.FC = () => {
               <ExternalLink className="w-3 h-3 text-blue-400" />
               <span>VIP-1 Proposal</span>
             </a>
+          </div>
+        </div>
+
+        {/* Legal & Regulatory Navigation Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[10px] text-slate-400 border-b border-slate-800/40 pb-2.5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-slate-500 uppercase tracking-wider font-bold">Legal & Compliance:</span>
+            <a
+              href="/privacy"
+              onClick={(e) => handleLegalClick(e, "privacy")}
+              className="hover:text-blue-400 transition flex items-center gap-1"
+            >
+              <Lock className="w-2.5 h-2.5 text-blue-400" />
+              <span>Privacy Policy (GDPR)</span>
+            </a>
+            <span className="text-slate-700">·</span>
+            <a
+              href="/terms"
+              onClick={(e) => handleLegalClick(e, "terms")}
+              className="hover:text-blue-400 transition flex items-center gap-1"
+            >
+              <FileText className="w-2.5 h-2.5 text-blue-400" />
+              <span>Terms of Service & Liability Disclaimer</span>
+            </a>
+            <span className="text-slate-700">·</span>
+            <a
+              href="/legal"
+              onClick={(e) => handleLegalClick(e, "legal")}
+              className="hover:text-blue-400 transition flex items-center gap-1"
+            >
+              <Scale className="w-2.5 h-2.5 text-emerald-400" />
+              <span>EU MiCA Statement</span>
+            </a>
+          </div>
+          <div className="text-slate-500 font-mono text-[9.5px]">
+            Stateless Routing · Zero Custodial Liability · Czech Civil Code § 2898
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import { Governance } from "./components/Governance";
 import { Whitepaper } from "./components/Whitepaper";
 import { Vision } from "./components/Vision";
 import { Console } from "./components/Console";
+import { Legal } from "./components/Legal";
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 
@@ -21,7 +22,16 @@ function getTabFromPath(): string {
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
   if (path.includes("governance") || path.includes("dao")) return "governance";
+  if (path.includes("privacy") || path.includes("terms") || path.includes("legal") || path.includes("mica")) return "legal";
   return "overview";
+}
+
+function getLegalSubTab(): "privacy" | "terms" | "mica" {
+  if (typeof window === "undefined") return "privacy";
+  const path = window.location.pathname.toLowerCase();
+  if (path.includes("terms")) return "terms";
+  if (path.includes("mica")) return "mica";
+  return "privacy";
 }
 
 export default function App() {
@@ -104,11 +114,12 @@ export default function App() {
           {activeTab === "governance" && <Governance />}
           {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
           {activeTab === "console" && <Console />}
+          {activeTab === "legal" && <Legal initialTab={getLegalSubTab()} />}
         </main>
       )}
 
       {/* Institutional Footer */}
-      <Footer />
+      <Footer onNavigate={handleTabChange} />
     </div>
   );
 }
