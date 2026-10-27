@@ -1318,13 +1318,27 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           </div>
                         </div>
 
-                        {/* Provider Node Label */}
+                        {/* Provider Node Label & Data Policy */}
                         <div className="text-[9.5px] text-slate-400 mt-1.5 pt-1 border-t border-slate-800/50 flex items-center justify-between">
                           <span className="flex items-center gap-1 text-slate-300">
                             <Server className="w-3 h-3 text-purple-400" />
                             <span>Provider: <strong className="text-white">{m.provider}</strong></span>
                           </span>
-                          <span className="text-emerald-400 font-bold uppercase tracking-wider text-[8.5px]">Verified SLA</span>
+                          {m.isOfficialBridge ? (
+                            <span
+                              className="text-amber-400 font-mono text-[8.5px] bg-amber-500/10 px-1.5 py-0.5 rounded-[2px] border border-amber-500/20"
+                              title="Inference queries are forwarded to upstream provider servers (DeepSeek / Xiaomi) and are subject to their respective logging & retention policies."
+                            >
+                              Bridge · Upstream Logged
+                            </span>
+                          ) : (
+                            <span
+                              className="text-emerald-400 font-mono text-[8.5px] bg-emerald-500/10 px-1.5 py-0.5 rounded-[2px] border border-emerald-500/20 font-bold"
+                              title="Inference executes on dedicated local bare-metal hardware with volatile RAM streaming and zero disk persistence."
+                            >
+                              Bare-Metal · Zero-Logging
+                            </span>
+                          )}
                         </div>
                       </div>
                     ))}

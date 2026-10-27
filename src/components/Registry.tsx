@@ -447,6 +447,23 @@ export const Registry: React.FC<RegistryProps> = ({
                         {Number(p.lastAuditScore || 0).toFixed(1)}% SLA
                       </span>
                     </div>
+                    <div className="mt-1">
+                      {p.providerType === "OFFICIAL_BRIDGE" || (p as any).is_official_bridge ? (
+                        <span
+                          className="text-[8.5px] text-amber-400/90 bg-amber-500/10 px-1.5 py-0.2 rounded-[2px] border border-amber-500/20 font-mono"
+                          title="Queries routed to upstream servers (DeepSeek/Xiaomi) subject to their respective logging policies."
+                        >
+                          Bridge · Upstream Stored
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[8.5px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded-[2px] border border-emerald-500/20 font-mono font-bold"
+                          title="Local bare-metal inference with volatile RAM streaming and zero disk telemetry."
+                        >
+                          Bare-Metal · Zero-Logging
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Action */}

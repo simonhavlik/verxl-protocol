@@ -271,17 +271,17 @@ const MIND_NODES: MindNode[] = [
     id: "legal",
     name: "EU MiCA & Regulatory Perimeter",
     category: "LEGAL",
-    tagline: "Stateless non-custodial router exemption under EU MiCA & GDPR Article 17 compliance.",
+    tagline: "Non-custodial router exemption under EU MiCA Recital 22; stateless platform routing with transparent upstream disclosures.",
     color: "#34d399",
     bgRgb: "rgba(52, 211, 153, 0.1)",
     borderColor: "rgba(52, 211, 153, 0.4)",
     coords: { x: 400, y: 270 },
     kpis: [
       { label: "MiCA Status", value: "Non-Custodial Exempt" },
-      { label: "GDPR Compliance", value: "Zero Retention" },
+      { label: "GDPR Status", value: "Platform Stateless" },
       { label: "Settlement Asset", value: "Regulated Circle USDC" },
     ],
-    details: "Verxl operates solely as a technical routing switch without custody of fiat or crypto deposits. In-transit ephemeral payload streaming satisfies GDPR and EU AI Act Article 50 disclosure covenants.",
+    details: "Verxl operates solely as a non-custodial routing switch without custody of funds. Verxl does not persist prompts to disk, while transparently disclosing upstream provider logging (DeepSeek, Xiaomi).",
     techSpecs: [
       "Pure technical routing without CASP custodial liability",
       "Smart contract-mediated escrow on Arbitrum L2",
@@ -404,8 +404,8 @@ const PITCH_SLIDES: PitchSlide[] = [
     subtitle: "Strict regulatory immunity engineered into the smart contract and routing perimeter",
     timeEstimate: "3:40 - 4:20",
     bullets: [
-      { title: "MiCA Non-Custodial Immunity", desc: "Under EU MiCA, purely technical non-custodial routers do not hold customer funds and are exempt from CASP licensing." },
-      { title: "Stateless In-Transit Streaming", desc: "Inference prompts and completions stream through RAM without persistent disk storage, satisfying GDPR and EU AI Act Article 50." },
+      { title: "MiCA Non-Custodial Immunity", desc: "Under EU MiCA Recital 22, purely technical non-custodial software routers do not hold customer funds and are exempt from CASP licensing." },
+      { title: "Stateless Edge Routing", desc: "Verxl edge proxy streams inference without disk persistence. Upstream third-party hosts (e.g. DeepSeek) retain data per their independent policies." },
       { title: "Decentralized DAO Governance", desc: "Fee parameters and slashing audits are governed exclusively by Aragon OSx consensus, eliminating centralized issuer liabilities." },
     ],
     financeMetric: {
@@ -414,7 +414,7 @@ const PITCH_SLIDES: PitchSlide[] = [
       desc: "Zero custody of user funds; direct smart contract escrows on Arbitrum L2.",
     },
     speakerScript:
-      "Equally vital is legal defensibility under European law. Under the EU MiCA framework, Verxl is strictly non-custodial. We do not intermediate fiat, hold custody of deposits, or execute discretionary trades. Furthermore, because our edge router streams data without storing prompts on disk, we have complete GDPR and EU AI Act compliance. This creates an unassailable institutional moat.",
+      "Equally vital is legal defensibility under European law. Under the EU MiCA framework, Verxl is strictly non-custodial — we never intermediate fiat, hold custody of user funds, or operate discretionary pools. Furthermore, Verxl's routing layer operates statelessly in RAM without persisting prompt text to disk, while transparently disclosing that third-party upstream hosts like DeepSeek retain and log data under their own independent policies. This creates complete regulatory clarity and an institutional moat.",
   },
   {
     id: 7,
@@ -484,7 +484,7 @@ const RED_FLAG_AUDIT_DATA: RedFlagAuditItem[] = [
     flagName: "Custodial Classification & Licensing (MiCA / SEC CASP)",
     analystWorry: "Does Verxl touch user deposits or act as an unlicensed custodial exchange/money transmitter, risking regulatory shutdown?",
     traditionalVulnerability: "Centralized aggregators hold user funds in commingled accounts and intermediate payments, triggering mandatory €730k regulatory capital reserves, MiCA CASP licensing, and AML/KYC banking freeze exposure.",
-    verxlProtocolDefense: "Stateless non-custodial clearing router exemption under EU MiCA Recital 22. Capital moves atomically on-chain via smart contracts on Arbitrum One directly between the inference buyer and provider node. Verxl never touches user private keys, never pools deposits, and holds zero custodial float. Ephemeral in-transit RAM streaming satisfies GDPR Art. 5.",
+    verxlProtocolDefense: "Stateless non-custodial clearing router exemption under EU MiCA Recital 22. Capital moves atomically on-chain via smart contracts on Arbitrum One directly between the inference buyer and provider node. Verxl never touches user private keys, never pools deposits, and holds zero custodial float.",
     mathematicalProof: "Custodial Float = €0.00. Funds dwell in smart contract escrows with atomic non-custodial release upon verified delivery.",
     kpiMetric: { label: "Custodial Escrow Risk", value: "0.00% / EU MiCA Recital 22 Exempt" },
     auditStatus: "MATHEMATICALLY_IMMUNE",
@@ -532,7 +532,7 @@ const RED_FLAG_AUDIT_DATA: RedFlagAuditItem[] = [
     flagName: "Price War Vulnerability & Developer Churn",
     analystWorry: "If OpenAI or Anthropic cuts pricing by 50%, will all developers abandon Verxl and return to centralized APIs?",
     traditionalVulnerability: "Pure pricing intermediaries without technical differentiation suffer catastrophic churn whenever centralized market leaders initiate predatory price cuts.",
-    verxlProtocolDefense: "Tri-Pillar Defensible Moat: (1) True Zero-Logging GDPR compliance with Czech ÚOOÚ oversight (impossible for US CLOUD-Act bound hyperscalers), (2) Sub-45ms multi-provider automated fallback during hyperscaler outages, and (3) Native OpenAI SDK drop-in compatibility requiring zero developer code refactoring.",
+    verxlProtocolDefense: "Tri-Pillar Defensible Moat: (1) Verxl Platform Zero-Disk-Persistence edge streaming with transparent upstream provider logging disclosures under Czech ÚOOÚ oversight, (2) Sub-45ms multi-provider automated fallback during hyperscaler outages, and (3) Native OpenAI SDK drop-in compatibility requiring zero developer code refactoring.",
     mathematicalProof: "LTV / CAC Ratio = 25.9x. Switchover friction = 1 line of config (baseURL). Multi-cloud availability SLA = 99.99%.",
     kpiMetric: { label: "LTV / CAC Ratio", value: "25.9x (Industry Top Quartile > 3.0x)" },
     auditStatus: "CLEARED",

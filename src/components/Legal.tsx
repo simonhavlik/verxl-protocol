@@ -144,6 +144,33 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </ul>
             </div>
 
+            {/* Section 2.1: Critical Disclosure on Upstream Silicon Hosts (DeepSeek, Xiaomi MiMo) */}
+            <div className="bg-amber-950/30 border border-amber-500/40 rounded-[2px] p-4 space-y-2.5 text-amber-200 font-mono">
+              <div className="font-bold flex items-center gap-2 uppercase text-amber-300 text-xs">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Critical Notice: Verxl Stateless Proxy vs. Upstream Provider Data Retention (DeepSeek, Xiaomi MiMo)</span>
+              </div>
+              <div className="space-y-2 text-[11px] text-slate-300 font-sans leading-relaxed">
+                <p>
+                  A clear legal and architectural distinction exists between <strong>Verxl Protocol's routing infrastructure</strong> and the <strong>independent upstream AI compute providers</strong> to which queries are routed:
+                </p>
+                <ul className="list-disc pl-5 space-y-1.5 text-slate-300">
+                  <li>
+                    <strong>Verxl Platform Perimeter:</strong> Verxl operates purely as a non-custodial routing switch. Our Cloudflare edge workers stream prompt and completion tokens through volatile memory (RAM) and do not write, log, or persist prompt or completion text to disk.
+                  </li>
+                  <li>
+                    <strong>Upstream Commercial Providers (DeepSeek AI, Xiaomi MiMo):</strong> When you select a bridge-routed model (such as DeepSeek V4.1 Flash, DeepSeek Pro, or Xiaomi MiMo), your inference payload is forwarded directly to the upstream host’s API servers (e.g., DeepSeek servers located in Hangzhou/Beijing, China, or Xiaomi infrastructure). <strong>These upstream providers DO log and store prompt inputs, reasoning traces, and completion data</strong> in accordance with their respective domestic privacy policies, terms of service, and regulatory reporting mandates (including mandatory logging under PRC cybersecurity and generative AI provisions).
+                  </li>
+                  <li>
+                    <strong>Developer Responsibility & Confidentiality:</strong> Verxl does not and cannot control upstream provider storage or retention. Developers transmitting confidential, proprietary, or regulated personal data must not route such workloads to public bridge models without appropriate enterprise guarantees.
+                  </li>
+                  <li>
+                    <strong>True Hardware-Level Zero-Logging:</strong> For absolute zero-retention across the entire execution stack, users must select dedicated, verified bare-metal nodes (such as the Prague Bulbasaur 01 cluster running localized Ollama/vLLM with disk telemetry disabled) or deploy private self-hosted Verxl nodes.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             {/* Section 3 */}
             <div className="space-y-1.5">
               <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
@@ -391,6 +418,12 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <li><strong>No Order Book Matching / Trading:</strong> Verxl does not operate an exchange, multilateral trading facility, or broker-dealer service. Compute fees are settled programmatically based on token volume at fixed smart contract rates.</li>
                 <li><strong>No Proprietary Token Issuance on Mainnet:</strong> Staking operations utilize standard on-chain contracts. In accordance with testnet execution guidelines, $VRXL operates as an experimental utility governance instrument on Ethereum Sepolia.</li>
               </ul>
+              <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 text-[10.5px] font-mono text-slate-400 space-y-1 mt-2">
+                <div className="text-white font-bold">Important Jurisdictional Separation: MiCA vs. Data Privacy (GDPR / AI Act)</div>
+                <p>
+                  Regulation (EU) 2023/1114 (MiCA) addresses exclusively crypto-assets, capital adequacy, and financial custody. It does <em>not</em> regulate prompt storage, AI weights, or user telemetry. In-transit prompt streaming and data protection are governed independently by <strong>GDPR (Regulation (EU) 2016/679)</strong> and the <strong>EU AI Act (Regulation (EU) 2024/1689)</strong>. As detailed in our Privacy Policy, while Verxl operates statelessly without disk persistence, third-party upstream model hosts (such as DeepSeek and Xiaomi MiMo) maintain separate, independent data logging and storage practices on their own servers over which Verxl exercises no control.
+                </p>
+              </div>
             </div>
 
             {/* Section 2: EU AI Act Transparency */}
