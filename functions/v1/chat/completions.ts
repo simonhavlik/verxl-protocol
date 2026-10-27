@@ -377,35 +377,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
     ];
   } else {
-    // Bulbasaur / Qwen resident 32k cluster — Bare-metal node first, then genuine Qwen upstream backup
+    // Bulbasaur / Qwen resident 32k cluster — Dedicated Bare-Metal Bulbasaur Node only (no alternatives)
     upstreamEndpoints = [
+      {
+        url: "https://node1.verxl.com/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: "qwen3.5-4b-uncensored-32k:latest",
+        timeoutMs: 25000,
+      },
       {
         url: "http://212.227.211.88:11645/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
         },
         modelName: "qwen3.5-4b-uncensored-32k:latest",
-        timeoutMs: 15000,
-      },
-      {
-        url: "https://opencode.ai/zen/go/v1/chat/completions",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
-          "x-opencode-session": opencodeSessionId,
-        },
-        modelName: "qwen3.6-plus",
-        timeoutMs: 15000,
-      },
-      {
-        url: "https://opencode.ai/zen/v1/chat/completions",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
-          "x-opencode-session": opencodeSessionId,
-        },
-        modelName: "qwen3.6-plus",
-        timeoutMs: 15000,
+        timeoutMs: 25000,
       },
     ];
   }
@@ -620,6 +608,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           return new Response(
             JSON.stringify({
               ...json,
+              model: requestedModel || "qwen3.5-4b-uncensored-32k",
               verxl_clearing: {
                 protocol_fee_bps: 50,
                 clearing_status: "SETTLED",
