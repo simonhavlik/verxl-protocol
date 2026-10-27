@@ -28,7 +28,8 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "playground", label: "Inference Terminal" },
     { id: "registry", label: "Compute Registry" },
     { id: "oracle", label: "Quality Oracle" },
-    { id: "governance", label: "DAO & Whitepaper" },
+    { id: "whitepaper", label: "Whitepaper" },
+    { id: "governance", label: "DAO Governance" },
   ];
 
   return (

@@ -361,11 +361,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               </button>
 
               <button
-                onClick={() => onNavigate("governance")}
+                onClick={() => onNavigate("whitepaper")}
                 className="hero-btn hero-btn--ghost"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>DAO Charter</span>
+                <span>Whitepaper</span>
               </button>
             </div>
 
