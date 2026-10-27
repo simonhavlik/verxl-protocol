@@ -12,6 +12,15 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, x-opencode-session",
 };
 
+// In-memory sliding window rate limiter for free demo queries: 40 requests per 10 minutes per IP
+interface RateLimitBucket {
+  count: number;
+  resetAt: number;
+}
+const ipRateLimitMap = new Map<string, RateLimitBucket>();
+const DEMO_RATE_LIMIT_MAX = 40;
+const DEMO_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, {
     status: 204,
@@ -179,6 +188,84 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
+  // Enforcement for free testnet demo tier (Playground)
+  const isFreeDemo = !authenticatedUser;
+  let demoRateLimitHeaders: Record<string, string> = {};
+
+  if (isFreeDemo) {
+    // 1. Model restriction: Playground free demo only allows Qwen. For the rest, one must pay.
+    const isQwen =
+      rawModel.toLowerCase().includes("qwen") ||
+      rawModel.toLowerCase().includes("uncensored") ||
+      rawModel === "";
+
+    if (!isQwen) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: `Model '${rawModel}' requires an authenticated Verxl account with paid USDC balance. The free Playground is reserved strictly for 'qwen3.5-4b-uncensored-32k'. For the rest one must pay: deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat to access DeepSeek, MiMo, and Llama.`,
+            type: "insufficient_quota",
+            code: "model_payment_required",
+          },
+        }),
+        { status: 402, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      );
+    }
+
+    // 2. IP Rate Limit: 40 requests per 10 minutes (generous for human testing, blocks automated spam)
+    const clientIp =
+      request.headers.get("CF-Connecting-IP") ||
+      request.headers.get("x-real-ip") ||
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "127.0.0.1";
+
+    const now = Date.now();
+    let bucket = ipRateLimitMap.get(clientIp);
+    if (!bucket || now > bucket.resetAt) {
+      bucket = { count: 1, resetAt: now + DEMO_RATE_LIMIT_WINDOW_MS };
+      ipRateLimitMap.set(clientIp, bucket);
+    } else {
+      bucket.count++;
+    }
+
+    // Prune stale entries if map grows large
+    if (ipRateLimitMap.size > 5000) {
+      for (const [ip, b] of ipRateLimitMap.entries()) {
+        if (now > b.resetAt) ipRateLimitMap.delete(ip);
+      }
+    }
+
+    const remaining = Math.max(0, DEMO_RATE_LIMIT_MAX - bucket.count);
+    const resetSec = Math.ceil((bucket.resetAt - now) / 1000);
+
+    demoRateLimitHeaders = {
+      "X-RateLimit-Limit": DEMO_RATE_LIMIT_MAX.toString(),
+      "X-RateLimit-Remaining": remaining.toString(),
+      "X-RateLimit-Reset": resetSec.toString(),
+    };
+
+    if (bucket.count > DEMO_RATE_LIMIT_MAX) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: `Free demo rate limit reached for your IP (${DEMO_RATE_LIMIT_MAX} requests per 10 minutes). Connect your wallet or deposit USDC at https://verxl.com/console to unlock unlimited high-concurrency inference.`,
+            type: "rate_limit_error",
+            code: "rate_limit_exceeded",
+          },
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": resetSec.toString(),
+            ...CORS_HEADERS,
+            ...demoRateLimitHeaders,
+          },
+        }
+      );
+    }
+  }
+
   // 3. Model & Pricing Definition
   let providerId = "bulbasaur-prague-01";
   let promptRatePerM = 0.05;
@@ -202,6 +289,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     "X-Verxl-Provider-Id": providerId,
     "X-Verxl-Clearing-Status": "SETTLED",
     "X-Verxl-DAO-Vault": "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
+    ...demoRateLimitHeaders,
   };
 
   const estimatedPromptTokens = Math.max(16, Math.ceil(JSON.stringify(messages).length / 4));

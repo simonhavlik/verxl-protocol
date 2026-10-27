@@ -14,6 +14,7 @@ import {
   X,
   Server,
   ShieldAlert,
+  Lock,
 } from "lucide-react";
 
 marked.setOptions({
@@ -135,6 +136,20 @@ export const Playground: React.FC = () => {
         }),
         signal: controller.signal,
       });
+
+      if (!response.ok) {
+        const errJson = (await response.json().catch(() => ({}))) as any;
+        const errMsg = errJson?.error?.message;
+        if (response.status === 429) {
+          setOutput(`> [!WARNING]\n> **Rate Limit Reached (Free Demo Tier):**\n> ${errMsg || "Free demo rate limit of 40 requests per 10 minutes exceeded for your IP. Connect your wallet or deposit USDC at Verxl Console to remove limits."}`);
+          setIsStreaming(false);
+          return;
+        } else if (response.status === 402) {
+          setOutput(`> [!IMPORTANT]\n> **Paid Model Tier Required:**\n> ${errMsg || "This model requires an active account balance. Deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat."}`);
+          setIsStreaming(false);
+          return;
+        }
+      }
 
       if (response.ok && response.body) {
         const contentType = response.headers.get("content-type") || "";
@@ -512,15 +527,40 @@ main();`,
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500 transition"
               >
                 <option value="qwen3.5-4b-uncensored-32k">
-                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (32k Resident Context)
+                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (32k Resident Context) [Free Demo]
+                </option>
+                <option disabled value="deepseek-v4.1-flash" className="text-slate-500 bg-[#070b14]">
+                  🔒 deepseek-v4.1-flash (Paid USDC Balance Required · Verxl Chat / Console)
+                </option>
+                <option disabled value="mimo-v2.6-flash" className="text-slate-500 bg-[#070b14]">
+                  🔒 mimo-v2.6-flash (Paid USDC Balance Required · Verxl Chat / Console)
+                </option>
+                <option disabled value="meta-llama/llama-3-70b-instruct" className="text-slate-500 bg-[#070b14]">
+                  🔒 meta-llama/llama-3-70b-instruct (Paid USDC Balance Required · Verxl Chat / Console)
                 </option>
               </select>
-              <div className="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px] font-mono text-slate-400">
-                <div className="flex items-center gap-1.5 text-blue-400">
-                  <Server className="w-3 h-3 shrink-0" />
-                  <span>Pre-warmed in GPU VRAM (no per-user reload delay).</span>
+
+              {/* Free Tier vs Paid Models Callout */}
+              <div className="mt-2 p-2.5 rounded-[2px] bg-[#070b14] border border-blue-500/20 text-[10.5px] font-mono space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-blue-400 font-bold">
+                    <Server className="w-3.5 h-3.5 shrink-0" />
+                    <span>Free Playground Model: Qwen 3.5 4B Uncensored</span>
+                  </span>
+                  <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    Unlimited Free Demo
+                  </span>
                 </div>
-                <span className="text-amber-400/90 text-[9.5px]">Specifications test run disabled (capacity)</span>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                  The demo terminal is restricted exclusively to <strong>Qwen 3.5 4B Uncensored</strong>. For the rest (DeepSeek V4.1, Xiao MiMo, Llama 70B), one must pay per token via <a href="/chat" className="text-blue-400 underline hover:text-blue-300 font-mono">Verxl Chat</a> or with an API key generated in <a href="/console" className="text-blue-400 underline hover:text-blue-300 font-mono">Console</a> after depositing USDC on Arbitrum.
+                </p>
+                <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
+                  <span className="flex items-center gap-1 text-slate-400">
+                    <Lock className="w-3 h-3 text-amber-400" />
+                    <span>IP Demo Limit: 40 requests / 10 min</span>
+                  </span>
+                  <span className="text-emerald-400">50 bps Protocol Fee</span>
+                </div>
               </div>
             </div>
 
