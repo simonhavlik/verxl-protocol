@@ -2879,19 +2879,19 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
       {/* MODAL: 5-MINUTE PITCH DECK PRESENTER VIEW */}
       {showPitchDeckModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-6 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-4xl bg-[#0a0e17] border border-blue-500/50 rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-4 my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2.5 sm:p-6 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-4xl max-h-[94vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/50 rounded-[4px] p-4 sm:p-7 shadow-2xl space-y-4 my-auto">
             {/* Modal Header & Timer Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/40 rounded-[2px]">
+                <div className="p-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/40 rounded-[2px] shrink-0">
                   <Presentation className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <span>Verxl Protocol 5-Minute Investor & Committee Pitch</span>
+                    <span>Verxl Protocol 5-Minute Pitch</span>
                     <span className="text-[10px] text-emerald-400 font-mono">
-                      Slide {currentPitchSlide + 1} / {PITCH_SLIDES.length}
+                      {currentPitchSlide + 1} / {PITCH_SLIDES.length}
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
@@ -2901,9 +2901,9 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               </div>
 
               {/* Timer & Presenter Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 {/* 5-Min Timer */}
-                <div className="flex items-center gap-1.5 bg-[#05070b] border border-slate-700 px-2.5 py-1 rounded-[2px] font-mono text-xs">
+                <div className="flex items-center gap-1.5 bg-[#05070b] border border-slate-700 px-2 py-1 rounded-[2px] font-mono text-xs">
                   <Clock className="w-3 h-3 text-amber-400" />
                   <span className={pitchTimer < 60 ? "text-rose-400 font-bold animate-pulse" : "text-white font-bold"}>
                     {Math.floor(pitchTimer / 60)}:{String(pitchTimer % 60).padStart(2, "0")}
@@ -2925,7 +2925,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <a
                   href="/Verxl_Protocol_Pitch_Presentation.pptx"
                   download="Verxl_Protocol_Pitch_Presentation.pptx"
-                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-[2px] flex items-center gap-1 transition"
+                  className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-[2px] flex items-center gap-1 transition"
                 >
                   <Download className="w-3 h-3" />
                   <span>PPTX</span>
@@ -2941,12 +2941,12 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
 
             {/* Slide Navigation Dots / Timeline Bar */}
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="flex sm:grid sm:grid-cols-7 gap-1.5 overflow-x-auto pb-1.5 no-scrollbar touch-pan-x">
               {PITCH_SLIDES.map((slide, idx) => (
                 <button
                   key={slide.id}
                   onClick={() => setCurrentPitchSlide(idx)}
-                  className={`py-1.5 px-2 text-[9px] font-mono rounded-[2px] border text-center transition ${
+                  className={`py-1.5 px-2 text-[9px] font-mono rounded-[2px] border text-center transition shrink-0 min-w-[76px] sm:min-w-0 ${
                     currentPitchSlide === idx
                       ? "bg-blue-600 text-white border-blue-400 font-bold shadow"
                       : "bg-[#05070b] text-slate-400 border-slate-800 hover:text-slate-200"

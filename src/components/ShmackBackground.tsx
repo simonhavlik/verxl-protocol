@@ -66,6 +66,13 @@ export const ShmackBackground: React.FC<ShmackBackgroundProps> = ({ activeTab })
 
   useEffect(() => {
     setMounted(true);
+
+    // On touch devices / phones, skip the continuous mouse-lerp render loop to save CPU & battery
+    const isTouch = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
+    if (isTouch) {
+      return;
+    }
+
     const onMove = (e: MouseEvent) => {
       pointer.current.tx = e.clientX;
       pointer.current.ty = e.clientY;

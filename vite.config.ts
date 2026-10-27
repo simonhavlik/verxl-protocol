@@ -28,6 +28,12 @@ export default defineConfig({
         termsDir: path.resolve(__dirname, "terms/index.html"),
         legalDir: path.resolve(__dirname, "legal/index.html"),
       },
+      output: {
+        manualChunks: {
+          vendorThree: ["three"],
+          vendorIcons: ["lucide-react"],
+        },
+      },
     },
   },
   server: {

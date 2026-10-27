@@ -102,18 +102,22 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
+    const isSmall = typeof window !== "undefined" && window.innerWidth <= 768;
+    const nodeCount = isSmall ? 160 : 380;
+
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: window.innerWidth > 900,
+        antialias: !isSmall,
+        powerPreference: "low-power",
       });
     } catch (e) {
       return;
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 2));
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
@@ -124,9 +128,6 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
     const group = new THREE.Group();
     scene.add(group);
-
-    const isSmall = window.innerWidth <= 720;
-    const nodeCount = isSmall ? 180 : 380;
 
     // Golden angle nodes on sphere shell
     const vecs: THREE.Vector3[] = [];
@@ -260,8 +261,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     resize();
     window.addEventListener("resize", resize);
 
-    let rafId: number;
+    let isVisible = true;
+    let rafId: number = 0;
     const animate = (now: number) => {
+      if (!isVisible) {
+        rafId = 0;
+        return;
+      }
       const t = now * 0.0001;
       pointer.x += (pointer.tx - pointer.x) * 0.05;
       pointer.y += (pointer.ty - pointer.y) * 0.05;
@@ -282,10 +288,28 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       rafId = requestAnimationFrame(animate);
     };
 
-    rafId = requestAnimationFrame(animate);
+    // Pause WebGL rendering when hero is scrolled out of view (saves massive CPU & battery on phones)
+    let observer: IntersectionObserver | null = null;
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            isVisible = entry.isIntersecting;
+            if (isVisible && !rafId) {
+              rafId = requestAnimationFrame(animate);
+            }
+          });
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    } else {
+      rafId = requestAnimationFrame(animate);
+    }
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (observer) observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
       container.removeEventListener("pointermove", onPointerMove);
       renderer.dispose();
@@ -379,7 +403,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
 
             {/* Institutional Stat Metrics Row */}
-            <div className="grid grid-cols-4 gap-0 pt-2.5 border-t border-slate-800/80 font-mono">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-0 pt-2.5 border-t border-slate-800/80 font-mono">
               <div className="pr-2">
                 <div className="text-base sm:text-xl font-bold text-white tracking-tight">
                   50 <span className="text-[10px] text-blue-400 font-normal">bps</span>
@@ -389,7 +413,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="px-2 border-l border-slate-800">
+              <div className="pl-2 sm:px-2 border-l border-slate-800">
                 <div className="text-base sm:text-xl font-bold text-white tracking-tight">
                   48 <span className="text-[10px] text-blue-400 font-normal">ms</span>
                 </div>
@@ -398,7 +422,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="px-2 border-l border-slate-800">
+              <div className="pr-2 sm:px-2 sm:border-l border-slate-800 border-t sm:border-t-0 pt-2 sm:pt-0">
                 <div className="text-base sm:text-xl font-bold text-white tracking-tight">
                   142<span className="text-[10px] text-slate-400 font-normal">k</span>
                 </div>
@@ -407,7 +431,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="pl-2 border-l border-slate-800">
+              <div className="pl-2 sm:pl-2 border-l border-slate-800 border-t sm:border-t-0 pt-2 sm:pt-0">
                 <div className="text-base sm:text-xl font-bold text-emerald-400 tracking-tight">
                   100%
                 </div>

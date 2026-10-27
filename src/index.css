@@ -34,12 +34,27 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button, a, input, select, textarea {
+    touch-action: manipulation;
   }
 
   ::selection {
     background: rgba(59, 130, 246, 0.3);
     color: #ffffff;
   }
+}
+
+/* Hide scrollbars while maintaining momentum scrolling on touch devices */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* =============================================================
@@ -458,12 +473,20 @@ td, th, .tabular, .font-mono {
 
 .demo-tabs {
   display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   border-bottom: 1px solid var(--line-soft);
   background: rgba(5, 7, 11, 0.4);
 }
+.demo-tabs::-webkit-scrollbar {
+  display: none;
+}
 .d-tab {
   flex: 1;
-  padding: 8px 10px;
+  min-width: max-content;
+  white-space: nowrap;
+  padding: 8px 12px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -492,6 +515,12 @@ td, th, .tabular, .font-mono {
   gap: 1px;
   border-bottom: 1px solid var(--line-soft);
   background: var(--line-soft);
+}
+
+@media (max-width: 640px) {
+  .demo-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .step-item {
   position: relative;

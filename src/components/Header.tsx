@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ExternalLink, ShieldCheck, Wallet, Check, Copy } from "lucide-react";
 
 interface HeaderProps {
@@ -15,7 +15,18 @@ export const Header: React.FC<HeaderProps> = ({
   onConnectWallet,
 }) => {
   const [copied, setCopied] = useState(false);
+  const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const daoAddress = "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a";
+
+  // Center active mobile tab button smoothly when switched
+  useEffect(() => {
+    if (mobileNavRef.current) {
+      const activeEl = mobileNavRef.current.querySelector('[data-active="true"]') as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, [activeTab]);
 
   const copyAddress = () => {
     navigator.clipboard.writeText(daoAddress);
@@ -37,16 +48,16 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#05070b]/90 border-b border-blue-500/15">
       {/* Sepolia Test Run Institutional Top Bar */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[10px] sm:text-[10.5px] text-amber-300/90 tracking-wide flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap">
-        <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold text-amber-300 tracking-wider">
+      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[9.5px] sm:text-[10.5px] text-amber-300/90 tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto whitespace-nowrap">
+        <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[8.5px] sm:text-[9px] font-bold text-amber-300 tracking-wider shrink-0">
           TEST RUN ON SEPOLIA
         </span>
         <span className="text-amber-500/40">/</span>
-        <span className="hidden sm:inline text-slate-300">
-          Project at VŠE
+        <span className="text-slate-300 truncate">
+          VŠE Praha Academic Project
         </span>
         <span className="hidden sm:inline text-amber-500/40">/</span>
-        <span className="text-amber-200">Not Official Mainnet Production</span>
+        <span className="hidden sm:inline text-amber-200">Not Official Mainnet Production</span>
         <span className="hidden md:inline text-amber-500/40">/</span>
         <a
           href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
@@ -151,15 +162,19 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Nav Bar */}
-      <div className="flex md:hidden overflow-x-auto border-t border-slate-800/80 px-4 py-2 gap-1.5 bg-[#070b13] no-scrollbar font-mono text-[11px]">
+      <div
+        ref={mobileNavRef}
+        className="flex md:hidden overflow-x-auto border-t border-slate-800/80 px-3 py-2 gap-2 bg-[#060911] no-scrollbar font-mono text-xs touch-pan-x scroll-smooth select-none"
+      >
         {navItems.map((item) => (
           <button
             key={item.id}
+            data-active={activeTab === item.id ? "true" : "false"}
             onClick={() => setActiveTab(item.id)}
-            className={`px-2.5 py-1 whitespace-nowrap rounded-[2px] transition ${
+            className={`min-h-[36px] px-3.5 py-1.5 whitespace-nowrap rounded-[2px] transition-all flex items-center justify-center tracking-wider text-[11px] font-bold uppercase active:scale-95 ${
               activeTab === item.id
-                ? "bg-blue-600 text-white font-medium"
-                : "text-slate-400 hover:bg-slate-800"
+                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30 border border-blue-400/50"
+                : "bg-[#0a0e17] text-slate-400 border border-slate-800/90 hover:text-white"
             }`}
           >
             {item.label}

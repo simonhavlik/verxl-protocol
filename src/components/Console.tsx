@@ -692,7 +692,7 @@ main();`,
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
           <span>Fee: <strong className="text-emerald-400">50 bps (0.5%)</strong></span>
           <span className="text-slate-700">|</span>
-          <span>Min Deposit: <strong className="text-white">$1.00 USD</strong></span>
+          <span>Min Deposit: <strong className="text-white">$0.10 USD</strong></span>
           <span className="text-slate-700">|</span>
           <span>Min Payout: <strong className="text-white">$1.00 USD</strong></span>
         </div>
@@ -1096,8 +1096,8 @@ main();`,
           </div>
           <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
             <span>Arbitrum L2 (<span className="text-slate-300">&lt;$0.01 gas</span>)</span>
-            <span className={user && user.total_deposited_usd >= 1.0 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
-              {user && user.total_deposited_usd >= 1.0 ? "Min $1 Threshold Met" : "Min $1 Req to Unlock Key"}
+            <span className={user && user.total_deposited_usd >= 0.1 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+              {user && user.total_deposited_usd >= 0.1 ? "Deposit Threshold Met" : "Min $0.10 Req to Unlock Key"}
             </span>
           </div>
         </div>
@@ -1128,7 +1128,7 @@ main();`,
               <span>Production API Keys</span>
             </h3>
             <p className="text-[11px] text-slate-400 font-sans">
-              Drop-in OpenAI compatible API keys. Minimum initial deposit of <strong className="text-white">$1.00 USD (1 USDC)</strong> required to generate.
+              Drop-in OpenAI compatible API keys. Minimum initial deposit of <strong className="text-white">$0.10 USD (0.10 USDC)</strong> required to generate.
             </p>
           </div>
 
@@ -1142,9 +1142,9 @@ main();`,
             />
             <button
               onClick={handleCreateKey}
-              disabled={!user || user.total_deposited_usd < 1.0 || creatingKey}
+              disabled={!user || user.total_deposited_usd < 0.1 || creatingKey}
               className="px-3 py-1.5 rounded-[2px] bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
-              title={!user || user.total_deposited_usd < 1.0 ? "Deposit at least $1.00 to unlock key creation" : "Generate new production key"}
+              title={!user || user.total_deposited_usd < 0.1 ? "Deposit at least $0.10 to unlock key creation" : "Generate new production key"}
             >
               {creatingKey ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Key className="w-3.5 h-3.5" />}
               <span>+ Create Key</span>
@@ -1188,7 +1188,7 @@ main();`,
           <div className="text-center py-6 text-xs text-slate-400">
             Authenticate with institutional email above to view and manage API keys.
           </div>
-        ) : user.total_deposited_usd < 1.0 ? (
+        ) : user.total_deposited_usd < 0.1 ? (
           <div className="bg-[#05070b] border border-amber-500/30 rounded-[2px] p-4 text-center space-y-2">
             <AlertTriangle className="w-5 h-5 text-amber-400 mx-auto" />
             <div className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1196,19 +1196,19 @@ main();`,
             </div>
             <p className="text-[11px] text-slate-300 max-w-md mx-auto font-sans">
               To prevent bot spam and reserve bare-metal GPU compute, Verxl requires an initial deposit of at least{" "}
-              <strong className="text-amber-300">$1.00 USD (USDC on Arbitrum)</strong>. 100% of your deposit is credited directly to your inference balance.
+              <strong className="text-amber-300">$0.10 USD (USDC on Arbitrum)</strong>. 100% of your deposit is credited directly to your inference balance.
             </p>
             <button
               onClick={() => setShowDepositModal(true)}
               className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-[2px] transition inline-flex items-center gap-1.5"
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>Deposit $1.00 USDC to Activate</span>
+              <span>Deposit $0.10 USDC to Activate</span>
             </button>
           </div>
         ) : keys.length === 0 ? (
           <div className="text-center py-6 text-xs text-slate-400 space-y-2">
-            <p>You have met the $1.00 deposit threshold. Click "+ Create New Key" above to generate your first API key.</p>
+            <p>You have met the $0.10 deposit threshold. Click "+ Create New Key" above to generate your first API key.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1345,8 +1345,8 @@ main();`,
 
       {/* MODAL 1: DEPOSIT USDC ON ARBITRUM */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-5 sm:p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-blue-400" />
@@ -1466,8 +1466,8 @@ main();`,
 
       {/* MODAL 2: PROVIDER PAYOUT REQUEST DRAWER */}
       {showPayoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-[#0a0e17] border border-purple-500/40 rounded-[3px] p-5 sm:p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-purple-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
                 <ArrowUpRight className="w-4 h-4 text-purple-400" />
@@ -1582,8 +1582,8 @@ main();`,
 
       {/* MODAL 3: SECURITY MANAGEMENT MODAL (2FA & PASSWORD) */}
       {showSecurityModal && user && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-5 sm:p-6 shadow-2xl space-y-4 my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-blue-400" />
