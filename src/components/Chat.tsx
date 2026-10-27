@@ -14,7 +14,6 @@ import {
   ChevronDown,
   ChevronRight,
   Settings,
-  ShieldCheck,
   Coins,
   Terminal,
   Cpu,
@@ -182,8 +181,6 @@ export const Chat: React.FC = () => {
   const [editTitleText, setEditTitleText] = useState("");
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [copiedTreasury, setCopiedTreasury] = useState(false);
-  const [grantLoading, setGrantLoading] = useState(false);
-  const [grantMessage, setGrantMessage] = useState<string | null>(null);
 
   // Deposit verification
   const [depositTxHash, setDepositTxHash] = useState("");
@@ -296,38 +293,6 @@ export const Chat: React.FC = () => {
     setEditingTitleId(null);
   };
 
-  // Claim Academic Evaluation Test Grant ($1.00 USD)
-  const handleClaimGrant = async () => {
-    setGrantLoading(true);
-    setGrantMessage(null);
-    try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-
-      const res = await fetch("/api/chat/grant", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({}),
-      });
-
-      const data = (await res.json()) as any;
-      if (res.ok && data.token) {
-        localStorage.setItem("vrxl_auth_token", data.token);
-        setAuthToken(data.token);
-        setBalanceUsd(Number(data.user?.balance_usd || 1.00));
-        setUserEmail(data.user?.email || "Academic Evaluator");
-        setGrantMessage("Success! $1.00 Academic Test Credit granted.");
-        setTimeout(() => setGrantMessage(null), 4000);
-      } else {
-        setGrantMessage(data.error || "Unable to claim grant.");
-      }
-    } catch (err: any) {
-      setGrantMessage("Error connecting to grant server.");
-    } finally {
-      setGrantLoading(false);
-    }
-  };
-
   // Verify Arbitrum USDC Deposit
   const handleVerifyDeposit = async () => {
     if (!depositTxHash.trim()) return;
@@ -384,21 +349,11 @@ export const Chat: React.FC = () => {
       authorizationHeader = `Bearer ${authToken}`;
     }
 
-    // Check balance if authenticated
-    if (authorizationHeader && balanceUsd <= 0.0 && !customApiKey) {
-      setShowDepositModal(true);
-      return;
-    }
-
-    // If completely unauthenticated, check if we should prompt grant or login
-    if (!authorizationHeader) {
-      // Auto-grant evaluation test session for zero-friction demoing
-      await handleClaimGrant();
-      const storedToken = localStorage.getItem("vrxl_auth_token");
-      if (storedToken) {
-        authorizationHeader = `Bearer ${storedToken}`;
-      } else {
-        authorizationHeader = "Bearer vrxl_testnet_demo_key";
+    // Check authorization & balance
+    if (!customApiKey.trim()) {
+      if (!authorizationHeader || balanceUsd <= 0.0) {
+        setShowDepositModal(true);
+        return;
       }
     }
 
@@ -746,21 +701,6 @@ export const Chat: React.FC = () => {
               + Deposit
             </button>
           </div>
-
-          {/* Quick Academic Test Grant */}
-          <button
-            onClick={handleClaimGrant}
-            disabled={grantLoading}
-            className="w-full flex items-center justify-center gap-1.5 py-1 text-[10px] font-mono text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-[2px] transition"
-          >
-            <ShieldCheck className="w-3 h-3 text-amber-400" />
-            <span>{grantLoading ? "Crediting..." : "Claim $1.00 Academic Test Credit"}</span>
-          </button>
-          {grantMessage && (
-            <div className="text-[10px] font-mono text-center text-amber-300 animate-pulse">
-              {grantMessage}
-            </div>
-          )}
 
           {/* User ID / Address */}
           <div className="flex items-center justify-between text-[10.5px] font-mono text-slate-400 px-1 pt-1">
@@ -1198,7 +1138,7 @@ export const Chat: React.FC = () => {
             {/* Arbitrum USDC Treasury Address */}
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-slate-400">
-                Arbitrum One USDC Deposit Address (Šimon Lead MetaMask):
+                Verxl Treasury Deposit Address (Arbitrum One USDC):
               </label>
               <div className="flex items-center justify-between bg-[#05070b] border border-slate-800 p-2 rounded-[3px]">
                 <span className="font-mono text-[11px] text-blue-300 truncate max-w-[280px]">
@@ -1244,24 +1184,6 @@ export const Chat: React.FC = () => {
                   {depositStatus}
                 </div>
               )}
-            </div>
-
-            {/* Academic Evaluation Grant Section */}
-            <div className="p-3 bg-blue-950/20 border border-blue-500/30 rounded-[3px] space-y-2">
-              <div className="text-[10px] uppercase tracking-wider font-bold text-blue-400 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Academic Evaluation / Instructor Test Grant</span>
-              </div>
-              <p className="text-[10.5px] text-slate-300">
-                Testing without an Arbitrum wallet? Click below to claim $1.00 USD in testnet compute balance.
-              </p>
-              <button
-                onClick={handleClaimGrant}
-                disabled={grantLoading}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-[3px] transition text-center"
-              >
-                {grantLoading ? "Processing Grant..." : "Claim $1.00 USD Instant Test Credit"}
-              </button>
             </div>
           </div>
         </div>

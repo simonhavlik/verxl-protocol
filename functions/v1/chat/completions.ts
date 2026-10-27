@@ -206,7 +206,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return new Response(
         JSON.stringify({
           error: {
-            message: `Insufficient Verxl account balance ($${Number(userRecord.balance_usd).toFixed(4)} USD). Deposit USDC on Arbitrum or claim an academic grant to continue.`,
+            message: `Insufficient Verxl account balance ($${Number(userRecord.balance_usd).toFixed(4)} USD). Deposit USDC on Arbitrum to continue.`,
             type: "insufficient_quota",
             code: "insufficient_balance",
           },

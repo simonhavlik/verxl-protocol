@@ -10,7 +10,7 @@ interface Env {
 const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
-// Recognized settlement/treasury wallets (Šimon MetaMask lead wallet + legacy DAO vault)
+// Recognized settlement/treasury wallets (Verxl Treasury + legacy DAO vault)
 const VALID_TREASURIES = new Set([
   "0x14f10a865e277c0b1949e18dd9856602db11742b",
   "0x5ae718197a6a87e103b124b660fd49692c857ae0",
