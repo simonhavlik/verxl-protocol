@@ -3,12 +3,21 @@ node_modules/
 .pnp
 .pnp.js
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.keystore
+secrets/
+credentials/
+
+# Agent / AI Scratch / Local Configs
+GEMINI.md
+*.local
+.system_generated/
+.gemini/
 
 # Build artifacts
 dist/
@@ -19,6 +28,12 @@ artifacts/
 typechain/
 typechain-types/
 
+# Hardhat / Smart Contracts
+contracts/artifacts/
+contracts/cache/
+contracts/coverage/
+coverage/
+
 # Cloudflare / Wrangler
 .wrangler/
 .mf/
@@ -28,6 +43,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
 
 # OS / Editor
 .DS_Store
