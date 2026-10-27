@@ -34,7 +34,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       dao_contract: "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
       vrxl_token: "0x78aC77364b73B8e7F24B10a08eB1a30283b3e34b",
       staking_registry: "0x0B95B3094892c21966C7063d8d59E5CeE2224095",
-      vault_balance_eth: 0.009,
+      vault_balance_eth: 0.04,
       protocol_fee_bps: 50,
     },
     oracle: {
