@@ -7,12 +7,24 @@ const { Client } = pg;
 export const DB_CONNECTION_STRING =
   "postgresql://***REMOVED***";
 
+let _env: any = null;
+
+export function setDbEnv(env: any) {
+  if (env) _env = env;
+}
+
 export function createPgClient(connStr?: string): pg.Client {
+  const hyperdriveStr = _env?.HYPERDRIVE?.connectionString;
+  const isHyperdrive = Boolean(hyperdriveStr && !connStr);
+  const targetStr = connStr || hyperdriveStr || DB_CONNECTION_STRING;
+
   return new Client({
-    connectionString: connStr || DB_CONNECTION_STRING,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    connectionString: targetStr,
+    ssl: isHyperdrive
+      ? false
+      : {
+          rejectUnauthorized: false,
+        },
     connectionTimeoutMillis: 7000,
   });
 }

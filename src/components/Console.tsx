@@ -675,7 +675,6 @@ export const Console: React.FC = () => {
   // Handlers: Verify Deposit
   const handleVerifyDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
     if (!depositTxHash || !depositTxHash.startsWith("0x")) {
       setStatusMsg({ type: "error", text: "Valid 0x transaction hash is required." });
       return;
@@ -687,7 +686,7 @@ export const Console: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token || ""}`,
         },
         body: JSON.stringify({
           tx_hash: depositTxHash.trim(),
@@ -696,17 +695,23 @@ export const Console: React.FC = () => {
         }),
       });
       const data = (await res.json()) as any;
-      if (res.ok) {
+      if (res.ok && data.success) {
+        const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? 0);
+        const newBal = Number(data.new_balance_usd ?? data.deposit?.new_balance_usd ?? ((user?.balance_usd || 0) + added));
         setStatusMsg({
           type: "success",
-          text: `Deposit confirmed! Credited $${data.amount_usd.toFixed(2)} USD. Your balance is now $${data.new_balance_usd.toFixed(2)} USD.`,
+          text: `Deposit confirmed! Credited $${added.toFixed(2)} USD. Your balance is now $${newBal.toFixed(2)} USD.`,
         });
+        if (data.token && !token) {
+          localStorage.setItem("vrxl_auth_token", data.token);
+          setToken(data.token);
+        }
         if (data.new_api_key) {
           setGeneratedKeySecret(data.new_api_key);
         }
         setShowDepositModal(false);
         setDepositTxHash("");
-        fetchSessionData(token);
+        fetchSessionData(data.token || token);
       } else {
         setStatusMsg({ type: "error", text: data.error || "Deposit verification failed." });
       }

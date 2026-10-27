@@ -347,9 +347,19 @@ export const Chat: React.FC = () => {
 
       const data = (await res.json()) as any;
       if (res.ok && data.success) {
-        setDepositStatus(`Deposit confirmed! +$${Number(data.deposit?.amount_usd || 0).toFixed(2)} USD added.`);
-        setBalanceUsd(Number(data.deposit?.new_balance_usd || balanceUsd));
-        fetchBalance();
+        const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? 0);
+        const newBal = Number(data.new_balance_usd ?? data.deposit?.new_balance_usd ?? balanceUsd);
+        setDepositStatus(`Deposit confirmed! +$${added.toFixed(2)} USD added.`);
+        setBalanceUsd(newBal);
+        if (data.token) {
+          localStorage.setItem("vrxl_auth_token", data.token);
+          setAuthToken(data.token);
+        }
+        if (data.new_api_key) {
+          localStorage.setItem("vrxl_custom_api_key", data.new_api_key);
+          setCustomApiKey(data.new_api_key);
+        }
+        fetchBalance(data.token || authToken);
         setDepositTxHash("");
       } else {
         setDepositStatus(`Verification note: ${data.error || "Transaction pending confirmation on Arbitrum."}`);
@@ -1177,6 +1187,13 @@ export const Chat: React.FC = () => {
             <p className="text-slate-300 text-[11px] leading-relaxed">
               Verxl Protocol operates on a non-custodial prepaid clearing balance. Output tokens are verified on-chain and settled at 50 bps protocol fee.
             </p>
+
+            <div className="text-[10px] px-2 py-1 bg-slate-900 border border-slate-800 rounded-[2px] flex items-center justify-between text-slate-400">
+              <span>Account Status:</span>
+              <span className="font-bold text-slate-200">
+                {authToken ? (userEmail || "Authenticated Session") : "Guest (Auto-created on deposit)"}
+              </span>
+            </div>
 
             {/* Arbitrum USDC Treasury Address */}
             <div className="space-y-1.5">
