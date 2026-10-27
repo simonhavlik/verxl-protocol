@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 export const Playground: React.FC = () => {
-  const [model, setModel] = useState("qwen3.5-4b-uncensored-8k");
+  const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
   );
@@ -42,7 +42,7 @@ export const Playground: React.FC = () => {
     completionTokens: 184,
     protocolFeeUsd: 0.00005,
     traditionalSaaSUsd: 0.00095,
-    provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 8k)",
+    provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 32k)",
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -171,7 +171,7 @@ export const Playground: React.FC = () => {
       `### Verxl Protocol Fee Efficiency Analysis\n\n` +
       `**1. Gross Compute Cost Comparison:**\n` +
       `- Monthly Inference Volume: 500,000,000 tokens (approx. 250M prompt + 250M completion).\n` +
-      `- Baseline Raw Compute (Qwen 3.5 4B Uncensored @ $0.06/1M blended):\n` +
+      `- Baseline Raw Compute (Qwen 3.5 4B Uncensored 32k @ $0.06/1M blended):\n` +
       `  $$\\text{Base Hardware Cost} = 500 \\times \\$0.06 = \\$30,000 / \\text{month}$$\n\n` +
       `**2. Fee Structure & Protocol Spread:**\n` +
       `- **Centralized SaaS Aggregators (950 bps / 9.50% markup):**\n` +
@@ -306,9 +306,9 @@ main();`,
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Inference Terminal</span>
+            <span>Inference Terminal & Streaming Interface</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-normal">
-              LIVE BULBASAUR HOST · 8K CONTEXT
+              LIVE BULBASAUR HOST · 32K RESIDENT CONTEXT
             </span>
           </h2>
 
@@ -323,7 +323,7 @@ main();`,
           </button>
         </div>
         <p className="text-xs text-slate-400 font-mono mt-0.5">
-          Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (8k context) via Verxl 50 bps decentralized clearinghouse.
+          Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (32k context resident) via Verxl 50 bps decentralized clearinghouse.
         </p>
       </div>
 
@@ -344,7 +344,7 @@ main();`,
           </div>
           <div className="text-[11px] leading-relaxed text-slate-300 space-y-1.5">
             <p>
-              <strong>Deterministic Research Parity:</strong> Verxl Protocol provides decentralized, permissionless inference clearing. This terminal connects directly to our bare-metal Prague cluster (Bulbasaur) serving <strong>Qwen 3.5 4B Uncensored (8k Context)</strong> as-is without corporate guardrail filtering or synthetic alignment penalties, intended for deterministic benchmarking and open research.
+              <strong>Deterministic Research Parity:</strong> Verxl Protocol provides decentralized, permissionless inference clearing. This terminal connects directly to our bare-metal Prague cluster (Bulbasaur) serving <strong>Qwen 3.5 4B Uncensored (32k Context)</strong> as-is without corporate guardrail filtering or synthetic alignment penalties, intended for deterministic benchmarking and open research.
             </p>
             <p className="text-slate-400">
               <strong>Precaution Notice:</strong> If Verxl Protocol receives verified notification of harmful, unlawful, or malicious exploitation violating statutory regulations or network safety standards, node routing guarantees will be revoked and node operators remain subject to automated 10% collateral slashing via Aragon DAO governance (VIP-1). The protocol operates in parity with open-source model repositories (Hugging Face / Apache 2.0).
@@ -368,20 +368,23 @@ main();`,
                 <label className="text-[11px] font-mono text-slate-400">
                   Active Testing Model
                 </label>
-                <span className="text-[10px] font-mono text-emerald-400">PRAGUE HOST: BULBASAUR</span>
+                <span className="text-[10px] font-mono text-emerald-400">PRAGUE HOST: BULBASAUR (32K)</span>
               </div>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500 transition"
               >
-                <option value="qwen3.5-4b-uncensored-8k">
-                  qwen3.5-4b-uncensored-8k · Bulbasaur Prague Node (Active Test Model)
+                <option value="qwen3.5-4b-uncensored-32k">
+                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (32k Resident Context)
                 </option>
               </select>
-              <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
-                <Server className="w-3 h-3 text-blue-400 shrink-0" />
-                <span>Production Fleet (32k Qwen, Xiaomi Mi MIMO 2.6 Flash/Pro & DeepSeek v4.1 Bridges) listed in Registry.</span>
+              <div className="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px] font-mono text-slate-400">
+                <div className="flex items-center gap-1.5 text-blue-400">
+                  <Server className="w-3 h-3 shrink-0" />
+                  <span>Pre-warmed in GPU VRAM (no per-user reload delay).</span>
+                </div>
+                <span className="text-amber-400/90 text-[9.5px]">Specifications test run disabled (capacity)</span>
               </div>
             </div>
 
@@ -572,11 +575,16 @@ main();`,
                     <span className="inline-block w-2 h-4 bg-blue-400 ml-1 animate-pulse align-middle" />
                   )}
                 </div>
+              ) : isStreaming ? (
+                <div className="flex items-center gap-2 text-blue-400 text-xs py-2">
+                  <span className="w-2 h-2 rounded-[1px] bg-blue-400 animate-pulse" />
+                  <span>Streaming token stream from Prague 32k cluster...</span>
+                </div>
               ) : !reasoningOutput ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
                   <Terminal className="w-8 h-8 opacity-30 text-blue-400" />
                   <p className="text-xs font-mono text-slate-400">
-                    Terminal idle. Press "Execute Bulbasaur Live Stream" to query Qwen 3.5 4B Uncensored (8k Context).
+                    Terminal idle. Press "Execute Bulbasaur Live Stream" to query Qwen 3.5 4B Uncensored (32k Context).
                   </p>
                 </div>
               ) : null}

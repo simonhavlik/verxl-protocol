@@ -19,21 +19,6 @@ export const onRequestOptions: PagesFunction<Env> = async () => {
 export const onRequestGet: PagesFunction<Env> = async () => {
   const models = [
     {
-      id: "qwen3.5-4b-uncensored-8k",
-      object: "model",
-      created: 1730000000,
-      owned_by: "verxl-team-bulbasaur",
-      permission: [],
-      root: "qwen3.5-4b-uncensored-8k",
-      context_window: 8192,
-      tier: "Inference Terminal Live Test Host",
-      pricing: {
-        prompt_usd_per_1m: 0.05,
-        completion_usd_per_1m: 0.07,
-        protocol_fee_bps: 50,
-      },
-    },
-    {
       id: "qwen3.5-4b-uncensored-32k",
       object: "model",
       created: 1730000000,
@@ -41,10 +26,25 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       permission: [],
       root: "qwen3.5-4b-uncensored-32k",
       context_window: 32768,
-      tier: "Self-Hosted Registered Provider (Bulbasaur)",
+      tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 32k Resident)",
       pricing: {
         prompt_usd_per_1m: 0.06,
         completion_usd_per_1m: 0.09,
+        protocol_fee_bps: 50,
+      },
+    },
+    {
+      id: "qwen3.5-4b-uncensored-8k",
+      object: "model",
+      created: 1730000000,
+      owned_by: "verxl-team-bulbasaur",
+      permission: [],
+      root: "qwen3.5-4b-uncensored-32k",
+      context_window: 32768,
+      tier: "Compatibility Alias (Directs to 32k Resident Model)",
+      pricing: {
+        prompt_usd_per_1m: 0.05,
+        completion_usd_per_1m: 0.07,
         protocol_fee_bps: 50,
       },
     },

@@ -358,7 +358,7 @@ export const Console: React.FC = () => {
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer ${activeKeyDisplay}" \\
   -d '{
-    "model": "qwen3.5-4b-uncensored-8k",
+    "model": "qwen3.5-4b-uncensored-32k",
     "messages": [{"role": "user", "content": "Explain Verxl 50 bps clearing switch"}],
     "temperature": 0.7
   }'`,
@@ -370,7 +370,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="qwen3.5-4b-uncensored-8k",
+    model="qwen3.5-4b-uncensored-32k",
     messages=[{"role": "user", "content": "Compute clearing proof"}],
 )
 print(response.choices[0].message.content)`,
@@ -383,7 +383,7 @@ const client = new OpenAI({
 
 async function main() {
   const completion = await client.chat.completions.create({
-    model: "qwen3.5-4b-uncensored-8k",
+    model: "qwen3.5-4b-uncensored-32k",
     messages: [{ role: "user", content: "Deterministic seed=42 verification" }],
   });
   console.log(completion.choices[0].message.content);

@@ -43,7 +43,7 @@ const HORIZONS: HorizonPhase[] = [
     tagline: "Stateless 50 bps edge clearing switch, seed=42 invariant probing, and Aragon OSx DAO settlement on Ethereum Sepolia & Arbitrum.",
     coreDeliverables: [
       "Dual-redundant tunnel routing (Charizard IONOS port 11645 + Cloudflare Edge)",
-      "Bare-metal Prague GPU host (Bulbasaur Qwen 3.5 4B Uncensored 8k/32k)",
+      "Bare-metal Prague GPU host (Bulbasaur Qwen 3.5 4B Uncensored 32k Resident)",
       "Official public API bridges for Xiaomi Mi MIMO 2.6 Flash/Pro & DeepSeek v4.1",
       "Automated 10% collateral slashing via VerxlStakingRegistry smart contract",
       "Passwordless institutional email OTP auth via automated@verxl.com on Seznam SMTP",

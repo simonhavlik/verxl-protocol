@@ -40,7 +40,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const requestedModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-8k";
+  // Pre-loaded resident 32k model: avoid per-user model reloading in GPU VRAM
+  const rawModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-32k";
+  const requestedModel =
+    rawModel.includes("uncensored") || rawModel.includes("qwen")
+      ? "qwen3.5-4b-uncensored-32k"
+      : rawModel;
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const stream = Boolean(body.stream);
   const temperature = typeof body.temperature === "number" ? body.temperature : 0.7;

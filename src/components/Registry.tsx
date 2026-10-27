@@ -55,8 +55,7 @@ export const Registry: React.FC<RegistryProps> = ({
     stakedAmountVrxl: "10000",
     contact: "@hpc_operator_telegram",
   });
-  const [probeTesting, setProbeTesting] = useState(false);
-  const [probeResult, setProbeResult] = useState<{ passed: boolean; latencyMs: number; score: number } | null>(null);
+  const [probeResult] = useState<{ passed: boolean; latencyMs: number; score: number } | null>(null);
   const [regSubmitting, setRegSubmitting] = useState(false);
   const [regSuccessData, setRegSuccessData] = useState<{ txHash: string; providerName: string } | null>(null);
 
@@ -104,21 +103,6 @@ export const Registry: React.FC<RegistryProps> = ({
         setStakeActionSuccess(null);
       }, 2500);
     }
-  };
-
-  // Run a deterministic pre-audit probe
-  const handleRunDiagnosticProbe = async () => {
-    setProbeTesting(true);
-    setProbeResult(null);
-
-    await new Promise((r) => setTimeout(r, 900));
-
-    setProbeResult({
-      passed: true,
-      latencyMs: Math.floor(Math.random() * 15) + 18,
-      score: 99.8,
-    });
-    setProbeTesting(false);
   };
 
   // Handle provider registration submission
@@ -637,32 +621,29 @@ export const Registry: React.FC<RegistryProps> = ({
                   </div>
                 </div>
 
-                {/* Pre-Registration Diagnostic Invariant Probe */}
-                <div className="bg-[#05070b] border border-slate-800/80 p-2.5 rounded-[3px] space-y-2">
+                {/* Hardware Specifications Diagnostic Test Run */}
+                <div className="bg-[#05070b] border border-amber-500/25 p-2.5 rounded-[3px] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Radio className="w-3 h-3 text-blue-400" />
-                      <span>Pre-Registration Canary Verification (Seed=42)</span>
+                    <span className="text-[10px] text-amber-300 uppercase tracking-wider flex items-center gap-1.5 font-bold">
+                      <Radio className="w-3 h-3 text-amber-400" />
+                      <span>Hardware Specifications Diagnostic Test Run</span>
                     </span>
                     <button
                       type="button"
-                      onClick={handleRunDiagnosticProbe}
-                      disabled={probeTesting}
-                      className="text-[10px] px-2 py-0.5 rounded-[2px] bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/40 transition"
+                      disabled={true}
+                      title="Specifications test run temporarily unavailable due to capacity constraints"
+                      className="text-[9.5px] px-2 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-300/80 border border-amber-500/30 cursor-not-allowed opacity-80"
                     >
-                      {probeTesting ? "Probing Invariant..." : "Test Diagnostic Probe"}
+                      Test Run Unavailable (Capacity)
                     </button>
                   </div>
 
-                  {probeResult && (
-                    <div className="p-2 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-[10.5px] text-emerald-300 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Endpoint Diagnostic Passed: 99.8% precision SLA match.</span>
-                      </span>
-                      <span className="font-bold">{probeResult.latencyMs}ms latency</span>
-                    </div>
-                  )}
+                  <div className="p-2 rounded-[2px] bg-amber-500/5 border border-amber-500/20 text-[10px] text-amber-300/90 flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      Hardware specifications test runs are temporarily unavailable due to bare-metal host capacity constraints (Qwen 3.5 32k resident context in GPU VRAM). Submitted nodes will bypass instant diagnostic and proceed directly to the asynchronous verification queue.
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t border-slate-800">
