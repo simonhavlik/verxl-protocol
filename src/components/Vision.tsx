@@ -10,6 +10,7 @@ import {
   Activity,
   Zap,
   Globe,
+  Users,
 } from "lucide-react";
 
 interface VisionProps {
@@ -36,7 +37,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Hero Section: Core Thesis & Founder Portrait */}
+      {/* Hero Section: Core Thesis & Lead Architecture Frame */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-5 sm:p-7 shadow-xl relative overflow-hidden">
         {/* Left Column: Vision Statement */}
         <div className="lg:col-span-7 space-y-3.5">
@@ -74,7 +75,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Right Column: Founder Portrait Frame */}
+        {/* Right Column: Shanghai Pudong Thesis Frame */}
         <div className="lg:col-span-5 flex justify-center">
           <div className="w-full max-w-sm bg-[#05070b] border border-blue-500/30 rounded-[3px] p-2.5 shadow-2xl space-y-2">
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2px] border border-slate-800">
@@ -108,6 +109,129 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       <div className="bg-[#05070b] border-l-2 border-blue-500 p-4 rounded-[2px] text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
         <span className="text-blue-400 font-bold font-mono">Core Protocol Premise:</span>{" "}
         Every centralized model aggregator is an unnecessary counterparty credit risk and an institutional margin tax. Verxl strips out the middleman, binds independent compute hosts with on-chain collateral, and settles inference atomically at cost.
+      </div>
+
+      {/* SECTION: PROTOCOL CORE TEAM & SEMINAR ASSEMBLY */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-400" />
+            <span>Protocol Engineering Assembly & Project Team</span>
+          </h2>
+          <span className="text-[10px] text-slate-400">VŠE Praha · 2SE307 (SB 235)</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          {/* Member 1: Šimon Havlík */}
+          <div className="bg-[#0a0e17] border border-blue-500/30 rounded-[3px] p-3.5 space-y-3 shadow-md flex flex-col justify-between">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-[2px] overflow-hidden border border-blue-500/40 shrink-0">
+                  <img
+                    src="/simon-pudong.jpg"
+                    alt="Šimon Havlík"
+                    className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white uppercase tracking-wider">
+                    Šimon Havlík
+                  </div>
+                  <div className="text-[10px] text-blue-400 font-semibold">
+                    Lead Architect & Smart Contracts
+                  </div>
+                  <div className="text-[9.5px] text-slate-400 font-mono">
+                    Genesis Equity: 33.34% ($VRXL)
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                Architected the Aragon OSx DAO on Ethereum Sepolia, authored the <code className="text-blue-300">VerxlStakingRegistry.sol</code> collateral contract, deterministic seed=42 invariant probing, and the 50 bps non-custodial clearing switch.
+              </p>
+            </div>
+
+            <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[9.5px] text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Founding Contributor</span>
+              </span>
+              <span>Team Captain</span>
+            </div>
+          </div>
+
+          {/* Member 2: Systems & Edge Engineering */}
+          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3.5 space-y-3 shadow-md flex flex-col justify-between">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-[2px] bg-[#05070b] border border-slate-700 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden group">
+                  <Terminal className="w-5 h-5 text-blue-400" />
+                  <span className="text-[8px] text-slate-400 font-mono tracking-tighter mt-0.5">PHOTO PENDING</span>
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Project Member</span>
+                    <span className="px-1 py-0.1 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px]">2SE307</span>
+                  </div>
+                  <div className="text-[10px] text-blue-400 font-semibold">
+                    Distributed Systems & Edge Proxy
+                  </div>
+                  <div className="text-[9.5px] text-slate-400 font-mono">
+                    Genesis Equity: 33.33% ($VRXL)
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                Engineered the Cloudflare edge streaming reverse proxy at <code className="text-blue-300">verxl.com/v1</code>, Charizard IONOS VPS port 11645 tunnel daemon forwarding to Prague bare-metal host, and SMTPS direct socket integration.
+              </p>
+            </div>
+
+            <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[9.5px] text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Founding Contributor</span>
+              </span>
+              <span className="text-slate-400">Picture incoming</span>
+            </div>
+          </div>
+
+          {/* Member 3: Telemetry & Autonomous Oracle */}
+          <div className="bg-[#0a0e17] border border-purple-500/20 rounded-[3px] p-3.5 space-y-3 shadow-md flex flex-col justify-between">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-[2px] bg-[#05070b] border border-slate-700 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden group">
+                  <Activity className="w-5 h-5 text-purple-400" />
+                  <span className="text-[8px] text-slate-400 font-mono tracking-tighter mt-0.5">PHOTO PENDING</span>
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Project Member</span>
+                    <span className="px-1 py-0.1 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px]">2SE307</span>
+                  </div>
+                  <div className="text-[10px] text-purple-400 font-semibold">
+                    Autonomous Oracle & Tokenomics
+                  </div>
+                  <div className="text-[9.5px] text-slate-400 font-mono">
+                    Genesis Equity: 33.33% ($VRXL)
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                Authored deterministic inference quality probe telemetry, Aragon OSx token voting distribution, Arbitrum USDC escrow settlement, and the 10% Nash collateral slashing rules for model adulteration.
+              </p>
+            </div>
+
+            <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[9.5px] text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Founding Contributor</span>
+              </span>
+              <span className="text-slate-400">Picture incoming</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Three Horizons Architecture Roadmap */}
@@ -302,6 +426,12 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px]"
           >
             <span>Registry</span>
+          </button>
+          <button
+            onClick={() => onNavigate("console")}
+            className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px]"
+          >
+            <span>Console</span>
           </button>
           <button
             onClick={() => onNavigate("whitepaper")}
