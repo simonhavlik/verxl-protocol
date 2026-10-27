@@ -48,6 +48,12 @@ const TAB_PALETTES: Record<string, TabPalette> = {
     orb3: "rgba(6, 182, 212, 0.20)",    // Horizon Cyan
     ambient: "rgba(99, 102, 241, 0.04)",
   },
+  console: {
+    orb1: "rgba(59, 130, 246, 0.26)",   // Electric Blue
+    orb2: "rgba(16, 185, 129, 0.20)",   // Settlement Emerald
+    orb3: "rgba(147, 51, 234, 0.20)",   // Arbitrum Purple
+    ambient: "rgba(59, 130, 246, 0.03)",
+  },
 };
 
 export const ShmackBackground: React.FC<ShmackBackgroundProps> = ({ activeTab }) => {

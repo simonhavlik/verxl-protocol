@@ -4,5 +4,19 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": "dist"
+  "pages_build_output_dir": "dist",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "verxl-db",
+      "database_id": "92a03705-8a19-4501-b2ef-aaf22a9e6b8d"
+    }
+  ],
+  "vars": {
+    "TREASURY_ADDRESS": "0x5AE718197a6A87E103B124b660fd49692C857aE0",
+    "SMTP_USER": "automated@verxl.com",
+    "SMTP_PASS": "***REMOVED***",
+    "SMTP_HOST": "smtp.seznam.cz",
+    "SMTP_PORT": "465"
+  }
 }

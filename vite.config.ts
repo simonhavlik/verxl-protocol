@@ -23,6 +23,7 @@ export default defineConfig({
         registryDir: path.resolve(__dirname, "registry/index.html"),
         oracleDir: path.resolve(__dirname, "oracle/index.html"),
         governanceDir: path.resolve(__dirname, "governance/index.html"),
+        consoleDir: path.resolve(__dirname, "console/index.html"),
       },
     },
   },

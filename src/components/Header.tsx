@@ -31,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "whitepaper", label: "Whitepaper" },
     { id: "governance", label: "Governance" },
     { id: "vision", label: "Vision" },
+    { id: "console", label: "Console" },
   ];
 
   return (

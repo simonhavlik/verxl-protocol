@@ -7,6 +7,7 @@ import { Oracle } from "./components/Oracle";
 import { Governance } from "./components/Governance";
 import { Whitepaper } from "./components/Whitepaper";
 import { Vision } from "./components/Vision";
+import { Console } from "./components/Console";
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 
@@ -15,6 +16,7 @@ function getTabFromPath(): string {
   const path = window.location.pathname.toLowerCase();
   if (path.includes("whitepaper")) return "whitepaper";
   if (path.includes("vision")) return "vision";
+  if (path.includes("console") || path.includes("billing") || path.includes("keys")) return "console";
   if (path.includes("playground") || path.includes("terminal")) return "playground";
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
@@ -101,6 +103,7 @@ export default function App() {
           {activeTab === "whitepaper" && <Whitepaper />}
           {activeTab === "governance" && <Governance />}
           {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
+          {activeTab === "console" && <Console />}
         </main>
       )}
 
