@@ -25,11 +25,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     { id: "overview", label: "Overview" },
-    { id: "playground", label: "Inference Terminal" },
-    { id: "registry", label: "Compute Registry" },
-    { id: "oracle", label: "Quality Oracle" },
+    { id: "playground", label: "Terminal" },
+    { id: "registry", label: "Registry" },
+    { id: "oracle", label: "Oracle" },
     { id: "whitepaper", label: "Whitepaper" },
-    { id: "governance", label: "DAO Governance" },
+    { id: "governance", label: "Governance" },
   ];
 
   return (
@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px]"
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>Connect Wallet</span>
+              <span>Connect</span>
             </button>
           )}
 
