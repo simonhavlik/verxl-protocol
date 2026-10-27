@@ -16,6 +16,14 @@ import {
   Play,
   Pause,
   Sliders,
+  Download,
+  Presentation,
+  Eye,
+  Network,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
 } from "lucide-react";
 
 interface VisionProps {
@@ -135,6 +143,297 @@ const VOLUME_POINTS = [
   { volumeLabel: "10B", volumeNum: 10000, promptM: 5000, complM: 5000 },
 ];
 
+interface MindNode {
+  id: string;
+  name: string;
+  category: "CLIENTS" | "ROUTER" | "SUPPLY" | "GOVERNANCE" | "LEDGER" | "LEGAL";
+  tagline: string;
+  color: string;
+  bgRgb: string;
+  borderColor: string;
+  coords: { x: number; y: number };
+  kpis: { label: string; value: string }[];
+  details: string;
+  techSpecs: string[];
+}
+
+const MIND_NODES: MindNode[] = [
+  {
+    id: "clients",
+    name: "Crypto-Native Devs & Quants",
+    category: "CLIENTS",
+    tagline: "Tech-savvy quants, AI agent builders & privacy-first users requiring high-throughput API endpoints.",
+    color: "#38bdf8",
+    bgRgb: "rgba(56, 189, 248, 0.1)",
+    borderColor: "rgba(56, 189, 248, 0.4)",
+    coords: { x: 140, y: 70 },
+    kpis: [
+      { label: "Target Persona", value: "Agents & Quants" },
+      { label: "CAC Efficiency", value: "~$0 On-Chain" },
+      { label: "Drop-in API", value: "OpenAI v1 Compatible" },
+    ],
+    details: "High-frequency traders, autonomous agents (Hermes, OMP), and enterprise developers who refuse cloud KYC and vendor lock-in. Authenticated via cryptographic API keys and 2FA.",
+    techSpecs: [
+      "OpenAPI 3.1 & OpenAI Drop-In (/v1/chat/completions)",
+      "Zero prompt logging & ephemeral memory buffers",
+      "Pay-as-you-go micro-billing with USDC on Arbitrum L2",
+    ],
+  },
+  {
+    id: "router",
+    name: "Verxl Stateless Edge Router",
+    category: "ROUTER",
+    tagline: "The central 50 bps non-custodial clearing switch operating across Cloudflare global edge.",
+    color: "#10b981",
+    bgRgb: "rgba(16, 185, 129, 0.12)",
+    borderColor: "rgba(16, 185, 129, 0.5)",
+    coords: { x: 400, y: 140 },
+    kpis: [
+      { label: "Protocol Fee", value: "50 bps (0.5%)" },
+      { label: "Edge Overhead", value: "3.8 ms" },
+      { label: "Quality Probe", value: "seed=42 Canary" },
+    ],
+    details: "Stateless edge routing engine that receives client prompts, enforces cryptographic 2FA authorization, verifies L2 USDC balances, probes candidate GPU nodes with deterministic canary tests, and streams responses.",
+    techSpecs: [
+      "Cloudflare Workers & V8 isolates across 300+ PoPs",
+      "Dynamic latency-weighted Dijkstra load routing",
+      "Atomic non-custodial 50 bps fee deduction",
+    ],
+  },
+  {
+    id: "supply",
+    name: "Prague & Global GPU Clusters",
+    category: "SUPPLY",
+    tagline: "Decentralized fleet of bare-metal Vulkan clusters and independent datacenter nodes.",
+    color: "#c084fc",
+    bgRgb: "rgba(192, 132, 252, 0.1)",
+    borderColor: "rgba(192, 132, 252, 0.4)",
+    coords: { x: 660, y: 70 },
+    kpis: [
+      { label: "Host Anchor", value: "Prague Bare-Metal" },
+      { label: "Hardware Support", value: "H100, A100, 4090" },
+      { label: "Instant Payout", value: "L2 USDC (99.5%)" },
+    ],
+    details: "GPU datacenter operators and private cluster hosts monetizing idle compute. Receive 99.5% of gross revenue settled instantly to Arbitrum wallets without 30-day corporate payment delays.",
+    techSpecs: [
+      "Vulkan & CUDA acceleration for Qwen, DeepSeek & MiMo",
+      "Strict 1,000 $VRXL staking collateral required",
+      "Real-time health audits by autonomous quality oracles",
+    ],
+  },
+  {
+    id: "governance",
+    name: "Aragon OSx DAO Vault",
+    category: "GOVERNANCE",
+    tagline: "On-chain decentralized treasury, staking rules, and autonomous 10% slashing enforcement.",
+    color: "#f59e0b",
+    bgRgb: "rgba(245, 158, 11, 0.1)",
+    borderColor: "rgba(245, 158, 11, 0.4)",
+    coords: { x: 660, y: 240 },
+    kpis: [
+      { label: "Chain Anchor", value: "Ethereum & Arbitrum" },
+      { label: "Slashing Rate", value: "10% Collateral" },
+      { label: "Treasury Inflow", value: "80% of Take" },
+    ],
+    details: "Aragon OSx-based decentralized autonomous organization. Holds protocol fee accruals, governs staking collateral, and programmatically executes slashing when nodes fail deterministic SLA audits.",
+    techSpecs: [
+      "Aragon OSx modular DAO contracts on Ethereum & Arbitrum",
+      "Token-weighted community proposal voting",
+      "Non-dilutive protocol revenue distribution model",
+    ],
+  },
+  {
+    id: "ledger",
+    name: "Charizard Financial Ledger",
+    category: "LEDGER",
+    tagline: "PostgreSQL transaction engine with PBKDF2 cryptography and RFC 6238 2FA security.",
+    color: "#60a5fa",
+    bgRgb: "rgba(96, 165, 250, 0.1)",
+    borderColor: "rgba(96, 165, 250, 0.4)",
+    coords: { x: 140, y: 240 },
+    kpis: [
+      { label: "Engine", value: "PostgreSQL 17 (kiam)" },
+      { label: "Schema Isolation", value: "Strict verxl.*" },
+      { label: "2FA Cryptography", value: "RFC 6238 TOTP" },
+    ],
+    details: "Ultra-fast, isolated PostgreSQL database on Charizard (212.227.211.88) tracking user non-custodial balances, key revocations, and 2FA secrets. Zero collision risk with public tables.",
+    techSpecs: [
+      "Strict schema isolation with SSL client encryption",
+      "PBKDF2-HMAC-SHA256 password hashing (100,000 rounds)",
+      "WebCrypto RFC 6238 TOTP with 8 emergency backup codes",
+    ],
+  },
+  {
+    id: "legal",
+    name: "EU MiCA & Regulatory Perimeter",
+    category: "LEGAL",
+    tagline: "Stateless non-custodial router exemption under EU MiCA & GDPR Article 17 compliance.",
+    color: "#34d399",
+    bgRgb: "rgba(52, 211, 153, 0.1)",
+    borderColor: "rgba(52, 211, 153, 0.4)",
+    coords: { x: 400, y: 270 },
+    kpis: [
+      { label: "MiCA Status", value: "Non-Custodial Exempt" },
+      { label: "GDPR Compliance", value: "Zero Retention" },
+      { label: "Settlement Asset", value: "Regulated Circle USDC" },
+    ],
+    details: "Verxl operates solely as a technical routing switch without custody of fiat or crypto deposits. In-transit ephemeral payload streaming satisfies GDPR and EU AI Act Article 50 disclosure covenants.",
+    techSpecs: [
+      "Pure technical routing without CASP custodial liability",
+      "Smart contract-mediated escrow on Arbitrum L2",
+      "Fully decentralized autonomous governance perimeter",
+    ],
+  },
+];
+
+interface PitchSlide {
+  id: number;
+  badge: string;
+  title: string;
+  subtitle: string;
+  timeEstimate: string;
+  bullets: { title: string; desc: string }[];
+  financeMetric: { label: string; value: string; desc: string };
+  speakerScript: string;
+}
+
+const PITCH_SLIDES: PitchSlide[] = [
+  {
+    id: 1,
+    badge: "1. THE MONOPOLISTIC PROBLEM",
+    title: "The 80%+ Cloud AI Markup & The Need for a Stateless Switch",
+    subtitle: "Why centralized AI gateways are rent-seeking tollbooths holding back compute liquidity",
+    timeEstimate: "0:00 - 0:45",
+    bullets: [
+      { title: "Predatory 80–90% Gross Margins", desc: "AWS Bedrock and OpenAI extract massive markups on commodity open-source models (DeepSeek, Qwen)." },
+      { title: "Fragmented Idle Compute Supply", desc: "Regional European and Asian datacenters hold thousands of unmonetized H100/A100 GPUs without retail distribution." },
+      { title: "Surveillance & Vendor Lock-In", desc: "Mandatory corporate KYC, opaque pricing changes, and arbitrary account freezes throttle developer velocity." },
+    ],
+    financeMetric: {
+      label: "Traditional Hyperscaler Fee Drag",
+      value: "840 - 1,040 bps",
+      desc: "Compared to Verxl's transparent 50 bps flat switch fee.",
+    },
+    speakerScript:
+      "Good morning. I'm Simon Havlík from the Faculty of International Relations at VŠE. Today, I'm presenting Verxl Protocol: a capital-light, decentralized clearing switch for global AI inference. Hyperscalers like AWS and OpenAI operate like feudal landlords, charging 80 to 90% gross margins on raw GPU silicon while independent European datacenters sit with idle GPUs. Verxl replaces this broken paradigm with a stateless, 50 basis point clearing switch.",
+  },
+  {
+    id: 2,
+    badge: "2. TARGET AUDIENCE & CAC FLYWHEEL",
+    title: "The Crypto-Native Triad: The Ultimate Low-CAC Customer Base",
+    subtitle: "Why crypto developers and quants are the perfect early adopters for decentralized AI",
+    timeEstimate: "0:45 - 1:30",
+    bullets: [
+      { title: "Tech-Savvy & API-First Builders", desc: "Developers building autonomous trading bots and agents who require OpenAI-compatible drop-in endpoints without bloat." },
+      { title: "Absolute Privacy & Sovereignty", desc: "European fintech quants and privacy advocates who cannot legally allow OpenAI to train on proprietary prompts." },
+      { title: "Identifiable On-Chain Communities", desc: "Crypto-natives actively seek permissionless protocols, providing immediate viral adoption and liquidity." },
+    ],
+    financeMetric: {
+      label: "Customer Acquisition Cost (CAC)",
+      value: "~$0 via On-Chain Traction",
+      desc: "Traditional fintech burns $150+ on ads; Verxl leverages organic token alignment and direct 94% fee savings.",
+    },
+    speakerScript:
+      "As an economics and finance student, customer acquisition cost is everything. Our target audience consists of three interconnected crypto personas: tech-savvy developers, privacy maximalists, and on-chain communities. In traditional SaaS, CAC is $150 to $300. In Verxl, our CAC is virtually zero because developers immediately save 90% on their API bills and earn protocol staking yields.",
+  },
+  {
+    id: 3,
+    badge: "3. CAPITAL-LIGHT MARKETPLACE MODEL",
+    title: "The Visa / NASDAQ of AI: Zero Hardware CapEx",
+    subtitle: "A pure financial clearinghouse connecting compute buyers and sellers at 50 bps",
+    timeEstimate: "1:30 - 2:15",
+    bullets: [
+      { title: "Zero Hardware CapEx", desc: "Verxl never buys GPUs, leases server racks, or pays power bills. We take zero inventory depreciation risk." },
+      { title: "Pure Clearinghouse Economics", desc: "Visa doesn't own banks; NASDAQ doesn't own stocks. Verxl is the non-custodial clearing layer for AI compute." },
+      { title: "Instant L2 Micro-Settlements", desc: "99.5% of gross volume is routed directly to hardware hosts on Arbitrum L2; 0.5% accumulates in the DAO treasury." },
+    ],
+    financeMetric: {
+      label: "Capital Expenditure (CapEx)",
+      value: "$0.00 Direct Hardware",
+      desc: "100% scalable software infrastructure with near-infinite gross operating leverage.",
+    },
+    speakerScript:
+      "Look at our business model: it is completely capital-light. Visa does not own retail stores; NASDAQ does not own stocks. They are clearinghouses. Verxl is the clearinghouse for artificial intelligence. We take zero hardware inventory risk. On every dollar of compute cleared across our network, we collect 50 basis points. Exactly 99.5% goes directly to the GPU host in USDC, and 0.5% flows into the DAO treasury.",
+  },
+  {
+    id: 4,
+    badge: "4. SYSTEMS ARCHITECTURE & FOUNDER ROLE",
+    title: "Full-Stack Protocol Architecture: Contracts, Edge & Cryptography",
+    subtitle: "Simon Havlík — Founder, Quantitative Systems Designer & Protocol Engineer",
+    timeEstimate: "2:15 - 3:00",
+    bullets: [
+      { title: "Aragon OSx On-Chain DAO", desc: "Engineered smart contracts on Ethereum & Arbitrum for $VRXL staking, collateral vaults, and 10% slashing." },
+      { title: "Stateless Cloudflare Edge Router", desc: "Engineered sub-4ms routing switch with seed=42 deterministic canary probes auditing node output." },
+      { title: "Charizard PostgreSQL Financial Ledger", desc: "Designed strict schema-isolated ledger (`verxl.*`), PBKDF2 password hashing, and RFC 6238 TOTP 2FA." },
+    ],
+    financeMetric: {
+      label: "End-to-End Edge Routing Latency",
+      value: "3.8 ms Overhead",
+      desc: "Measured edge proxy latency with zero-overhead tunnels to bare-metal clusters.",
+    },
+    speakerScript:
+      "My role is that of founder, full-stack quantitative architect, and systems engineer. I personally built all four layers of this protocol: the Aragon OSx governance contracts, the sub-4ms stateless edge router, the PostgreSQL transaction ledger on Charizard with RFC 6238 2FA security, and our bare-metal Vulkan cluster in Prague. This is live, running software tested in production.",
+  },
+  {
+    id: 5,
+    badge: "5. UNIT ECONOMICS & SCALABILITY",
+    title: "Compounding Financial Velocity: $3.6M/yr Net Take at 1T Tokens",
+    subtitle: "High-volume micro-clearing that scales non-linearly with global AI demand",
+    timeEstimate: "3:00 - 3:45",
+    bullets: [
+      { title: "Seed Phase (Q4 2026)", desc: "500M monthly tokens = $30,000 GMV → $150/mo protocol take across European quant developers." },
+      { title: "Scale Phase (2027)", desc: "50B monthly tokens = $3,000,000 GMV → $15,000/mo ($180k/yr) net protocol cash flow." },
+      { title: "Velocity Phase (2028+)", desc: "1T monthly tokens = $60,000,000 GMV → $300,000/mo ($3.6M/yr) flowing to DAO treasury stakers." },
+    ],
+    financeMetric: {
+      label: "Net Annual Cash Flow (1T Tokens)",
+      value: "$3,600,000 USD",
+      desc: "Pure protocol fee accumulation distributed 80% to DAO staking reserves and 20% to insurance.",
+    },
+    speakerScript:
+      "From an economic standpoint, look at our unit economics. On every transaction, we take 50 basis points. At 50 billion tokens a month, that is $3 million in monthly gross volume and $180,000 in annualized net protocol cash flow. At 1 trillion tokens — which top AI applications already process — the 50 bps switch yields $3.6 million annually in pure, non-dilutive protocol revenue.",
+  },
+  {
+    id: 6,
+    badge: "6. REGULATORY COMPLIANCE & LEGAL DEFENSE",
+    title: "EU MiCA Non-Custodial Exemption & GDPR Data Sovereignty",
+    subtitle: "Strict regulatory immunity engineered into the smart contract and routing perimeter",
+    timeEstimate: "3:45 - 4:20",
+    bullets: [
+      { title: "MiCA Non-Custodial Immunity", desc: "Under EU MiCA, purely technical non-custodial routers do not hold customer funds and are exempt from CASP licensing." },
+      { title: "Stateless In-Transit Streaming", desc: "Inference prompts and completions stream through RAM without persistent disk storage, satisfying GDPR and EU AI Act Article 50." },
+      { title: "Decentralized DAO Governance", desc: "Fee parameters and slashing audits are governed exclusively by Aragon OSx consensus, eliminating centralized issuer liabilities." },
+    ],
+    financeMetric: {
+      label: "EU MiCA Compliance Status",
+      value: "Non-Custodial Exempt",
+      desc: "Zero custody of user funds; direct smart contract escrows on Arbitrum L2.",
+    },
+    speakerScript:
+      "Equally vital is legal defensibility under European law. Under the EU MiCA framework, Verxl is strictly non-custodial. We do not intermediate fiat, hold custody of deposits, or execute discretionary trades. Furthermore, because our edge router streams data without storing prompts on disk, we have complete GDPR and EU AI Act compliance. This creates an unassailable institutional moat.",
+  },
+  {
+    id: 7,
+    badge: "7. 4-HORIZON STRATEGIC ROADMAP",
+    title: "2026–2028 Execution Horizons: Live MVP to Machine Economy",
+    subtitle: "From today's live non-custodial switch to autonomous agent-to-agent micro-clearing",
+    timeEstimate: "4:20 - 5:00",
+    bullets: [
+      { title: "Horizon 1 (Q4 2026 - LIVE NOW)", desc: "Live 50 bps edge switch, Arbitrum L2 USDC settlements, Charizard PostgreSQL ledger, and 2FA security." },
+      { title: "Horizon 2 (Q1–Q2 2027)", desc: "Decentralized provider staking (1,000 $VRXL), automated canary slashing, and integration of 50+ GPU clusters." },
+      { title: "Horizon 3 (Q3–Q4 2027)", desc: "Zero-Knowledge (ZK) output verification with cryptographic state proofs validating model execution." },
+      { title: "Horizon 4 (2028+)", desc: "HTTP 402 machine-to-machine economy: autonomous AI agents paying each other directly for compute." },
+    ],
+    financeMetric: {
+      label: "Horizon 1 Status",
+      value: "100% OPERATIONAL",
+      desc: "Live on mainnet right now at verxl.com with verifiable on-chain smart contracts.",
+    },
+    speakerScript:
+      "To conclude, our roadmap spans four clear horizons. Horizon 1 is not a future promise — it is operational right now on mainnet at verxl.com. Horizon 2 introduces decentralized provider staking and automated canary slashing. Horizon 3 brings zero-knowledge cryptographic proofs of inference. And Horizon 4 unlocks the true machine-to-machine economy where autonomous AI agents pay each other directly via HTTP 402. Thank you, and I look forward to your questions.",
+  },
+];
+
 export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -158,6 +457,30 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
     hardware: "Dedicated Bare-Metal Vulkan GPU",
     status: "OPERATIONAL · 32K RESIDENT",
   });
+
+  // Mind Map State
+  const [selectedMindNodeId, setSelectedMindNodeId] = useState<string>("router");
+  const selectedMindNode = MIND_NODES.find((n) => n.id === selectedMindNodeId) || MIND_NODES[1];
+
+  // 5-Minute Pitch Deck Modal State
+  const [showPitchDeckModal, setShowPitchDeckModal] = useState(false);
+  const [currentPitchSlide, setCurrentPitchSlide] = useState(0);
+  const [pitchTimer, setPitchTimer] = useState(300); // 5 minutes in seconds
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [showSpeakerNotes, setShowSpeakerNotes] = useState(true);
+
+  // Pitch Timer effect
+  useEffect(() => {
+    let interval: any = null;
+    if (isTimerRunning && pitchTimer > 0) {
+      interval = setInterval(() => {
+        setPitchTimer((prev) => Math.max(0, prev - 1));
+      }, 1000);
+    } else if (pitchTimer === 0) {
+      setIsTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, pitchTimer]);
 
   // Roadmap State
   const [selectedHorizonId, setSelectedHorizonId] = useState<string>("h1");
@@ -515,12 +838,30 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           <span className="text-slate-400">·</span>
           <span className="text-blue-400 text-[11px]">2026–2028</span>
         </div>
-        <div className="text-[10px] text-slate-400 flex flex-wrap items-center gap-2">
-          <span>Prague University of Economics and Business (VŠE Praha)</span>
-          <span className="text-slate-700">|</span>
-          <span>2SE307 Bitcoin & Blockchain</span>
-          <span className="text-slate-700">|</span>
-          <span className="text-emerald-400 font-semibold">SB 235 · M. Bok</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="text-[10px] text-slate-400 flex items-center gap-2 mr-1">
+            <span>VŠE Praha (2SE307)</span>
+            <span className="text-slate-700">|</span>
+            <span className="text-emerald-400 font-semibold">SB 235 · M. Bok</span>
+          </div>
+          <button
+            onClick={() => {
+              setShowPitchDeckModal(true);
+              setCurrentPitchSlide(0);
+            }}
+            className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow transition"
+          >
+            <Presentation className="w-3 h-3 text-cyan-300" />
+            <span>5-Min Pitch Deck</span>
+          </button>
+          <a
+            href="/Verxl_Protocol_Pitch_Presentation.pptx"
+            download="Verxl_Protocol_Pitch_Presentation.pptx"
+            className="px-2.5 py-1 rounded-[2px] bg-[#05070b] border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition"
+          >
+            <Download className="w-3 h-3 text-emerald-400" />
+            <span>.PPTX</span>
+          </a>
         </div>
       </div>
 
@@ -1388,7 +1729,448 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* SECTION 5.5: INTERACTIVE ECOSYSTEM MIND MAP & VALUE FLOW TOPOLOGY */}
+      <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[3px] p-5 space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div className="space-y-0.5">
+            <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <Network className="w-4 h-4 text-cyan-400" />
+              <span>Interactive Ecosystem Mind Map & Value Flow Topology</span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans">
+              Click any node in the topology to inspect economic incentives, data flows, and cryptographic covenants.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-400 uppercase">Selected:</span>
+            <span
+              className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider"
+              style={{ color: selectedMindNode.color, backgroundColor: selectedMindNode.bgRgb, border: `1px solid ${selectedMindNode.borderColor}` }}
+            >
+              {selectedMindNode.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Mind Map Interactive Canvas & Drawer */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* SVG Topology Graph */}
+          <div className="lg:col-span-7 bg-[#05070b] border border-slate-800 rounded-[3px] p-3 relative overflow-hidden">
+            <svg className="w-full h-[320px] select-none" viewBox="0 0 800 360">
+              <defs>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+                <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+                  <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.8" />
+                </linearGradient>
+              </defs>
+
+              {/* Connecting Edges with Animated Flow Lines */}
+              {/* Clients <-> Router */}
+              <path d="M 230,85 C 300,85 320,135 340,140" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="4 4" className="animate-pulse" opacity="0.6" />
+              {/* Router <-> Supply */}
+              <path d="M 460,140 C 490,135 520,85 580,85" fill="none" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="4 4" className="animate-pulse" opacity="0.6" />
+              {/* Ledger <-> Router */}
+              <path d="M 230,245 C 300,245 320,165 340,155" fill="none" stroke="#60a5fa" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
+              {/* Router <-> Governance */}
+              <path d="M 460,155 C 490,165 520,245 580,245" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
+              {/* Router <-> Legal */}
+              <line x1="400" y1="180" x2="400" y2="245" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
+              {/* Governance <-> Supply (Slashing) */}
+              <line x1="660" y1="115" x2="660" y2="215" stroke="#f43f5e" strokeWidth="1.2" strokeDasharray="2 2" opacity="0.4" />
+
+              {/* Data Labels on Edges */}
+              <text x="270" y="105" fill="#38bdf8" fontSize="8" fontFamily="monospace" textAnchor="middle">Prompt + 50bps</text>
+              <text x="525" y="105" fill="#c084fc" fontSize="8" fontFamily="monospace" textAnchor="middle">99.5% Net Payout</text>
+              <text x="275" y="215" fill="#60a5fa" fontSize="8" fontFamily="monospace" textAnchor="middle">2FA & Ledgers</text>
+              <text x="535" y="215" fill="#f59e0b" fontSize="8" fontFamily="monospace" textAnchor="middle">50bps DAO Reserve</text>
+              <text x="408" y="215" fill="#34d399" fontSize="8" fontFamily="monospace" textAnchor="start">MiCA</text>
+              <text x="675" y="165" fill="#f43f5e" fontSize="7.5" fontFamily="monospace" textAnchor="start">10% Slash</text>
+
+              {/* Render Interactive Mind Nodes */}
+              {MIND_NODES.map((node) => {
+                const isSelected = selectedMindNodeId === node.id;
+                const isCenter = node.id === "router";
+                const w = isCenter ? 150 : 135;
+                const h = isCenter ? 64 : 54;
+                const rx = node.coords.x - w / 2;
+                const ry = node.coords.y - h / 2;
+
+                return (
+                  <g
+                    key={node.id}
+                    onClick={() => setSelectedMindNodeId(node.id)}
+                    className="cursor-pointer transition-transform duration-200 hover:scale-105"
+                  >
+                    {/* Selected Ring */}
+                    {isSelected && (
+                      <rect
+                        x={rx - 4}
+                        y={ry - 4}
+                        width={w + 8}
+                        height={h + 8}
+                        rx="6"
+                        fill="none"
+                        stroke={node.color}
+                        strokeWidth="2"
+                        filter="url(#glow)"
+                        className="animate-pulse"
+                      />
+                    )}
+
+                    {/* Node Container Box */}
+                    <rect
+                      x={rx}
+                      y={ry}
+                      width={w}
+                      height={h}
+                      rx="4"
+                      fill="#0a0e17"
+                      stroke={node.color}
+                      strokeWidth={isSelected ? "2" : "1"}
+                    />
+
+                    {/* Center Node Indicator */}
+                    {isCenter && (
+                      <circle
+                        cx={node.coords.x}
+                        cy={ry - 6}
+                        r="4"
+                        fill="#10b981"
+                        className="animate-ping"
+                      />
+                    )}
+
+                    {/* Category Label */}
+                    <text
+                      x={node.coords.x}
+                      y={ry + 16}
+                      fill={node.color}
+                      fontSize="7.5"
+                      fontFamily="monospace"
+                      fontWeight="bold"
+                      textAnchor="middle"
+                      letterSpacing="1"
+                    >
+                      {node.category}
+                    </text>
+
+                    {/* Node Name */}
+                    <text
+                      x={node.coords.x}
+                      y={ry + 32}
+                      fill="#ffffff"
+                      fontSize="9.5"
+                      fontFamily="sans-serif"
+                      fontWeight="bold"
+                      textAnchor="middle"
+                    >
+                      {node.name.length > 20 ? node.name.slice(0, 18) + "…" : node.name}
+                    </text>
+
+                    {/* Sub KPI */}
+                    <text
+                      x={node.coords.x}
+                      y={ry + 46}
+                      fill="#94a3b8"
+                      fontSize="7.5"
+                      fontFamily="monospace"
+                      textAnchor="middle"
+                    >
+                      {node.kpis[0].value}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+            <div className="text-[9.5px] text-slate-500 text-center font-mono pt-1">
+              Deterministic Invariant Routing: seed=42 canary verification across 300+ edge PoPs
+            </div>
+          </div>
+
+          {/* Node Inspector Drawer */}
+          <div className="lg:col-span-5 bg-[#05070b] border border-slate-800 rounded-[3px] p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="space-y-0.5">
+                <span
+                  className="text-[9px] uppercase tracking-widest font-bold"
+                  style={{ color: selectedMindNode.color }}
+                >
+                  {selectedMindNode.category} COMPONENT
+                </span>
+                <div className="text-sm font-bold text-white">
+                  {selectedMindNode.name}
+                </div>
+              </div>
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: selectedMindNode.color, boxShadow: `0 0 10px ${selectedMindNode.color}` }}
+              />
+            </div>
+
+            <p className="text-xs text-slate-300 font-sans leading-relaxed">
+              {selectedMindNode.details}
+            </p>
+
+            {/* KPI Tiles */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {selectedMindNode.kpis.map((kpi, idx) => (
+                <div key={idx} className="bg-[#0a0e17] border border-slate-800 p-2 rounded-[2px] text-center space-y-0.5">
+                  <div className="text-[8.5px] text-slate-400 uppercase tracking-wider">{kpi.label}</div>
+                  <div className="text-[11px] font-bold text-white font-mono">{kpi.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Technical Specifications */}
+            <div className="border-t border-slate-800/80 pt-2 space-y-1.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Architectural Specifications & Guarantees
+              </div>
+              <ul className="space-y-1 text-[10.5px] text-slate-300 font-mono">
+                {selectedMindNode.techSpecs.map((spec, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{spec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* SECTION 6: EXECUTIVE NAVIGATION CTA BAR */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0a0e17] border border-blue-500/30 rounded-[3px] p-4 shadow-lg">
+        <div className="space-y-0.5">
+          <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5 text-blue-400" />
+            <span>Operational System Deployment</span>
+          </div>
+          <p className="text-slate-400 text-[11px] font-sans">
+            Test our Prague GPU host in the Terminal, verify active clusters in the Registry, or access the commercial billing Console.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onNavigate("playground")}
+            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
+          >
+            <Terminal className="w-3.5 h-3.5 text-blue-400" />
+            <span>Terminal</span>
+          </button>
+          <button
+            onClick={() => onNavigate("registry")}
+            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
+          >
+            <span>Registry</span>
+          </button>
+          <button
+            onClick={() => onNavigate("console")}
+            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
+          >
+            <span>Console</span>
+          </button>
+          <button
+            onClick={() => onNavigate("whitepaper")}
+            className="hero-btn hero-btn--primary !py-2 !px-4 !text-[11px]"
+          >
+            <span>Whitepaper</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* MODAL: 5-MINUTE PITCH DECK PRESENTER VIEW */}
+      {showPitchDeckModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-6 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-4xl bg-[#0a0e17] border border-blue-500/50 rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-4 my-6">
+            {/* Modal Header & Timer Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/40 rounded-[2px]">
+                  <Presentation className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <span>Verxl Protocol 5-Minute Investor & Committee Pitch</span>
+                    <span className="text-[10px] text-emerald-400 font-mono">
+                      Slide {currentPitchSlide + 1} / {PITCH_SLIDES.length}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono">
+                    Simon Havlík · VŠE Prague (2SE307 Bitcoin & Blockchain · M. Bok)
+                  </div>
+                </div>
+              </div>
+
+              {/* Timer & Presenter Action Buttons */}
+              <div className="flex items-center gap-2">
+                {/* 5-Min Timer */}
+                <div className="flex items-center gap-1.5 bg-[#05070b] border border-slate-700 px-2.5 py-1 rounded-[2px] font-mono text-xs">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  <span className={pitchTimer < 60 ? "text-rose-400 font-bold animate-pulse" : "text-white font-bold"}>
+                    {Math.floor(pitchTimer / 60)}:{String(pitchTimer % 60).padStart(2, "0")}
+                  </span>
+                  <button
+                    onClick={() => setIsTimerRunning(!isTimerRunning)}
+                    className="ml-1 text-[10px] text-blue-400 hover:text-white uppercase"
+                  >
+                    {isTimerRunning ? "Pause" : "Start"}
+                  </button>
+                  <button
+                    onClick={() => { setPitchTimer(300); setIsTimerRunning(false); }}
+                    className="text-[10px] text-slate-500 hover:text-slate-300 uppercase"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <a
+                  href="/Verxl_Protocol_Pitch_Presentation.pptx"
+                  download="Verxl_Protocol_Pitch_Presentation.pptx"
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-[2px] flex items-center gap-1 transition"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>PPTX</span>
+                </a>
+
+                <button
+                  onClick={() => setShowPitchDeckModal(false)}
+                  className="text-slate-400 hover:text-white text-xs uppercase px-1.5 py-1"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+
+            {/* Slide Navigation Dots / Timeline Bar */}
+            <div className="grid grid-cols-7 gap-1.5">
+              {PITCH_SLIDES.map((slide, idx) => (
+                <button
+                  key={slide.id}
+                  onClick={() => setCurrentPitchSlide(idx)}
+                  className={`py-1.5 px-2 text-[9px] font-mono rounded-[2px] border text-center transition ${
+                    currentPitchSlide === idx
+                      ? "bg-blue-600 text-white border-blue-400 font-bold shadow"
+                      : "bg-[#05070b] text-slate-400 border-slate-800 hover:text-slate-200"
+                  }`}
+                >
+                  <span>Step {idx + 1}</span>
+                  <div className="text-[7.5px] truncate opacity-75">{slide.badge.split(". ")[1] || slide.badge}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Active Slide Body */}
+            {(() => {
+              const activeSlide = PITCH_SLIDES[currentPitchSlide];
+              return (
+                <div className="bg-[#05070b] border border-blue-500/30 rounded-[3px] p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest font-mono">
+                        {activeSlide.badge}
+                      </span>
+                      <h2 className="text-base sm:text-lg font-black text-white">
+                        {activeSlide.title}
+                      </h2>
+                      <div className="text-xs text-slate-400 font-sans">
+                        {activeSlide.subtitle}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-amber-400 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-[2px] font-mono shrink-0">
+                      ⏱ Time: {activeSlide.timeEstimate}
+                    </span>
+                  </div>
+
+                  {/* 3 Core Beat Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {activeSlide.bullets.map((b, idx) => (
+                      <div key={idx} className="bg-[#0a0e17] border border-slate-800 p-3 rounded-[2px] space-y-1">
+                        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span>{b.title}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 font-sans leading-relaxed">
+                          {b.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quantitative Financial Metric Banner */}
+                  <div className="bg-gradient-to-r from-emerald-950/30 via-[#0a0e17] to-blue-950/30 border border-emerald-500/40 rounded-[2px] p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-[9.5px] uppercase tracking-wider text-slate-400 font-mono">
+                        {activeSlide.financeMetric.label}
+                      </div>
+                      <div className="text-base sm:text-lg font-black text-emerald-400 font-mono">
+                        {activeSlide.financeMetric.value}
+                      </div>
+                    </div>
+                    <div className="text-[10.5px] text-slate-300 font-sans max-w-md text-left sm:text-right">
+                      {activeSlide.financeMetric.desc}
+                    </div>
+                  </div>
+
+                  {/* Speaker Script Box (Timed Speech Guidance) */}
+                  <div className="border border-slate-800 bg-[#070b13] p-3.5 rounded-[2px] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Terminal className="w-3 h-3" />
+                        <span>Speaker Script (Simon Havlík · 5-Minute Delivery)</span>
+                      </div>
+                      <button
+                        onClick={() => setShowSpeakerNotes(!showSpeakerNotes)}
+                        className="text-[10px] text-slate-400 hover:text-white uppercase flex items-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>{showSpeakerNotes ? "Hide Notes" : "Show Notes"}</span>
+                      </button>
+                    </div>
+                    {showSpeakerNotes && (
+                      <p className="text-xs text-slate-200 font-sans leading-relaxed italic border-l-2 border-amber-400 pl-3">
+                        "{activeSlide.speakerScript}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Slide Navigation Footer Controls */}
+            <div className="flex items-center justify-between border-t border-slate-800 pt-3">
+              <button
+                onClick={() => setCurrentPitchSlide((prev) => Math.max(0, prev - 1))}
+                disabled={currentPitchSlide === 0}
+                className="px-3 py-1.5 bg-[#05070b] border border-slate-700 hover:border-slate-500 disabled:opacity-40 text-xs font-bold uppercase tracking-wider text-white rounded-[2px] flex items-center gap-1.5 transition"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous Beat</span>
+              </button>
+
+              <div className="text-xs text-slate-400 font-mono">
+                {currentPitchSlide + 1} of {PITCH_SLIDES.length}
+              </div>
+
+              <button
+                onClick={() => setCurrentPitchSlide((prev) => Math.min(PITCH_SLIDES.length - 1, prev + 1))}
+                disabled={currentPitchSlide === PITCH_SLIDES.length - 1}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-xs font-bold uppercase tracking-wider text-white rounded-[2px] flex items-center gap-1.5 transition"
+              >
+                <span>Next Beat</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0a0e17] border border-blue-500/30 rounded-[3px] p-4 shadow-lg">
         <div className="space-y-0.5">
           <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
