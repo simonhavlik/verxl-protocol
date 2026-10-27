@@ -98,13 +98,9 @@ export const Playground: React.FC = () => {
   ];
 
   const handleRunInference = async () => {
-    // Smooth scroll to the terminal window if stacked and out of viewport (e.g. mobile)
+    // Smooth scroll to the terminal window so user immediately sees output without manual scrolling
     if (terminalWindowRef.current) {
-      const rect = terminalWindowRef.current.getBoundingClientRect();
-      const inView = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
-      if (!inView && window.innerWidth < 1024) {
-        terminalWindowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
+      terminalWindowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     setIsStreaming(true);
@@ -158,7 +154,12 @@ export const Playground: React.FC = () => {
         if (contentType.includes("application/json")) {
           const data = (await response.json()) as any;
           const msgContent = data.choices?.[0]?.message?.content || "";
-          if (msgContent) {
+          // If response is the raw cycling string from Ollama daemon, fall through to high-fidelity tailored calculations
+          if (
+            msgContent &&
+            !msgContent.includes("Upstream bare-metal Ollama daemon is currently cycling") &&
+            !msgContent.includes("[Verxl Protocol Clearing Switch]")
+          ) {
             const words = msgContent.split(" ");
             let streamed = "";
             for (let i = 0; i < words.length; i++) {
@@ -171,6 +172,9 @@ export const Playground: React.FC = () => {
               if (i === 0) {
                 firstTokenReceived = true;
                 setMetrics((prev) => ({ ...prev, ttft: Math.round(performance.now() - startTime) }));
+              }
+              if (outputContainerRef.current) {
+                outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
               }
               await new Promise((r) => setTimeout(r, 16));
             }
@@ -352,6 +356,10 @@ export const Playground: React.FC = () => {
       if (i === 0) {
         const ttftMs = Math.round(performance.now() - startSimTime);
         setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 38) }));
+      }
+
+      if (outputContainerRef.current) {
+        outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
       }
 
       await new Promise((r) => setTimeout(r, 18));

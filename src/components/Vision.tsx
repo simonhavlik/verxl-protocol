@@ -773,9 +773,6 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   const simActiveNodes = Math.max(12, Math.round(simDailyReqsM * 18));
   const simStakedTvlUsd = simActiveNodes * 1000 * simTokenPriceUsd; // 1,000 $VRXL min stake per node
 
-  // Core Founding Team State in Hero
-  const [activeHeroMember, setActiveHeroMember] = useState<"simon" | "daniel" | "miroslava">("simon");
-
   // Mouse interaction state for 3D parallax
   const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -1254,109 +1251,61 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Right Column: Core Executive Assembly in FULL VIBRANT COLOR */}
+          {/* Right Column: Core Executive Assembly with ALL 3 FOUNDERS VISIBLE */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-md bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-3 relative backdrop-blur-md group hover:border-blue-400 transition-all duration-300">
-              {/* Top Bar with Member Switcher Tabs */}
+            <div className="w-full bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-2.5 relative backdrop-blur-md">
+              {/* Top Bar */}
               <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
                 <span className="text-blue-400 font-bold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                   <span>Protocol Executive Assembly</span>
                 </span>
-                <span className="text-slate-300 font-mono text-[9.5px]">VŠE Praha</span>
+                <span className="text-emerald-400 font-mono font-bold text-[9.5px]">VŠE Praha · 1:1:1 Consensus</span>
               </div>
 
-              {/* Member Selector Pills */}
-              <div className="grid grid-cols-3 gap-1 bg-[#090d16] p-1 rounded-[3px] border border-slate-800 text-[10.5px] font-mono">
+              {/* All 3 Founders Visible Simultaneously */}
+              <div className="space-y-2">
                 {(["simon", "daniel", "miroslava"] as const).map((key) => {
                   const m = HERO_TEAM_MEMBERS[key];
-                  const isSelected = activeHeroMember === key;
                   return (
-                    <button
+                    <div
                       key={key}
-                      onClick={() => setActiveHeroMember(key)}
-                      className={`py-1 px-1.5 rounded-[2px] transition truncate text-center font-bold tracking-tight ${
-                        isSelected
-                          ? "bg-blue-600 text-white shadow"
-                          : "text-slate-400 hover:text-white hover:bg-slate-800/40"
-                      }`}
+                      className="bg-[#090d16] border border-slate-800/90 rounded-[3px] p-2 flex items-center gap-3 hover:border-blue-400/80 transition-all duration-200 group"
                     >
-                      {m.name.split(" ")[0]}
-                    </button>
+                      <div className="relative w-14 h-14 rounded-[3px] overflow-hidden border border-slate-700 shrink-0 bg-[#080c14] shadow">
+                        <img
+                          src={m.photo}
+                          alt={m.name}
+                          className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                          loading="eager"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-bold text-white uppercase tracking-wider truncate">
+                            {m.name}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded-[2px] font-bold text-[8.5px] uppercase tracking-wider shrink-0 ${m.badgeColor}`}>
+                            {m.badge}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-blue-300 font-medium truncate">
+                          {m.role}
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-mono flex items-center justify-between pt-0.5 border-t border-slate-800/60">
+                          <span>{m.academicAttribution}</span>
+                          <span className="text-emerald-400 font-semibold">{m.tranche.split(" ")[0]} Tranche</span>
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
 
-              {/* Active Member Full Color Portrait Frame */}
-              {(() => {
-                const current = HERO_TEAM_MEMBERS[activeHeroMember];
-                return (
-                  <div className="space-y-2.5">
-                    <div className="relative aspect-[4/3] sm:aspect-[16/11] overflow-hidden rounded-[2px] border border-slate-700 shadow-inner bg-[#080c14]">
-                      <img
-                        key={current.id}
-                        src={current.photo}
-                        alt={current.name}
-                        className="w-full h-full object-cover object-top transition duration-500 transform group-hover:scale-[1.02]"
-                        loading="eager"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#05070b] via-[#05070b]/30 to-transparent opacity-90" />
-
-                      <div className="absolute bottom-2.5 left-3 right-3 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-extrabold text-white uppercase tracking-wider">
-                            {current.name}
-                          </span>
-                          <span className={`px-1.5 py-0.5 rounded-[2px] font-bold text-[9px] uppercase tracking-wider shadow ${current.badgeColor}`}>
-                            {current.badge}
-                          </span>
-                        </div>
-                        <div className="text-[10.5px] text-blue-300 font-sans font-medium line-clamp-1">
-                          {current.role}
-                        </div>
-                        <div className="text-[9px] text-slate-300 font-mono flex items-center justify-between pt-0.5">
-                          <span>{current.academicAttribution}</span>
-                          <span className="text-emerald-400 font-bold">{current.tranche}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* All 3 Member Thumbnails Row for 100% Simultaneous Visibility */}
-                    <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                      {(["simon", "daniel", "miroslava"] as const).map((key) => {
-                        const item = HERO_TEAM_MEMBERS[key];
-                        const isFocus = activeHeroMember === key;
-                        return (
-                          <div
-                            key={key}
-                            onClick={() => setActiveHeroMember(key)}
-                            className={`flex items-center gap-1.5 p-1 rounded-[2px] border cursor-pointer transition ${
-                              isFocus
-                                ? "bg-blue-600/20 border-blue-500 text-white"
-                                : "bg-[#090d16] border-slate-800 text-slate-400 hover:text-slate-200"
-                            }`}
-                          >
-                            <img
-                              src={item.photo}
-                              alt={item.name}
-                              className="w-6 h-6 rounded-[2px] object-cover shrink-0 border border-slate-700"
-                            />
-                            <div className="truncate text-[9.5px] font-mono leading-tight">
-                              <div className="font-bold truncate text-slate-200">{item.name.split(" ")[0]}</div>
-                              <div className="text-[8px] text-slate-400 truncate">{item.badge}</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
-
               {/* Bottom Card Footer */}
-              <div className="px-1 text-[10px] text-slate-300 flex items-center justify-between font-mono border-t border-slate-800/80 pt-2">
-                <span className="text-slate-400">Academic Project Initiative</span>
-                <span className="text-emerald-400 font-bold">VŠE Praha</span>
+              <div className="px-1 text-[9.5px] text-slate-400 flex items-center justify-between font-mono border-t border-slate-800/80 pt-2">
+                <span>Decentralized Governance</span>
+                <span className="text-emerald-400 font-bold">2-of-3 Simple Majority Threshold</span>
               </div>
             </div>
           </div>

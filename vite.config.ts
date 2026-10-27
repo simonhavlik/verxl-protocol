@@ -40,5 +40,17 @@ export default defineConfig({
   server: {
     port: 3000,
     open: false,
+    proxy: {
+      "/v1": {
+        target: "https://verxl.com",
+        changeOrigin: true,
+        secure: true,
+      },
+      "/api": {
+        target: "https://verxl.com",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
 });

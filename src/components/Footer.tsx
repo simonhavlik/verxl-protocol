@@ -104,9 +104,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {/* Academic Project Attribution & Testnet Disclaimer */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 text-[10px] text-slate-400">
           <div>
-            Started as an academic university project at Prague University of Economics and Business (VŠE Praha).
+            Launched as an applied blockchain and decentralized compute competition project at Prague University of Economics and Business (VŠE Praha).
             <div className="text-amber-400/90 mt-0.5 font-mono text-[9.5px]">
-              [TEST RUN ON SEPOLIA] Academic demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
+              [TEST RUN ON SEPOLIA] Demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
             </div>
           </div>
           <div className="flex items-center gap-2 font-mono">

@@ -67,6 +67,7 @@ export default function App() {
       if (window.location.pathname !== targetPath) {
         window.history.pushState(null, "", targetPath);
       }
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
   };
 
@@ -135,7 +136,17 @@ export default function App() {
             {activeTab === "governance" && <Governance />}
             {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
             {activeTab === "console" && <Console />}
-            {activeTab === "legal" && <Legal initialTab={getLegalSubTab()} />}
+            {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
+              <Legal
+                initialTab={
+                  activeTab === "privacy" ? "privacy" :
+                  activeTab === "terms" ? "terms" :
+                  activeTab === "mica" ? "mica" :
+                  activeTab === "charter" ? "charter" :
+                  getLegalSubTab()
+                }
+              />
+            )}
           </Suspense>
         </main>
       )}

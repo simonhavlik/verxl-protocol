@@ -1,9 +1,8 @@
-# ACADEMIC COLLABORATION, IP ATTRIBUTION & PROJECT GOVERNANCE CHARTER
-### Dohoda o vymezení akademické spolupráce, vypořádání práv k duševnímu vlastnictví a výlučném vlastnictví projektu
+# APPLIED BLOCKCHAIN & DECENTRALIZED COMPUTE INITIATIVE CHARTER & IP ATTRIBUTION
+### Dohoda o vymezení spolupráce, vypořádání práv k duševnímu vlastnictví a výlučném vlastnictví projektu
 
-**Course Module Context:** Prague University of Economics and Business (Vysoká škola ekonomická v Praze – VŠE Praha)  
-**Academic Course:** 2SE307 Bitcoin and Blockchain (Faculty of International Relations / Fakulta mezinárodních vztahů)  
-**Course Instructor:** Ing. M. Bok (Faculty of International Relations / Fakulta mezinárodních vztahů, VŠE Praha)  
+**Institutional Context:** Prague University of Economics and Business (Vysoká škola ekonomická v Praze – VŠE Praha)  
+**Initiative:** Applied Blockchain and Decentralized Compute Competition Project  
 **Governing Law:** Laws of the Czech Republic (Act No. 121/2000 Coll., Copyright Act, and Act No. 89/2012 Coll., Civil Code)  
 **Effective Date:** October 27, 2026  
 
@@ -11,30 +10,29 @@
 
 ## 1. PARTIES TO THE CHARTER / SMLUVNÍ STRANY
 
-1. **Party A (Lead Architect, Sole Owner & Funder):**  
+1. **Party A (Project Lead, Sole Funder & Software Architect):**  
    **Šimon Havlík**  
-   Student ID / Lead Developer  
-   Address: Za Mlýnem 435, 252 29 Dobřichovice, Czech Republic  
-   *(hereinafter referred to as the **"Project Owner"** or **"Autor & Výlučný Vlastník"**)*  
+   Lead Developer & Architect  
+   *(hereinafter referred to as the **"Project Lead"** or **"Autor & Výlučný Vlastník"**)*  
 
-2. **Parties B & C (Academic Peer Collaborators):**  
-   Enrolled Student Collaborators in VŠE Course 2SE307  
-   *(hereinafter referred to collectively as the **"Academic Collaborators"** or **"Akademičtí Spolupracovníci"**)*  
+2. **Parties B & C (Founding Partners & Project Collaborators):**  
+   **Daniel Kolárovský** (QA & Process Verification Lead) & **Miroslava Valová** (Regulatory Compliance & Market Strategy Lead)  
+   *(hereinafter referred to collectively as the **"Founding Collaborators"** or **"Akademičtí Partneři"**)*  
 
-*(Project Owner and Academic Collaborators are collectively referred to as the **"Parties"**).*
+*(Project Lead and Founding Collaborators are collectively referred to as the **"Parties"**).*
 
 ---
 
-## 2. PREAMBLE & ACADEMIC FRAMEWORK / PREAMBULE A RÁMEC PROJEKTU
+## 2. PREAMBLE & INSTITUTIONAL FRAMEWORK / PREAMBULE A RÁMEC PROJEKTU
 
-**2.1 Course Minimum Group Requirement:**  
-Under the official curriculum and grading guidelines of VŠE course 2SE307 (Bitcoin and Blockchain), all enrolled students were required to form teams of at least three (3) individuals to present an applied blockchain and decentralized system project.
+**2.1 Institutional Competition Project:**  
+The project is organized as an applied blockchain and decentralized compute competition initiative at Prague University of Economics and Business (VŠE Praha), combining software engineering, empirical SLA verification, and regulatory market analysis.
 
 **2.2 Nature and Origin of Verxl Protocol:**  
-The Parties mutually acknowledge that the technical concept, architecture, source code repository, smart contracts, edge routing switches, mathematical invariant canary verification (`seed=42`), database schemas, and commercial domain names (`verxl.com`) of Verxl Protocol were conceived, architected, financed, and coded exclusively by Party A (Šimon Havlík) prior to, outside of, and independently of course classroom sessions.
+The Parties mutually acknowledge that the technical concept, architecture, source code repository, smart contracts, edge routing switches, mathematical invariant canary verification (`seed=42`), database schemas, and commercial domain names (`verxl.com`) of Verxl Protocol were conceived, architected, financed, and coded exclusively by Party A (Šimon Havlík).
 
-**2.3 Nature of Academic Participation by Parties B & C:**  
-The Academic Collaborators joined the project strictly to satisfy the team size prerequisite of course 2SE307 and to secure academic course credits and grading. Their participation is formally characterized as non-equity peer advisory review, academic presentation delivery, and quality feedback (konzultační a oponentská činnost pro účely výuky).
+**2.3 Specialized Collaboration Scope:**  
+The Founding Collaborators direct specialized domains: Daniel Kolárovský leading empirical quality assurance, SLA benchmark validation, and process auditing; Miroslava Valová leading EU MiCA / AI Act regulatory compliance analysis, market sizing, and enterprise customer persona models.
 
 ---
 
@@ -43,11 +41,11 @@ The Academic Collaborators joined the project strictly to satisfy the team size 
 **3.1 Exclusive Ownership of Work (§ 2 Autorského zákona):**  
 All software source code (including but not limited to TypeScript, React frontend, Vite configuration, Cloudflare Workers, Node.js daemons, and PostgreSQL database migrations), smart contracts (`VerxlStakingRegistry.sol`, `VerxlQualityOracle.sol`, `VerxlToken.sol`), system whitepapers, visual designs, APIs, and documentation are the exclusive, undivided property of Party A (Šimon Havlík).
 
-**3.2 Non-Co-Authorship Acknowledgment (§ 8 Autorského zákona):**  
-The Academic Collaborators expressly declare and acknowledge that they have not authored any independently copyrightable code, smart contracts, or proprietary routing algorithms of the Protocol. Pursuant to Section 8 of Czech Act No. 121/2000 Coll. (Copyright Act / Autorský zákon), their advisory participation, editorial suggestions, and classroom presentation assistance do not constitute co-authorship (*spoluautorství*).
+**3.2 Attribution Scope (§ 8 Autorského zákona):**  
+The Founding Collaborators confirm that their advisory review, empirical benchmark testing, and strategy formulation operate in support of the protocol and do not constitute co-authorship (*spoluautorství*) over core software or smart contract source code under Section 8 of Czech Act No. 121/2000 Coll. (Copyright Act / Autorský zákon).
 
 **3.3 Confirmatory Assignment & Exclusive License (§ 12 a násl. Autorského zákona):**  
-In the event that any contribution, feedback, or work product generated by the Academic Collaborators in connection with course 2SE307 could legally be deemed to contain protectable intellectual property, the Academic Collaborators hereby irrevocably, exclusively, and royalty-free assign to Party A (Šimon Havlík) all economic rights (*výlučná majetková práva*) for the maximum duration permitted by law, on a worldwide, unrestricted, and sublicensable basis.
+To the maximum extent any project feedback, review commentary, or presentation work product could legally be construed as copyrightable, the Founding Collaborators hereby irrevocably, exclusively, and royalty-free assign to Party A (Šimon Havlík) all economic rights (*výlučná majetková práva*) for the maximum duration permitted by law, on a worldwide, unrestricted, and sublicensable basis.
 
 **3.4 Moral Rights Waiver:**  
 To the fullest extent permissible under Czech law, the Academic Collaborators waive any right to enjoin, restrict, or challenge the commercialization, licensing, assignment, alteration, or open-source release of the Protocol by Party A.
