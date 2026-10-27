@@ -1967,7 +1967,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Tabs: MetaMask vs API Key vs Email */}
+            {/* Tabs: MetaMask (Primary) vs Email (Optional) vs API Key */}
             <div className="flex border-b border-slate-800">
               <button
                 onClick={() => {
@@ -1986,6 +1986,21 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </button>
               <button
                 onClick={() => {
+                  setAuthTab("email");
+                  setAuthError(null);
+                  setAuthSuccess(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  authTab === "email"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Email (Optional)</span>
+              </button>
+              <button
+                onClick={() => {
                   setAuthTab("key");
                   setAuthError(null);
                   setAuthSuccess(null);
@@ -1998,21 +2013,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 <span>API Key</span>
-              </button>
-              <button
-                onClick={() => {
-                  setAuthTab("email");
-                  setAuthError(null);
-                  setAuthSuccess(null);
-                }}
-                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
-                  authTab === "email"
-                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
-                    : "border-transparent text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                <Mail className="w-3.5 h-3.5" />
-                <span>Email</span>
               </button>
             </div>
 
@@ -2032,7 +2032,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {authTab === "wallet" && (
               <div className="space-y-3 pt-1">
                 <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Connect your Web3 MetaMask wallet. Teammates and verified Arbitrum depositors will immediately have their balance and PostgreSQL chat sessions restored.
+                  Connect your Web3 MetaMask wallet directly. Account creation, balance recovery, and PostgreSQL chat persistence are instantaneous and permissionless. Email is optional for notifications or secondary 2FA.
                 </p>
                 <button
                   type="button"
@@ -2064,7 +2064,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
                 >
                   <Wallet className="w-4 h-4" />
-                  <span>Connect & Sign In via MetaMask</span>
+                  <span>Connect MetaMask Wallet</span>
                 </button>
               </div>
             )}

@@ -1,4 +1,4 @@
-import { CORS_HEADERS, signSessionToken } from "../lib/auth";
+import { CORS_HEADERS, signSessionToken, verifySessionToken } from "../lib/auth";
 import { db } from "../lib/db";
 import { recoverMessageAddress } from "viem";
 
@@ -61,6 +61,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
   }
 
+  // Check if caller is already logged in with email and wants to link their MetaMask wallet
+  const authHeader = request.headers.get("Authorization");
+  let loggedInUserSub: string | null = null;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const existingToken = authHeader.slice(7).trim();
+    const payload = await verifySessionToken(existingToken);
+    if (payload && payload.sub) {
+      loggedInUserSub = payload.sub;
+    }
+  }
+
   // Find user by wallet address
   let user = await db.prepare(
     "SELECT id, email, wallet_address, balance_usd, total_deposited_usd FROM users WHERE LOWER(wallet_address) = ?"
@@ -73,6 +84,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       balance_usd: number;
       total_deposited_usd: number;
     }>();
+
+  // If caller was already logged in with an account, attach the wallet to that account
+  if (loggedInUserSub && !user) {
+    await db.prepare("UPDATE users SET wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+      .bind(wallet, loggedInUserSub)
+      .run();
+
+    user = await db.prepare(
+      "SELECT id, email, wallet_address, balance_usd, total_deposited_usd FROM users WHERE id = ?"
+    )
+      .bind(loggedInUserSub)
+      .first<{
+        id: string;
+        email: string;
+        wallet_address: string;
+        balance_usd: number;
+        total_deposited_usd: number;
+      }>();
+  }
 
   // If user does not exist in DB:
   if (!user) {
@@ -132,6 +162,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         balance_usd: Number(user.balance_usd),
         total_deposited_usd: Number(user.total_deposited_usd),
         has_active_key: Boolean(activeKey),
+        has_linked_email: Boolean(user.email && !user.email.endsWith("@web3.verxl.user")),
         is_admin:
           user.email?.toLowerCase() === "me@simonhavlik.com" ||
           user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5",

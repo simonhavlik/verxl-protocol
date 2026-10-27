@@ -26,6 +26,7 @@ import {
   Sparkles,
   KeyRound,
   Server,
+  ArrowRight,
 } from "lucide-react";
 
 export interface ProviderModelConfig {
@@ -87,6 +88,7 @@ export const Console: React.FC = () => {
     keys,
     loginWithToken,
     loginWithWallet,
+    linkEmail,
     logout,
     refreshSession,
     setUser,
@@ -184,6 +186,68 @@ export const Console: React.FC = () => {
   const [payoutPendingBalance, setPayoutPendingBalance] = useState<number>(12.45);
   const [submittingPayout, setSubmittingPayout] = useState(false);
   const [payoutReceipt, setPayoutReceipt] = useState<any | null>(null);
+
+  // Link Optional Email State (for Web3 / MetaMask Accounts)
+  const [showLinkEmailModal, setShowLinkEmailModal] = useState(false);
+  const [linkEmailInput, setLinkEmailInput] = useState("");
+  const [linkEmailCode, setLinkEmailCode] = useState("");
+  const [linkEmailStep, setLinkEmailStep] = useState<"email" | "code">("email");
+  const [linkingEmail, setLinkingEmail] = useState(false);
+  const [linkEmailError, setLinkEmailError] = useState<string | null>(null);
+  const [linkEmailSuccess, setLinkEmailSuccess] = useState<string | null>(null);
+
+  const handleSendLinkEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLinkEmailError(null);
+    setLinkEmailSuccess(null);
+    if (!linkEmailInput) return;
+    try {
+      setLinkingEmail(true);
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: linkEmailInput.trim().toLowerCase() }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success) {
+        setLinkEmailStep("code");
+        setLinkEmailSuccess(`Verification code dispatched to ${linkEmailInput.trim().toLowerCase()}`);
+      } else {
+        setLinkEmailError(data.error || "Failed to send verification code.");
+      }
+    } catch (err: any) {
+      setLinkEmailError(err.message || "Network error while sending verification code.");
+    } finally {
+      setLinkingEmail(false);
+    }
+  };
+
+  const handleConfirmLinkEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLinkEmailError(null);
+    setLinkEmailSuccess(null);
+    if (!linkEmailCode || !linkEmailInput) return;
+    try {
+      setLinkingEmail(true);
+      const res = await linkEmail(linkEmailInput, linkEmailCode);
+      if (res.success) {
+        setStatusMsg({
+          type: "success",
+          text: `Email '${linkEmailInput.trim().toLowerCase()}' linked to your account! You can now also log in with email OTP & configure 2FA.`,
+        });
+        setShowLinkEmailModal(false);
+        setLinkEmailInput("");
+        setLinkEmailCode("");
+        setLinkEmailStep("email");
+      } else {
+        setLinkEmailError(res.error || "Failed to link email. Invalid or expired code.");
+      }
+    } catch (err: any) {
+      setLinkEmailError(err.message || "Network error while linking email.");
+    } finally {
+      setLinkingEmail(false);
+    }
+  };
 
   // UI Utilities
   const [copiedKey, setCopiedKey] = useState(false);
@@ -1214,12 +1278,20 @@ main();`,
               </p>
             </div>
 
-            {/* 1-Click MetaMask Web3 Wallet Quick Sign-In */}
-            <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
-              <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
-                <span>Web3 Instant Access</span>
-                <span className="text-emerald-400 font-bold">METAMASK ENABLED</span>
+            {/* Primary Authentication: 1-Click MetaMask Web3 Wallet */}
+            <div className="bg-[#05070b] border-2 border-emerald-500/40 rounded-[3px] p-4 space-y-3 shadow-lg shadow-emerald-500/5">
+              <div className="flex items-center justify-between text-[11px] text-slate-300">
+                <span className="font-bold flex items-center gap-1.5 text-white">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span>Primary Authentication: MetaMask</span>
+                </span>
+                <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[9px] uppercase tracking-wider">
+                  Web3 Direct
+                </span>
               </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                Connect your MetaMask Web3 wallet for instant, non-custodial access to API keys, model routing, and balance clearing. Email is completely optional.
+              </p>
               <button
                 type="button"
                 onClick={async () => {
@@ -1233,7 +1305,7 @@ main();`,
                         if (res.success) {
                           setStatusMsg({
                             type: "success",
-                            text: `Connected wallet ${account.slice(0, 6)}...${account.slice(-4)}. Welcome back!`,
+                            text: `Connected MetaMask wallet ${account.slice(0, 6)}...${account.slice(-4)}. Welcome!`,
                           });
                         } else {
                           setStatusMsg({ type: "error", text: res.error || "Wallet authentication failed." });
@@ -1246,16 +1318,18 @@ main();`,
                     setStatusMsg({ type: "error", text: "MetaMask not detected in browser." });
                   }
                 }}
-                className="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition"
+                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-[0.99]"
               >
-                <Wallet className="w-3.5 h-3.5" />
-                <span>Sign In via MetaMask</span>
+                <Wallet className="w-4 h-4" />
+                <span>Connect MetaMask Wallet</span>
               </button>
             </div>
 
             <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
-              <span className="flex-shrink mx-2 text-[10px] text-slate-400 uppercase">Or Continue With Email</span>
+              <span className="flex-shrink mx-2 text-[10px] text-slate-400 uppercase tracking-wider">
+                Or Continue With Email (Optional Login / 2FA)
+              </span>
               <div className="flex-grow border-t border-slate-800"></div>
             </div>
 
@@ -1481,12 +1555,66 @@ main();`,
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-white">{user.email}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {user.wallet_address ? (
+                  <div
+                    className="flex items-center gap-1.5 font-mono text-xs font-bold text-white bg-blue-500/10 border border-blue-500/30 px-2 py-0.5 rounded-[2px]"
+                    title={`MetaMask Connected: ${user.wallet_address}`}
+                  >
+                    <Wallet className="w-3.5 h-3.5 text-blue-400" />
+                    <span>
+                      {user.wallet_address.slice(0, 6)}...{user.wallet_address.slice(-4)}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (typeof window !== "undefined" && (window as any).ethereum) {
+                        try {
+                          const eth = (window as any).ethereum;
+                          const [account] = await eth.request({ method: "eth_requestAccounts" });
+                          if (account) await loginWithWallet(account);
+                        } catch {}
+                      }
+                    }}
+                    className="flex items-center gap-1 font-mono text-[10.5px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-[2px] hover:bg-emerald-500/20 transition cursor-pointer"
+                    title="Connect MetaMask to link your Web3 wallet to this account"
+                  >
+                    <Wallet className="w-3 h-3" />
+                    <span>Connect MetaMask</span>
+                  </button>
+                )}
+
+                {/* Email Display or Link Email Button */}
+                {user.email && !user.email.endsWith("@web3.verxl.user") ? (
+                  <span className="text-xs text-slate-300 font-sans flex items-center gap-1.5 bg-[#05070b] border border-slate-800 px-2 py-0.5 rounded-[2px]">
+                    <Mail className="w-3 h-3 text-slate-400" />
+                    <span>{user.email}</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLinkEmailError(null);
+                      setLinkEmailSuccess(null);
+                      setLinkEmailStep("email");
+                      setShowLinkEmailModal(true);
+                    }}
+                    className="px-2 py-0.5 rounded-[2px] bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition cursor-pointer"
+                    title="Add an optional email for OTP login, recovery, or 2FA backups"
+                  >
+                    <Mail className="w-3 h-3 text-blue-400" />
+                    <span>+ Add Email (Optional)</span>
+                  </button>
+                )}
+
                 <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">
                   AUTHENTICATED
                 </span>
-                {(user.email.toLowerCase() === "me@simonhavlik.com" || user.is_admin) && (
+                {(user.email?.toLowerCase() === "me@simonhavlik.com" ||
+                  user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5" ||
+                  user.is_admin) && (
                   <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
                     <Sparkles className="w-2.5 h-2.5 text-purple-400" />
                     <span>ADMIN</span>
@@ -2971,6 +3099,117 @@ main();`,
         </div>
       )}
 
+      {/* MODAL: LINK OPTIONAL EMAIL */}
+      {showLinkEmailModal && user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-400" />
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Link Email (Optional Addition)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLinkEmailModal(false)}
+                className="text-slate-400 hover:text-white text-xs uppercase"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+              Your account is already authenticated via your MetaMask wallet (
+              <span className="font-mono text-blue-300">
+                {user.wallet_address ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` : "Web3"}
+              </span>
+              ). Adding an email is completely voluntary and enables email OTP login, password recovery, and hardware TOTP 2FA backups.
+            </p>
+
+            {linkEmailError && (
+              <div className="text-[11px] text-rose-300 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-[2px]">
+                {linkEmailError}
+              </div>
+            )}
+            {linkEmailSuccess && (
+              <div className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 p-2.5 rounded-[2px]">
+                {linkEmailSuccess}
+              </div>
+            )}
+
+            {linkEmailStep === "email" ? (
+              <form onSubmit={handleSendLinkEmailOtp} className="space-y-3">
+                <div>
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">
+                    Email Address to Link
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="developer@acme.com"
+                      value={linkEmailInput}
+                      onChange={(e) => setLinkEmailInput(e.target.value)}
+                      className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={linkingEmail || !linkEmailInput}
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {linkingEmail ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                  <span>Send Verification Code</span>
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleConfirmLinkEmail} className="space-y-3">
+                <div>
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">
+                    Enter 6-Digit Code for {linkEmailInput}
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      placeholder="e.g. 842109"
+                      value={linkEmailCode}
+                      onChange={(e) => setLinkEmailCode(e.target.value)}
+                      className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs font-mono tracking-widest text-white focus:outline-none focus:border-blue-500"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setLinkEmailStep("email"); setLinkEmailCode(""); }}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={linkingEmail || linkEmailCode.length < 6}
+                    className="flex-[2] bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {linkingEmail ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Verify & Link Email</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* MODAL 3: SECURITY MANAGEMENT MODAL (2FA & PASSWORD) */}
       {showSecurityModal && user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
@@ -3042,6 +3281,37 @@ main();`,
                 )}
               </button>
             </div>
+
+            {/* Web3 MetaMask Account Notice: Optional Email for Password & 2FA */}
+            {(!user.email || user.email.endsWith("@web3.verxl.user")) && (
+              <div className="bg-[#05070b] border border-blue-500/40 rounded-[2px] p-3.5 space-y-2.5">
+                <div className="flex items-center gap-2 text-blue-400 font-bold uppercase tracking-wider text-xs">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span>Web3 Account Active (MetaMask)</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                  You are authenticated with your Web3 wallet (
+                  <span className="font-mono text-emerald-300">
+                    {user.wallet_address ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` : "MetaMask"}
+                  </span>
+                  ). Linking an email is an optional addition to configure secondary password login and RFC 6238 TOTP 2FA.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSecurityModal(false);
+                    setLinkEmailError(null);
+                    setLinkEmailSuccess(null);
+                    setLinkEmailStep("email");
+                    setShowLinkEmailModal(true);
+                  }}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-[2px] transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>+ Link Email for Password & 2FA</span>
+                </button>
+              </div>
+            )}
 
             {/* TAB 1: TWO-FACTOR AUTH (2FA) */}
             {securityTab === "2fa" && (

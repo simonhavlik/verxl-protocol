@@ -166,9 +166,10 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={handleConnectWalletClick}
               disabled={connectingWallet}
               className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px] disabled:opacity-50"
+              title="Connect MetaMask to instantly authenticate or restore your account"
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>{connectingWallet ? "Connecting..." : "Connect"}</span>
+              <span>{connectingWallet ? "Connecting..." : "Connect MetaMask"}</span>
             </button>
           )}
 

@@ -10,6 +10,7 @@ export interface UserProfile {
   has_active_key: boolean;
   has_password?: boolean;
   two_factor_enabled?: boolean;
+  has_linked_email?: boolean;
   is_admin?: boolean;
 }
 
@@ -29,6 +30,7 @@ interface AuthContextType {
   loginWithToken: (newToken: string) => Promise<void>;
   loginWithApiKey: (apiKey: string) => Promise<{ success: boolean; error?: string }>;
   loginWithWallet: (walletAddress: string, signature?: string) => Promise<{ success: boolean; user?: any; error?: string }>;
+  linkEmail: (email: string, code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshSession: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
@@ -135,9 +137,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithWallet = async (walletAddress: string, signature?: string) => {
     try {
       setLoading(true);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const res = await fetch("/api/auth/wallet-login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ wallet_address: walletAddress, signature }),
       });
       const data = (await res.json()) as any;
@@ -157,6 +163,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err: any) {
       return { success: false, error: err.message || "Network error during wallet login" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const linkEmail = async (email: string, code: string): Promise<{ success: boolean; error?: string }> => {
+    if (!token) return { success: false, error: "Authentication required to link email" };
+    try {
+      setLoading(true);
+      const res = await fetch("/api/auth/link-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim() }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success && data.token) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vrxl_auth_token", data.token);
+        }
+        setToken(data.token);
+        setUser(data.user);
+        await fetchSessionData(data.token);
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Failed to link email." };
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || "Network error while linking email" };
     } finally {
       setLoading(false);
     }
@@ -189,6 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithToken,
         loginWithApiKey,
         loginWithWallet,
+        linkEmail,
         logout,
         refreshSession,
         setUser,
