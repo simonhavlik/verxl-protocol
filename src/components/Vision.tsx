@@ -319,7 +319,7 @@ const PITCH_SLIDES: PitchSlide[] = [
       desc: "Compared to Verxl's transparent 50 bps flat switch fee.",
     },
     speakerScript:
-      "Good morning. I'm Simon Havlík from the Faculty of International Relations at VŠE. Today, I'm presenting Verxl Protocol: a capital-light, decentralized clearing switch for global AI inference. Hyperscalers like AWS and OpenAI operate like feudal landlords, charging 80 to 90% gross margins on raw GPU silicon while independent European datacenters sit with idle GPUs. Verxl replaces this broken paradigm with a stateless, 50 basis point clearing switch.",
+      "Good morning. I'm Šimon Havlík from Prague University of Economics and Business. Today, I'm presenting Verxl Protocol: a capital-light, decentralized clearing switch for global AI inference. Hyperscalers like AWS and OpenAI operate like feudal landlords, charging 80 to 90% gross margins on commodity models while independent European datacenters sit with idle GPUs. Verxl replaces this broken paradigm with a stateless, 50 basis point clearing switch settling natively on Arbitrum L2.",
   },
   {
     id: 2,
@@ -361,29 +361,29 @@ const PITCH_SLIDES: PitchSlide[] = [
   },
   {
     id: 4,
-    badge: "4. SYSTEMS ARCHITECTURE & FOUNDER ROLE",
-    title: "Full-Stack Protocol Architecture: Contracts, Edge & Cryptography",
-    subtitle: "Simon Havlík — Founder, Quantitative Systems Designer & Protocol Engineer",
-    timeEstimate: "2:15 - 3:00",
+    badge: "4. TECHNICAL ARCHITECTURE & EXECUTION",
+    title: "Proprietary Protocol Architecture: Edge Routing, Canary Oracle & L2 Settlement",
+    subtitle: "Engineered by Šimon Havlík (Lead Architect) · Academic Collaboration with VŠE Partners",
+    timeEstimate: "2:15 - 2:55",
     bullets: [
-      { title: "Aragon OSx On-Chain DAO", desc: "Engineered smart contracts on Ethereum & Arbitrum for $VRXL staking, collateral vaults, and 10% slashing." },
-      { title: "Stateless Cloudflare Edge Router", desc: "Engineered sub-4ms routing switch with seed=42 deterministic canary probes auditing node output." },
-      { title: "Charizard PostgreSQL Financial Ledger", desc: "Designed strict schema-isolated ledger (`verxl.*`), PBKDF2 password hashing, and RFC 6238 TOTP 2FA." },
+      { title: "Stateless Sub-4ms Edge Switch", desc: "Cloudflare Pages Functions dynamically inspect tokens and route requests to lowest-latency clusters with zero RAM storage." },
+      { title: "Seed=42 Canary Quality Oracle", desc: "Automated deterministic SLA probes verify model weight authenticity in under 200ms, triggering 10% collateral slashing." },
+      { title: "Non-Custodial Arbitrum L2 Settlement", desc: "Smart contracts settle 99.5% directly to GPU hosts and 0.5% to DAO treasury; operators never custody user funds." },
     ],
     financeMetric: {
       label: "End-to-End Edge Routing Latency",
       value: "3.8 ms Overhead",
-      desc: "Measured edge proxy latency with zero-overhead tunnels to bare-metal clusters.",
+      desc: "Zero hardware CapEx depreciation risk with live sub-4ms proxy execution.",
     },
     speakerScript:
-      "My role is that of founder, full-stack quantitative architect, and systems engineer. I personally built all four layers of this protocol: the Aragon OSx governance contracts, the sub-4ms stateless edge router, the PostgreSQL transaction ledger on Charizard with RFC 6238 2FA security, and our bare-metal Vulkan cluster in Prague. This is live, running software tested in production.",
+      "Moving to technical architecture and our team: Verxl is engineered around three proprietary pillars. First, our sub-4ms stateless edge switch dynamically matches prompts to lowest-latency nodes without GPU lock-in. Second, our deterministic canary oracle continuously tests provider quality using seed=42 SLA probes, slashing malicious nodes by 10%. And third, non-custodial smart contracts on Arbitrum settle payments in USDC in seconds. We note our core team: Šimon Havlík leading architecture and full-stack engineering, collaborating with academic project partners at VŠE.",
   },
   {
     id: 5,
     badge: "5. UNIT ECONOMICS & SCALABILITY",
     title: "Compounding Financial Velocity: $3.6M/yr Net Take at 1T Tokens",
     subtitle: "High-volume micro-clearing that scales non-linearly with global AI demand",
-    timeEstimate: "3:00 - 3:45",
+    timeEstimate: "2:55 - 3:40",
     bullets: [
       { title: "Seed Phase (Q4 2026)", desc: "500M monthly tokens = $30,000 GMV → $150/mo protocol take across European quant developers." },
       { title: "Scale Phase (2027)", desc: "50B monthly tokens = $3,000,000 GMV → $15,000/mo ($180k/yr) net protocol cash flow." },
@@ -402,7 +402,7 @@ const PITCH_SLIDES: PitchSlide[] = [
     badge: "6. REGULATORY COMPLIANCE & LEGAL DEFENSE",
     title: "EU MiCA Non-Custodial Exemption & GDPR Data Sovereignty",
     subtitle: "Strict regulatory immunity engineered into the smart contract and routing perimeter",
-    timeEstimate: "3:45 - 4:20",
+    timeEstimate: "3:40 - 4:20",
     bullets: [
       { title: "MiCA Non-Custodial Immunity", desc: "Under EU MiCA, purely technical non-custodial routers do not hold customer funds and are exempt from CASP licensing." },
       { title: "Stateless In-Transit Streaming", desc: "Inference prompts and completions stream through RAM without persistent disk storage, satisfying GDPR and EU AI Act Article 50." },
@@ -2895,7 +2895,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    Simon Havlík · Started as an academic university project at VŠE Prague
+                    Šimon Havlík · Started as an academic university project at VŠE Prague
                   </div>
                 </div>
               </div>
@@ -3015,7 +3015,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                     <div className="flex items-center justify-between">
                       <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                         <Terminal className="w-3 h-3" />
-                        <span>Speaker Script (Simon Havlík · 5-Minute Delivery)</span>
+                        <span>Speaker Script (Šimon Havlík · 5-Minute Delivery)</span>
                       </div>
                       <button
                         onClick={() => setShowSpeakerNotes(!showSpeakerNotes)}
