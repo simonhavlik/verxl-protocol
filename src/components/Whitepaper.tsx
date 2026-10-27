@@ -36,15 +36,15 @@ export const Whitepaper: React.FC = () => {
       {/* Top Header & Action Controls */}
       <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div>
-          <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-1.5 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10.5px] font-mono text-amber-400 mb-1.5 uppercase tracking-wider">
             <FileText className="w-3.5 h-3.5" />
-            <span>INSTITUTIONAL WHITEPAPER SPECIFICATION · v1.0</span>
+            <span>INSTITUTIONAL WHITEPAPER SPECIFICATION · SEPOLIA TEST RUN</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Verxl Protocol: Non-Custodial AI Inference Clearing
           </h2>
           <p className="text-xs text-slate-400 font-mono mt-0.5">
-            FIR VŠE Prague • Course 4KE404/4KE505 Crypto • Lead Architect: Šimon Havlík
+            FIR VŠE Prague • Course 4KE404/4KE505 Crypto • Lead Architect: Šimon Havlík • Sepolia Testnet Run
           </p>
         </div>
 
@@ -97,12 +97,28 @@ export const Whitepaper: React.FC = () => {
         </div>
       </div>
 
+      {/* Sepolia Test Run Notice Banner */}
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-[3px] p-4 font-mono text-xs text-amber-300 flex items-start gap-3">
+        <Shield className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <div className="font-bold text-amber-300 tracking-wider uppercase text-[11px] flex items-center gap-2">
+            <span>Academic Demonstration & Test Run Notice</span>
+            <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9.5px]">
+              ETHEREUM SEPOLIA TESTNET
+            </span>
+          </div>
+          <p className="text-slate-300 text-[11px] leading-relaxed">
+            Project Verxl Protocol is currently deployed as an academic proof-of-concept test run for Course 4KE404/4KE505 at Prague University of Economics and Business (FIR VŠE, Instructor: Ing. Ondřej Paruch). All on-chain staking contracts, the Aragon OSx governance vault (<a href={`https://sepolia.etherscan.io/address/${daoAddress}`} target="_blank" rel="noopener noreferrer" className="text-amber-300 underline underline-offset-2">0xf0e5...111a</a>), and Canary Oracle probe mechanisms operate strictly on the Ethereum Sepolia testnet. This document describes the protocol mechanism design and testnet deployment prior to official mainnet launch.
+          </p>
+        </div>
+      </div>
+
       {/* Main Document Body */}
       <article className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-6 sm:p-12 shadow-2xl space-y-8 text-slate-200 leading-relaxed font-serif">
         {/* Document Header & ASCII Banner */}
         <div className="border-b border-slate-800 pb-8 text-center font-sans space-y-3">
           <div className="text-xs font-mono text-blue-400 tracking-widest uppercase">
-            Academic Research Paper • Faculty of International Relations (FIR / FMV) • VŠE Prague
+            Academic Research Paper • Faculty of International Relations (FIR / FMV) • VŠE Prague • Test Run on Sepolia
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">

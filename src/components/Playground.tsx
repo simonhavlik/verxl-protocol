@@ -278,13 +278,13 @@ main();`,
       <div>
         <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
           <Terminal className="w-3.5 h-3.5" />
-          <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions)</span>
+          <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TEST RUN</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
           Inference Terminal
         </h2>
         <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
-          Sub-50ms TTFT streaming inference directly through Verxl's non-custodial decentralized clearinghouse.
+          Sub-50ms TTFT streaming inference directly through Verxl's non-custodial decentralized clearinghouse (Sepolia Testnet Pilot).
         </p>
       </div>
 

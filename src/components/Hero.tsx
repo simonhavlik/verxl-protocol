@@ -311,11 +311,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           {/* Left Column: Copy & Actions */}
           <div className="lg:col-span-6 space-y-6">
             {/* Eyebrow with Radar Pulse Dot */}
-            <div className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider uppercase text-slate-300">
+            <div className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider uppercase text-slate-300 flex-wrap">
               <span className="radar-dot" aria-hidden="true" />
               <span className="font-semibold text-white">Verxl Protocol</span>
               <span className="text-slate-400">/</span>
-              <span className="text-blue-400">v1.0.0-Sepolia</span>
+              <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-semibold tracking-wider">
+                TEST RUN ON SEPOLIA
+              </span>
               <span className="text-slate-400">/</span>
               <a
                 href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a/proposals/VIP-1"
@@ -338,7 +340,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl">
               Eliminate centralized SaaS rent extraction. While commercial aggregators mark up raw compute by{" "}
               <strong className="text-rose-400 font-mono">840–1,040 bps</strong>, Verxl routes inference
-              statelessly to independent GPU clusters bonded by $VRXL staking collateral on Ethereum.
+              statelessly to independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
             </p>
 
             {/* Sharp Action Buttons — Strictly Square (rounded-[3px]), zero pills */}
@@ -403,7 +405,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   100%
                 </div>
                 <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  Aragon OSx
+                  Aragon OSx (Sepolia Test Run)
                 </div>
               </div>
             </div>
@@ -430,7 +432,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
                 <div className="live">
                   <i />
-                  <span>SEPOLIA LIVE</span>
+                  <span className="text-amber-400">SEPOLIA TEST RUN</span>
                 </div>
               </div>
 

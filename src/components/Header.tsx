@@ -34,6 +34,28 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#05070b]/90 border-b border-blue-500/15">
+      {/* Sepolia Test Run Institutional Top Bar */}
+      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[10px] sm:text-[10.5px] text-amber-300/90 tracking-wide flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap">
+        <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold text-amber-300 tracking-wider">
+          TEST RUN ON SEPOLIA
+        </span>
+        <span className="text-amber-500/40">/</span>
+        <span className="hidden sm:inline text-slate-300">
+          Academic Proof of Concept · FIR VŠE Prague (4KE404/4KE505)
+        </span>
+        <span className="hidden sm:inline text-amber-500/40">/</span>
+        <span className="text-amber-200">Not Official Mainnet Production</span>
+        <span className="hidden md:inline text-amber-500/40">/</span>
+        <a
+          href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:inline text-amber-300/80 hover:text-amber-200 underline decoration-amber-500/40 transition"
+        >
+          Sepolia DAO: 0xf0e5...111a
+        </a>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <div
@@ -50,13 +72,13 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-bold text-base tracking-wider text-white font-mono">
                 VERXL<span className="text-blue-500">.COM</span>
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-mono font-medium bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                <span className="w-1.5 h-1.5 status-dot bg-blue-400 animate-pulse" />
-                SEPOLIA
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                <span className="w-1.5 h-1.5 status-dot bg-amber-400 animate-pulse" />
+                SEPOLIA TEST RUN
               </span>
             </div>
             <p className="text-[9.5px] text-slate-400 hidden sm:block font-mono tracking-wide">
-              Non-Custodial AI Inference Clearing
+              Non-Custodial AI Inference Clearing · Test Run
             </p>
           </div>
         </div>

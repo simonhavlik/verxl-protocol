@@ -11,13 +11,13 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-sm tracking-wider text-white">
                 VERXL<span className="text-blue-500">.COM</span>
               </span>
-              <span className="px-1.5 py-0.5 rounded-[2px] text-[9.5px] bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                v1.0.0-SEPOLIA
+              <span className="px-1.5 py-0.5 rounded-[2px] text-[9.5px] bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                v1.0.0-SEPOLIA-TEST-RUN
               </span>
             </div>
             <p className="text-slate-400 max-w-md text-[10.5px]">
               Decentralized, non-custodial artificial intelligence inference router and compute clearinghouse.
-              Eliminating centralized SaaS rent extraction with a 50 bps protocol fee.
+              Academic proof-of-concept demonstration with 50 bps protocol clearing on Ethereum Sepolia testnet.
             </p>
           </div>
 
@@ -36,10 +36,10 @@ export const Footer: React.FC = () => {
               href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-[#080c14] border border-slate-800 text-slate-300 hover:text-blue-400 hover:border-blue-500/40 transition"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-[#080c14] border border-slate-800 text-slate-300 hover:text-amber-400 hover:border-amber-500/40 transition"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Sepolia DAO Contract</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Sepolia DAO Test Run</span>
             </a>
 
             <a
@@ -54,16 +54,19 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Academic Course Attribution */}
+        {/* Academic Course Attribution & Testnet Disclaimer */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-[10.5px] text-slate-400">
           <div>
             Prague University of Economics and Business (VŠE Praha) • Faculty of International Relations (FIR) •
             Course: <span className="text-slate-300 font-medium">4KE404 / 4KE505 Crypto</span> • Instructor:{" "}
             <span className="text-slate-300 font-medium">Ing. Ondřej Paruch</span> • Pitch Presentation: Nov 4, 2026, xPort VŠE
+            <div className="text-amber-400/90 mt-1 font-mono">
+              [TEST RUN ON SEPOLIA] Academic demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 status-dot bg-emerald-400" />
-            <span>Cloudflare Edge Active</span>
+          <div className="flex items-center gap-2 font-mono">
+            <span className="w-2 h-2 status-dot bg-amber-400 animate-pulse" />
+            <span className="text-amber-300">Sepolia Testnet Active</span>
           </div>
         </div>
       </div>

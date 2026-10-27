@@ -96,14 +96,14 @@ export const Oracle: React.FC = () => {
       <div>
         <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
           <Activity className="w-3.5 h-3.5" />
-          <span>AUTONOMOUS AI QUALITY ORACLE (NASH EQUILIBRIUM ENFORCER)</span>
+          <span>AUTONOMOUS AI QUALITY ORACLE · SEPOLIA TEST RUN</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
           Deterministic Canary Auditing & Slashing
         </h2>
         <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
           Cryptographically seed-locked audit probes prevent GPU hosts from secretly downgrading
-          FP16 weights to INT4 quantization.
+          FP16 weights to INT4 quantization (Sepolia Testnet Pilot).
         </p>
       </div>
 
