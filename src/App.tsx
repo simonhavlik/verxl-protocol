@@ -7,6 +7,7 @@ import { Oracle } from "./components/Oracle";
 import { Governance } from "./components/Governance";
 import { Whitepaper } from "./components/Whitepaper";
 import { Footer } from "./components/Footer";
+import { ShmackBackground } from "./components/ShmackBackground";
 
 function getTabFromPath(): string {
   if (typeof window === "undefined") return "overview";
@@ -68,7 +69,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
+      {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
+      {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
+
       {/* Sticky Institutional Header */}
       <Header
         activeTab={activeTab}
@@ -79,11 +83,11 @@ export default function App() {
 
       {/* Main Content Area */}
       {activeTab === "overview" ? (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col relative z-10">
           <Hero onNavigate={handleTabChange} />
         </div>
       ) : (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
           {activeTab === "playground" && <Playground />}
           {activeTab === "registry" && (
             <Registry

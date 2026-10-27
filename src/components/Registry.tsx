@@ -85,34 +85,34 @@ export const Registry: React.FC<RegistryProps> = ({
   const activeNodesCount = providers.filter((p) => p.status === "ACTIVE").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
-            <Server className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
+            <Server className="w-3 h-3" />
             <span>ON-CHAIN VERXL COMPUTE REGISTRY · SEPOLIA TEST RUN</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Decentralized GPU Compute Fleet
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
+          <p className="text-xs text-slate-400 font-mono">
             Audited, independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia test run.
           </p>
         </div>
 
         {/* Global Registry Stats */}
-        <div className="flex items-center gap-4 bg-[#0a0e17] border border-blue-500/20 p-3 rounded-[3px] font-mono text-xs shadow-sm">
+        <div className="flex items-center gap-3 bg-[#0a0e17] border border-blue-500/20 px-3 py-1.5 rounded-[3px] font-mono text-xs shadow-sm">
           <div>
-            <div className="text-[9.5px] text-slate-400 uppercase tracking-wider">TOTAL BONDED</div>
-            <div className="text-sm font-bold text-white tabular">
+            <div className="text-[9px] text-slate-400 uppercase tracking-wider">TOTAL BONDED</div>
+            <div className="text-xs font-bold text-white tabular">
               {totalBondedVrxl.toLocaleString()} $VRXL
             </div>
           </div>
-          <div className="h-7 w-[1px] bg-slate-800"></div>
+          <div className="h-6 w-[1px] bg-slate-800"></div>
           <div>
-            <div className="text-[9.5px] text-slate-400 uppercase tracking-wider">ACTIVE CLUSTERS</div>
-            <div className="text-sm font-bold text-emerald-400 tabular">
+            <div className="text-[9px] text-slate-400 uppercase tracking-wider">ACTIVE CLUSTERS</div>
+            <div className="text-xs font-bold text-emerald-400 tabular">
               {activeNodesCount} / {providers.length}
             </div>
           </div>
@@ -120,7 +120,7 @@ export const Registry: React.FC<RegistryProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-3 sm:p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-2 sm:p-2.5 flex flex-col md:flex-row gap-2.5 items-center justify-between">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

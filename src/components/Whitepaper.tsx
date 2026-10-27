@@ -32,45 +32,45 @@ export const Whitepaper: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Top Header & Action Controls */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
         <div>
-          <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10.5px] font-mono text-amber-400 mb-1.5 uppercase tracking-wider">
-            <FileText className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 mb-1 uppercase tracking-wider">
+            <FileText className="w-3 h-3" />
             <span>INSTITUTIONAL WHITEPAPER SPECIFICATION · SEPOLIA TEST RUN</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
             Verxl Protocol: Non-Custodial AI Inference Clearing
           </h2>
-          <p className="text-xs text-slate-400 font-mono mt-0.5">
+          <p className="text-[11px] text-slate-400 font-mono">
             FIR VŠE Prague • Course 4KE404/4KE505 Crypto • Lead Architect: Šimon Havlík • Sepolia Testnet Run
           </p>
         </div>
 
         {/* Action Buttons — Strictly Square (rounded-[3px]) */}
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
           <a
             href="/whitepaper.md"
             download="VERXL_PROTOCOL_WHITEPAPER.md"
-            className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px]"
+            className="hero-btn hero-btn--ghost !py-1 !px-2.5 !text-[10px]"
           >
-            <Download className="w-3.5 h-3.5 text-blue-400" />
+            <Download className="w-3 h-3 text-blue-400" />
             <span>Download .MD</span>
           </a>
 
           <button
             onClick={handleCopyMarkdown}
-            className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px]"
+            className="hero-btn hero-btn--ghost !py-1 !px-2.5 !text-[10px]"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3 h-3 text-emerald-400" />
                 <span className="text-emerald-400">Copied MD</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
+                <Copy className="w-3 h-3 text-slate-400" />
                 <span>Copy Raw MD</span>
               </>
             )}
@@ -78,9 +78,9 @@ export const Whitepaper: React.FC = () => {
 
           <button
             onClick={handlePrint}
-            className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px]"
+            className="hero-btn hero-btn--ghost !py-1 !px-2.5 !text-[10px]"
           >
-            <Printer className="w-3.5 h-3.5 text-slate-400" />
+            <Printer className="w-3 h-3 text-slate-400" />
             <span>Print / PDF</span>
           </button>
 
@@ -88,33 +88,33 @@ export const Whitepaper: React.FC = () => {
             href={`https://sepolia.etherscan.io/address/${daoAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px]"
+            className="hero-btn hero-btn--primary !py-1 !px-2.5 !text-[10px]"
           >
-            <Shield className="w-3.5 h-3.5" />
+            <Shield className="w-3 h-3" />
             <span>Aragon DAO</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-2.5 h-2.5" />
           </a>
         </div>
       </div>
 
       {/* Sepolia Test Run Notice Banner */}
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-[3px] p-4 font-mono text-xs text-amber-300 flex items-start gap-3">
-        <Shield className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="font-bold text-amber-300 tracking-wider uppercase text-[11px] flex items-center gap-2">
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-[3px] p-3 font-mono text-xs text-amber-300 flex items-start gap-2.5">
+        <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <div className="font-bold text-amber-300 tracking-wider uppercase text-[10.5px] flex items-center gap-2">
             <span>Academic Demonstration & Test Run Notice</span>
-            <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9.5px]">
+            <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9px]">
               ETHEREUM SEPOLIA TESTNET
             </span>
           </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
+          <p className="text-slate-300 text-[10.5px] leading-relaxed">
             Project Verxl Protocol is currently deployed as an academic proof-of-concept test run for Course 4KE404/4KE505 at Prague University of Economics and Business (FIR VŠE, Instructor: Ing. Ondřej Paruch). All on-chain staking contracts, the Aragon OSx governance vault (<a href={`https://sepolia.etherscan.io/address/${daoAddress}`} target="_blank" rel="noopener noreferrer" className="text-amber-300 underline underline-offset-2">0xf0e5...111a</a>), and Canary Oracle probe mechanisms operate strictly on the Ethereum Sepolia testnet. This document describes the protocol mechanism design and testnet deployment prior to official mainnet launch.
           </p>
         </div>
       </div>
 
       {/* Main Document Body */}
-      <article className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-6 sm:p-12 shadow-2xl space-y-8 text-slate-200 leading-relaxed font-serif">
+      <article className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-5 sm:p-8 shadow-2xl space-y-5 text-slate-200 leading-relaxed font-serif">
         {/* Document Header & ASCII Banner */}
         <div className="border-b border-slate-800 pb-8 text-center font-sans space-y-3">
           <div className="text-xs font-mono text-blue-400 tracking-widest uppercase">

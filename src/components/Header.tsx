@@ -56,40 +56,40 @@ export const Header: React.FC<HeaderProps> = ({
         </a>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <div
-          className="flex items-center gap-3 cursor-pointer py-2"
+          className="flex items-center gap-2.5 cursor-pointer py-1"
           onClick={() => setActiveTab("overview")}
         >
           <img
             src="/logo-square.jpg"
             alt="Verxl Logo"
-            className="w-8 h-8 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20"
+            className="w-7 h-7 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20"
           />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-wider text-white font-mono">
+              <span className="font-bold text-sm tracking-wider text-white font-mono">
                 VERXL<span className="text-blue-500">.COM</span>
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
                 <span className="w-1.5 h-1.5 status-dot bg-amber-400 animate-pulse" />
                 SEPOLIA TEST RUN
               </span>
             </div>
-            <p className="text-[9.5px] text-slate-400 hidden sm:block font-mono tracking-wide">
+            <p className="text-[9px] text-slate-400 hidden sm:block font-mono tracking-wide">
               Non-Custodial AI Inference Clearing · Test Run
             </p>
           </div>
         </div>
 
         {/* Navigation Tabs — Hairline instrument tabs */}
-        <nav className="hidden md:flex items-center gap-1 bg-[#090d16] p-1 rounded-[3px] border border-slate-800/90 font-mono text-xs">
+        <nav className="hidden md:flex items-center gap-0.5 bg-[#090d16] p-0.5 rounded-[3px] border border-slate-800/90 font-mono text-xs">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`px-3 py-1.5 rounded-[2px] transition-all text-[11px] uppercase tracking-wider font-medium ${
+              className={`px-2.5 py-1 rounded-[2px] transition-all text-[10.5px] uppercase tracking-wider font-medium ${
                 activeTab === item.id
                   ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25 border border-blue-400/40"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"

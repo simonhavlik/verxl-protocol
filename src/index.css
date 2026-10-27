@@ -104,7 +104,6 @@ td, th, .tabular, .font-mono {
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 4.25rem);
   width: 100%;
   overflow: hidden;
   background:
@@ -255,20 +254,45 @@ td, th, .tabular, .font-mono {
   -webkit-text-fill-color: transparent;
 }
 
-/* Sharp Instrument Buttons */
+/* Sharp Instrument Buttons — Compact & Dense */
 .hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
+  gap: 6px;
+  padding: 7px 14px;
   border-radius: 3px !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
   transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* Institutional Dense Table (Portfolio-Optimization style) */
+.dense-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.dense-table th {
+  color: #8290a4;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  font-size: 10px;
+}
+.dense-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+  vertical-align: middle;
+}
+.dense-table tr:hover {
+  background-color: rgba(59, 130, 246, 0.04);
 }
 
 .hero-btn--primary {

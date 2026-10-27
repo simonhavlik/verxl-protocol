@@ -5,7 +5,11 @@ import {
   Terminal,
   Cpu,
   ShieldCheck,
+  Server,
+  Activity,
+  Sliders,
 } from "lucide-react";
+import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 
 interface HeroProps {
   onNavigate: (tab: string) => void;
@@ -20,6 +24,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Fast Fee Calculator State (in millions of tokens per month)
+  const [calcTokensMillions, setCalcTokensMillions] = useState(500);
 
   // Live token stream animation state in Stage 3
   const [streamedText, setStreamedText] = useState("");
@@ -306,16 +313,16 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       </div>
 
       {/* Main Hero Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-12 flex-1 flex flex-col justify-between">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-4 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-center">
           {/* Left Column: Copy & Actions */}
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-6 space-y-3">
             {/* Eyebrow with Radar Pulse Dot */}
-            <div className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider uppercase text-slate-300 flex-wrap">
+            <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] tracking-wider uppercase text-slate-300 flex-wrap">
               <span className="radar-dot" aria-hidden="true" />
               <span className="font-semibold text-white">Verxl Protocol</span>
               <span className="text-slate-400">/</span>
-              <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-semibold tracking-wider">
+              <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[9.5px] font-semibold tracking-wider">
                 TEST RUN ON SEPOLIA
               </span>
               <span className="text-slate-400">/</span>
@@ -330,35 +337,35 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-bold text-white tracking-tight leading-[1.05]">
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.45rem] font-bold text-white tracking-tight leading-[1.08]">
               Non-Custodial{" "}
               <span className="accent-blue">AI Inference</span>{" "}
               at 50 bps Clearing
             </h1>
 
             {/* Subtitle */}
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl">
+            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-normal max-w-xl">
               Eliminate centralized SaaS rent extraction. While commercial aggregators mark up raw compute by{" "}
               <strong className="text-rose-400 font-mono">840–1,040 bps</strong>, Verxl routes inference
               statelessly to independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
             </p>
 
             {/* Sharp Action Buttons — Strictly Square (rounded-[3px]), zero pills */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
               <button
                 onClick={() => onNavigate("playground")}
                 className="hero-btn hero-btn--primary"
               >
-                <Terminal className="w-4 h-4" />
+                <Terminal className="w-3.5 h-3.5" />
                 <span>Launch Inference Terminal</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+                <ArrowRight className="w-3 h-3 ml-0.5" />
               </button>
 
               <button
                 onClick={() => onNavigate("registry")}
                 className="hero-btn hero-btn--ghost"
               >
-                <Cpu className="w-4 h-4 text-blue-400" />
+                <Cpu className="w-3.5 h-3.5 text-blue-400" />
                 <span>Compute Fleet</span>
               </button>
 
@@ -366,46 +373,46 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate("whitepaper")}
                 className="hero-btn hero-btn--ghost"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Whitepaper</span>
               </button>
             </div>
 
             {/* Institutional Stat Metrics Row */}
-            <div className="grid grid-cols-4 gap-0 pt-6 border-t border-slate-800/80 font-mono">
-              <div className="pr-3">
-                <div className="text-lg sm:text-2xl font-bold text-white tracking-tight">
-                  50 <span className="text-xs text-blue-400 font-normal">bps</span>
+            <div className="grid grid-cols-4 gap-0 pt-2.5 border-t border-slate-800/80 font-mono">
+              <div className="pr-2">
+                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
+                  50 <span className="text-[10px] text-blue-400 font-normal">bps</span>
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
                   Protocol Take
                 </div>
               </div>
 
-              <div className="px-3 border-l border-slate-800">
-                <div className="text-lg sm:text-2xl font-bold text-white tracking-tight">
-                  48 <span className="text-xs text-blue-400 font-normal">ms</span>
+              <div className="px-2 border-l border-slate-800">
+                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
+                  48 <span className="text-[10px] text-blue-400 font-normal">ms</span>
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  P50 TTFT Latency
+                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
+                  P50 Latency
                 </div>
               </div>
 
-              <div className="px-3 border-l border-slate-800">
-                <div className="text-lg sm:text-2xl font-bold text-white tracking-tight">
-                  142<span className="text-xs text-slate-400 font-normal">k</span>
+              <div className="px-2 border-l border-slate-800">
+                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
+                  142<span className="text-[10px] text-slate-400 font-normal">k</span>
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
                   $VRXL Bonded
                 </div>
               </div>
 
-              <div className="pl-3 border-l border-slate-800">
-                <div className="text-lg sm:text-2xl font-bold text-emerald-400 tracking-tight">
+              <div className="pl-2 border-l border-slate-800">
+                <div className="text-base sm:text-xl font-bold text-emerald-400 tracking-tight">
                   100%
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  Aragon OSx (Sepolia Test Run)
+                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
+                  Aragon OSx (Sepolia)
                 </div>
               </div>
             </div>
@@ -728,6 +735,320 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           </span>
         </div>
       </div>
+
+      {/* =========================================================================
+          Institutional Overview Dashboard (Modeled on Portfolio Optimizer)
+          Compact tables, zero empty void, live clearinghouse telemetry
+         ========================================================================= */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4 w-full font-mono">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/15 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
+            <h2 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
+              Verxl Protocol Clearinghouse · Live Telemetry & Ledger
+            </h2>
+            <span className="hidden sm:inline px-1.5 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[9px] text-blue-400">
+              SEPOLIA PILOT
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-[10px] text-slate-400">
+            <span>Aragon Vault:</span>
+            <a
+              href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-white underline decoration-blue-500/40"
+            >
+              0xf0e5...111a
+            </a>
+            <span className="text-slate-700">|</span>
+            <span className="text-emerald-400 font-semibold">100% Agency</span>
+          </div>
+        </div>
+
+        {/* 2-Column High-Density Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+          {/* Left Column (lg:col-span-5): Protocol Key Metrics & Fee Calculator */}
+          <div className="lg:col-span-5 space-y-3.5">
+            {/* Key Metrics Table (styled like pr-table in Portfolio Optimizer) */}
+            <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-blue-400" />
+                  Key Clearing Metrics
+                </span>
+                <span className="text-[9.5px] text-blue-400 font-mono">0.50% FIXED SWITCH</span>
+              </div>
+
+              <table className="dense-table">
+                <tbody>
+                  <tr>
+                    <th>Protocol Agency Fee</th>
+                    <td className="text-right text-emerald-400 font-bold">50 bps (0.50%)</td>
+                  </tr>
+                  <tr>
+                    <th>Centralized SaaS Rent</th>
+                    <td className="text-right text-rose-400 line-through">840 – 1,040 bps</td>
+                  </tr>
+                  <tr>
+                    <th>Median TTFT Latency</th>
+                    <td className="text-right text-white">46 ms</td>
+                  </tr>
+                  <tr>
+                    <th>Live Token Throughput</th>
+                    <td className="text-right text-white">84.5 TPS</td>
+                  </tr>
+                  <tr>
+                    <th>Bonding Minimum</th>
+                    <td className="text-right text-slate-300">1,000 $VRXL</td>
+                  </tr>
+                  <tr>
+                    <th>Total Collateral Bonded</th>
+                    <td className="text-right text-blue-400 font-semibold">142,000 $VRXL</td>
+                  </tr>
+                  <tr>
+                    <th>Supply Slashed & Burned</th>
+                    <td className="text-right text-rose-400 font-semibold">14,500 $VRXL</td>
+                  </tr>
+                  <tr>
+                    <th>Canary Audit Vector</th>
+                    <td className="text-right text-slate-300">seed=42 · temp=0.0</td>
+                  </tr>
+                  <tr>
+                    <th>Audit Cadence</th>
+                    <td className="text-right text-slate-300">30 min deterministic</td>
+                  </tr>
+                  <tr>
+                    <th>Aragon Quorum / Majority</th>
+                    <td className="text-right text-emerald-400">20.0% / 50.0%</td>
+                  </tr>
+                  <tr>
+                    <th>Genesis Token Cap</th>
+                    <td className="text-right text-slate-300">1,000,000 $VRXL</td>
+                  </tr>
+                  <tr>
+                    <th>Custodial Risk</th>
+                    <td className="text-right text-emerald-400 font-bold">Zero (Agency Float)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Interactive Fee Compression Calculator */}
+            <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
+                  Fee Compression Simulator
+                </span>
+                <span className="text-[9.5px] text-emerald-400 font-bold">-94.7% COMPRESSION</span>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10.5px] text-slate-300 mb-1">
+                  <span>Monthly Inference Volume:</span>
+                  <span className="text-blue-400 font-bold">{calcTokensMillions.toLocaleString()}M tokens</span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="2000"
+                  step="50"
+                  value={calcTokensMillions}
+                  onChange={(e) => setCalcTokensMillions(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                />
+                <div className="flex justify-between text-[8.5px] text-slate-400 font-mono mt-0.5">
+                  <span>50M tokens</span>
+                  <span>500M</span>
+                  <span>1,000M</span>
+                  <span>2,000M</span>
+                </div>
+              </div>
+
+              {/* Instant USD Savings Math */}
+              {(() => {
+                const baseCompute = calcTokensMillions * 1000 * 0.68;
+                const centralizedFee = baseCompute * 0.0950;
+                const verxlFee = baseCompute * 0.0050;
+                const netSavedMonthly = centralizedFee - verxlFee;
+                const netSavedAnnual = netSavedMonthly * 12;
+
+                return (
+                  <div className="grid grid-cols-2 gap-2 text-[10.5px] pt-1 border-t border-slate-800/60">
+                    <div className="bg-[#05070b] p-2 border border-slate-800/80">
+                      <div className="text-[9px] text-slate-400 uppercase">Verxl Protocol Fee</div>
+                      <div className="text-emerald-400 font-bold text-sm mt-0.5">
+                        ${Math.round(verxlFee).toLocaleString()} <span className="text-[9px] font-normal text-slate-400">/mo</span>
+                      </div>
+                      <div className="text-[8.5px] text-slate-400 mt-0.5">50 bps take rate</div>
+                    </div>
+
+                    <div className="bg-[#05070b] p-2 border border-slate-800/80">
+                      <div className="text-[9px] text-slate-400 uppercase">Capital Preserved</div>
+                      <div className="text-blue-400 font-bold text-sm mt-0.5">
+                        ${Math.round(netSavedMonthly).toLocaleString()} <span className="text-[9px] font-normal text-slate-400">/mo</span>
+                      </div>
+                      <div className="text-[8.5px] text-emerald-400 mt-0.5">
+                        +${Math.round(netSavedAnnual).toLocaleString()}/yr runway
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Right Column (lg:col-span-7): Compute Fleet Holdings & Canary Oracle Log */}
+          <div className="lg:col-span-7 space-y-3.5">
+            {/* Compute Fleet Holdings Table (Holdings style from Portfolio Optimizer) */}
+            <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Server className="w-3.5 h-3.5 text-blue-400" />
+                  Active Compute Fleet Allocation
+                </span>
+                <button
+                  onClick={() => onNavigate("registry")}
+                  className="text-[9.5px] text-blue-400 hover:text-white flex items-center gap-1 transition"
+                >
+                  <span>View All 7 Nodes</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="dense-table">
+                  <thead>
+                    <tr>
+                      <th className="text-left">Cluster Node</th>
+                      <th className="text-left">Hardware</th>
+                      <th className="text-left">Bonded $VRXL</th>
+                      <th className="text-right">1M P/C</th>
+                      <th className="text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {INITIAL_PROVIDERS.slice(0, 5).map((p) => {
+                      const stakePct = Math.min(100, Math.round((p.stakedAmountVrxl / 35000) * 100));
+                      return (
+                        <tr key={p.id}>
+                          <td>
+                            <div className="font-semibold text-white truncate max-w-[140px]">
+                              {p.name.split(" ")[0]} {p.name.split(" ")[1]}
+                            </div>
+                            <div className="text-[9px] text-slate-400">{p.location}</div>
+                          </td>
+                          <td className="text-slate-300 text-[10px] whitespace-nowrap">
+                            {p.hardware}
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-200 text-[10px]">
+                                {p.stakedAmountVrxl.toLocaleString()}
+                              </span>
+                              <div className="w-12 h-1 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+                                <div
+                                  className="h-full bg-blue-500"
+                                  style={{ width: `${stakePct}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="text-right text-[10px] text-slate-300 tabular">
+                            ${p.pricePromptUsd} / ${p.priceCompletionUsd}
+                          </td>
+                          <td className="text-right whitespace-nowrap">
+                            <span
+                              className={`px-1.5 py-0.2 rounded-[2px] text-[8.5px] font-bold ${
+                                p.status === "ACTIVE"
+                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  : p.status === "PROBATION"
+                                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                  : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                              }`}
+                            >
+                              {p.status} ({p.latencyMs}ms)
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Autonomous Quality Oracle Canary Log */}
+            <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Deterministic Canary Probes (Seed=42 Nash Enforcement)
+                </span>
+                <button
+                  onClick={() => onNavigate("oracle")}
+                  className="text-[9.5px] text-blue-400 hover:text-white flex items-center gap-1 transition"
+                >
+                  <span>Oracle Dashboard</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="dense-table">
+                  <thead>
+                    <tr>
+                      <th className="text-left">Probe ID</th>
+                      <th className="text-left">Target Cluster</th>
+                      <th className="text-left">Timestamp</th>
+                      <th className="text-right">Fidelity</th>
+                      <th className="text-right">Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {INITIAL_AUDIT_LOGS.map((log) => (
+                      <tr key={log.id}>
+                        <td className="text-blue-400 font-mono text-[10px]">{log.id}</td>
+                        <td className="text-white text-[10px] truncate max-w-[130px]">
+                          {log.providerName.split(" ")[0]} {log.providerName.split(" ")[1]}
+                        </td>
+                        <td className="text-slate-400 text-[9.5px]">{log.timestamp}</td>
+                        <td className="text-right font-bold tabular text-[10px]">
+                          <span
+                            className={
+                              log.fidelityScore >= 98
+                                ? "text-emerald-400"
+                                : log.fidelityScore >= 70
+                                ? "text-amber-400"
+                                : "text-rose-400"
+                            }
+                          >
+                            {log.fidelityScore}%
+                          </span>
+                        </td>
+                        <td className="text-right">
+                          <span
+                            className={`px-1.5 py-0.2 rounded-[2px] text-[8.5px] font-bold ${
+                              log.passed
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                            }`}
+                          >
+                            {log.passed ? "PASSED" : "FAILED / SLASH"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

@@ -273,28 +273,28 @@ main();`,
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Section Header */}
       <div>
-        <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
-          <Terminal className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
+          <Terminal className="w-3 h-3" />
           <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TEST RUN</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
           Inference Terminal
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
+        <p className="text-xs text-slate-400 font-mono">
           Sub-50ms TTFT streaming inference directly through Verxl's non-custodial decentralized clearinghouse (Sepolia Testnet Pilot).
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         {/* Left Column: Configuration & Controls */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 sm:p-5 space-y-4 shadow-sm">
-            <h3 className="text-[11px] font-semibold text-slate-300 font-mono tracking-wider uppercase flex items-center justify-between border-b border-slate-800/80 pb-2">
+        <div className="lg:col-span-5 space-y-3">
+          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 space-y-3 shadow-sm">
+            <h3 className="text-[10px] font-semibold text-slate-300 font-mono tracking-wider uppercase flex items-center justify-between border-b border-slate-800/80 pb-1.5">
               <span>Model & Execution Parameters</span>
-              <span className="text-[9.5px] text-blue-400 font-mono">50 BPS PROTOCOL TAKE</span>
+              <span className="text-[9px] text-blue-400 font-mono">50 BPS PROTOCOL TAKE</span>
             </h3>
 
             {/* Model Selector */}
@@ -451,18 +451,18 @@ main();`,
         </div>
 
         {/* Right Column: Streaming Output & Telemetry */}
-        <div className="lg:col-span-7 space-y-4">
+        <div className="lg:col-span-7 space-y-3">
           {/* Output Card */}
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] flex flex-col h-[460px] overflow-hidden">
+          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] flex flex-col h-[390px] overflow-hidden">
             {/* Top Bar of Output Card */}
-            <div className="px-4 py-2.5 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
+            <div className="px-3 py-2 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span
                   className={`w-2 h-2 status-dot ${
                     isStreaming ? "bg-emerald-400 animate-pulse" : "bg-slate-500"
                   }`}
                 />
-                <span className="text-[11px] font-mono text-slate-300 uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-slate-300 uppercase tracking-wider">
                   {isStreaming ? "STREAMING INFERENCE CHUNKS..." : "INFERENCE STREAM TERMINAL"}
                 </span>
               </div>
@@ -470,7 +470,7 @@ main();`,
                 {output && (
                   <button
                     onClick={copyOutput}
-                    className="flex items-center gap-1 px-2 py-1 rounded-[2px] text-[11px] font-mono bg-[#080c14] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono bg-[#080c14] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition"
                   >
                     {copied ? (
                       <>
@@ -489,7 +489,7 @@ main();`,
             </div>
 
             {/* Output Scrollable Body */}
-            <div className="flex-1 p-4 sm:p-5 overflow-y-auto font-mono text-xs leading-relaxed text-slate-200 whitespace-pre-wrap select-text bg-[#05070b]/60">
+            <div className="flex-1 p-3 sm:p-4 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap select-text bg-[#05070b]/60">
               {output ? (
                 <div>
                   {output}

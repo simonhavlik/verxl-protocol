@@ -91,69 +91,69 @@ export const Oracle: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
-          <Activity className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
+          <Activity className="w-3 h-3" />
           <span>AUTONOMOUS AI QUALITY ORACLE · SEPOLIA TEST RUN</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
           Deterministic Canary Auditing & Slashing
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
+        <p className="text-xs text-slate-400 font-mono">
           Cryptographically seed-locked audit probes prevent GPU hosts from secretly downgrading
           FP16 weights to INT4 quantization (Sepolia Testnet Pilot).
         </p>
       </div>
 
       {/* Top Telemetry Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 font-mono">
         {/* Metric 1 */}
-        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 flex items-center justify-between">
+        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider">TOTAL $VRXL BURNED</div>
-            <div className="text-xl sm:text-2xl font-bold text-rose-400 mt-0.5 tabular">
+            <div className="text-[9px] text-slate-400 uppercase tracking-wider">TOTAL $VRXL BURNED</div>
+            <div className="text-base sm:text-xl font-bold text-rose-400 mt-0.5 tabular">
               14,500 $VRXL
             </div>
-            <div className="text-[9.5px] text-slate-400 mt-1">
+            <div className="text-[9px] text-slate-400 mt-0.5">
               Permanent supply contraction
             </div>
           </div>
-          <div className="w-9 h-9 rounded-[3px] bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-            <Flame className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-[3px] bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+            <Flame className="w-3.5 h-3.5" />
           </div>
         </div>
 
         {/* Metric 2 */}
-        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 flex items-center justify-between">
+        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider">DAO VAULT DIVIDEND</div>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-0.5 tabular">
+            <div className="text-[9px] text-slate-400 uppercase tracking-wider">DAO VAULT DIVIDEND</div>
+            <div className="text-base sm:text-xl font-bold text-emerald-400 mt-0.5 tabular">
               14,500 $VRXL
             </div>
-            <div className="text-[9.5px] text-slate-400 mt-1">
+            <div className="text-[9px] text-slate-400 mt-0.5">
               Direct deposit to 0xf0e5...111a
             </div>
           </div>
-          <div className="w-9 h-9 rounded-[3px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Scale className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-[3px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <Scale className="w-3.5 h-3.5" />
           </div>
         </div>
 
         {/* Metric 3 */}
-        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 flex items-center justify-between">
+        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider">AUDIT PROBES (24H)</div>
-            <div className="text-xl sm:text-2xl font-bold text-blue-400 mt-0.5 tabular">
-              1,482 Probes
+            <div className="text-[9px] text-slate-400 uppercase tracking-wider">ORACLE RELIABILITY</div>
+            <div className="text-base sm:text-xl font-bold text-blue-400 mt-0.5 tabular">
+              99.8% SLA
             </div>
-            <div className="text-[9.5px] text-slate-400 mt-1">
-              99.82% Fleet Compliance
+            <div className="text-[9px] text-slate-400 mt-0.5">
+              Deterministic ground truth
             </div>
           </div>
-          <div className="w-9 h-9 rounded-[3px] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-            <Zap className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-[3px] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <Zap className="w-3.5 h-3.5" />
           </div>
         </div>
       </div>

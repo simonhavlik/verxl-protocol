@@ -25,33 +25,33 @@ export const Governance: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10.5px] font-mono text-amber-400 mb-2 uppercase tracking-wider">
-          <Shield className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 mb-1 uppercase tracking-wider">
+          <Shield className="w-3 h-3" />
           <span>ON-CHAIN GOVERNANCE · SEPOLIA TEST RUN</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
           Aragon OSx DAO & Protocol Specification
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
+        <p className="text-xs text-slate-400 font-mono">
           Decentralized ownership, on-chain proposals, and the theoretical framework governing
           non-custodial AI inference clearing (Sepolia Testnet Pilot).
         </p>
       </div>
 
       {/* Sepolia Test Run Notice */}
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-[3px] p-3.5 font-mono text-xs text-amber-300 flex items-start gap-3">
-        <Shield className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="font-bold text-amber-300 tracking-wider uppercase text-[11px] flex items-center gap-2">
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-[3px] p-2.5 font-mono text-xs text-amber-300 flex items-start gap-2.5">
+        <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <div className="font-bold text-amber-300 tracking-wider uppercase text-[10px] flex items-center gap-2">
             <span>Sepolia Testnet DAO Deployment</span>
-            <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9.5px]">
+            <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9px]">
               TEST RUN ONLY
             </span>
           </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
+          <p className="text-slate-300 text-[10.5px] leading-relaxed">
             The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposal VIP-1 are live on the Ethereum Sepolia testnet as an academic demonstration for FIR VŠE Prague. All votes and treasury actions use Sepolia test assets and do not constitute an official production governance launch.
           </p>
         </div>
@@ -61,7 +61,7 @@ export const Governance: React.FC = () => {
       <div className="flex border-b border-slate-800 gap-1 pb-1 font-mono text-xs">
         <button
           onClick={() => setActiveSubTab("dao")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] uppercase tracking-wider font-medium transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition ${
             activeSubTab === "dao"
               ? "bg-blue-600 text-white shadow-sm border border-blue-400/40"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -73,7 +73,7 @@ export const Governance: React.FC = () => {
 
         <button
           onClick={() => setActiveSubTab("whitepaper")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] uppercase tracking-wider font-medium transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition ${
             activeSubTab === "whitepaper"
               ? "bg-blue-600 text-white shadow-sm border border-blue-400/40"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
