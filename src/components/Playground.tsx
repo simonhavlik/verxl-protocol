@@ -268,15 +268,22 @@ export const Playground: React.FC = () => {
     }
 
     // High fidelity streaming fallback matched to prompt
+    let targetReasoning = "";
     let targetText = "";
     const promptLower = userPrompt.toLowerCase();
 
-    if (promptLower.includes("fee") || promptLower.includes("savings") || promptLower.includes("500 million")) {
+    if (promptLower.includes("fee") || promptLower.includes("savings") || promptLower.includes("500 million") || promptLower.includes("fintech")) {
+      targetReasoning =
+        `[Phase 1 · Payload Analysis] Ingesting client request: 500,000,000 monthly inference tokens. Baseline protocol invariant: 50 bps non-custodial take-rate.\n` +
+        `[Phase 2 · Spread Decomposition] Centralized provider extracted rent = 950 bps (9.50%). Verxl decentralized switch = 50 bps (0.50%). Differential: 950 - 50 = 900 bps (9.0% raw token compression).\n` +
+        `[Phase 3 · Volume Quantification] 500,000,000 * 0.090 = 45,000,000 tokens preserved monthly. Computing annualized runway retention at current compute price curve.\n` +
+        `[Phase 4 · Settlement Verification] Confirming atomic smart contract clearance on Arbitrum One with zero unsegregated balance risk.`;
+
       targetText =
         `**Parameters:**\n` +
         `*   **Volume:** 500,000,000 Tokens (Monthly)\n` +
-        `*   **Verxl Fee:** 50 bps (0.50%)\n` +
-        `*   **Aggregator Fee:** 950 bps (9.50%)\n\n` +
+        `*   **Verxl Fee:** 50 bps (0.50% non-custodial clearing)\n` +
+        `*   **Aggregator Fee:** 950 bps (9.50% centralized float)\n\n` +
         `**Calculation:**\n` +
         `1.  **Fee Differential:** 950 bps - 50 bps = **900 bps (9.0%)**\n` +
         `2.  **Savings:** 500,000,000 Tokens × 0.090\n\n` +
@@ -286,6 +293,12 @@ export const Playground: React.FC = () => {
         `*   **Annualized Preserved Runway:** **$32,400 USD** retained directly by startup.\n` +
         `*   **Non-Custodial Settlement:** Cleared atomically on Arbitrum One via smart contract.`;
     } else if (promptLower.includes("nash") || promptLower.includes("slashing") || promptLower.includes("fp16")) {
+      targetReasoning =
+        `[Phase 1 · Game Theoretic Formalization] Modeling independent compute node payoff matrix under binary strategy space {Honest FP16, Adulterated Int4}.\n` +
+        `[Phase 2 · Invariant Canary Probing] Quality oracle dispatches deterministic seed=42 challenge prompts at random intervals. Oracle detection probability p = 0.998.\n` +
+        `[Phase 3 · Penalty Evaluation] Slashing penalty = 10% of 1,000 $VRXL collateral + total ejection from registry. Comparing marginal cost saving ΔC against expected slash loss.\n` +
+        `[Phase 4 · Subgame Perfection] 0.10 * S >> ΔC holds globally. Expected utility of defection is strictly negative (E[U] < 0). Unique subgame-perfect Nash equilibrium verified.`;
+
       targetText =
         `**Nash Equilibrium & 10% Collateral Slashing Invariant:**\n\n` +
         `Let $S$ be the staked provider collateral ($1,000 \\text{ \\$VRXL}$), $R$ be the per-token revenue at 50 bps, and $C_{\\text{adulterate}}$ be the marginal compute cost savings from serving 4-bit quantized weights instead of FP16.\n\n` +
@@ -296,6 +309,12 @@ export const Playground: React.FC = () => {
         `**Equilibrium Condition:**\n` +
         `Since $0.10 \\cdot S \\gg \\Delta C$ for all inference volumes, defecting produces a strictly negative expected utility ($\\mathbb{E}[U_{\\text{defect}}] < 0$). Honest FP16 serving is the unique subgame-perfect Nash equilibrium.`;
     } else if (promptLower.includes("rust") || promptLower.includes("tokio")) {
+      targetReasoning =
+        `[Phase 1 · Client Architecture] Designing zero-allocation asynchronous HTTP pipeline utilizing reqwest and Tokio runtime.\n` +
+        `[Phase 2 · Pooling & Keep-Alive] Configuring TCP pool max_idle_per_host=32 with tcp_nodelay enabled for sub-5ms socket reuse.\n` +
+        `[Phase 3 · SSE Stream Demuxing] Constructing bytes_stream iterator to parse Server-Sent Events with zero copy buffers.\n` +
+        `[Phase 4 · Error Handling] Implementing exponential backoff on HTTP 429/503 status codes with automated retry budget.`;
+
       targetText =
         `**High-Concurrency Rust Tokio Client for Verxl /v1/chat/completions:**\n\n` +
         `\`\`\`rust\n` +
@@ -331,6 +350,12 @@ export const Playground: React.FC = () => {
         `*   **Throughput:** Zero-overhead TCP connection reuse with connection pooling.\n` +
         `*   **Protocol Fee:** 50 bps hardcoded clearing rate.`;
     } else {
+      targetReasoning =
+        `[Phase 1 · Stateless Dispatch] Evaluating lowest latency cluster route across Tier-3 network.\n` +
+        `[Phase 2 · Routing Selection] Selecting Prague node 'bulbasaur-prague-01' (8x H100 SXM5, 32k resident context).\n` +
+        `[Phase 3 · Invariant Verification] Checking deterministic seed=42 oracle attestation on Sepolia.\n` +
+        `[Phase 4 · Stream Initialization] Streaming FP16 linear tensor weights directly to client socket.`;
+
       targetText =
         `**Verxl Protocol Inference Stream Response:**\n\n` +
         `*   **Routed Node:** \`bulbasaur-prague-01\` (Prague Tier-3 Cluster)\n` +
@@ -340,9 +365,33 @@ export const Playground: React.FC = () => {
         `Your prompt has been processed through the decentralized edge router with sub-4ms proxy latency and zero custodial capital lock-up.`;
     }
 
+    const startSimTime = performance.now();
+
+    // Stream thinking trace first
+    if (targetReasoning) {
+      const reasoningWords = targetReasoning.split(" ");
+      let currReasoning = "";
+      for (let i = 0; i < reasoningWords.length; i++) {
+        if (abortControllerRef.current?.signal.aborted) {
+          setIsStreaming(false);
+          return;
+        }
+        currReasoning += (i === 0 ? "" : " ") + reasoningWords[i];
+        setReasoningOutput(currReasoning);
+        if (i === 0) {
+          const ttftMs = Math.round(performance.now() - startSimTime);
+          setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 38) }));
+        }
+        if (outputContainerRef.current) {
+          outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
+        }
+        await new Promise((r) => setTimeout(r, 12));
+      }
+    }
+
+    // Stream output response
     const words = targetText.split(" ");
     let currentText = "";
-    const startSimTime = performance.now();
 
     for (let i = 0; i < words.length; i++) {
       if (abortControllerRef.current?.signal.aborted) {
@@ -353,16 +402,11 @@ export const Playground: React.FC = () => {
       currentText += (i === 0 ? "" : " ") + words[i];
       setOutput(currentText);
 
-      if (i === 0) {
-        const ttftMs = Math.round(performance.now() - startSimTime);
-        setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 38) }));
-      }
-
       if (outputContainerRef.current) {
         outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
       }
 
-      await new Promise((r) => setTimeout(r, 18));
+      await new Promise((r) => setTimeout(r, 16));
     }
 
     const simTotalLatency = Math.round(performance.now() - startSimTime);
