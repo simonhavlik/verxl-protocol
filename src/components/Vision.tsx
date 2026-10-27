@@ -1075,9 +1075,9 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="text-[10px] text-slate-400 flex items-center gap-2 mr-1">
-            <span>VŠE Praha (2SE307)</span>
+            <span>Started as an Academic University Project</span>
             <span className="text-slate-700">|</span>
-            <span className="text-emerald-400 font-semibold">SB 235 · M. Bok</span>
+            <span className="text-emerald-400 font-semibold">VŠE Praha</span>
           </div>
           <a
             href="#financial-diligence"
@@ -1221,7 +1221,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                   Lead Protocol Architect
                 </span>
-                <span className="text-slate-300">VŠE Praha · 2SE307</span>
+                <span className="text-slate-300">VŠE Praha</span>
               </div>
 
               {/* Full Color Pudong Photo Frame */}
@@ -1255,8 +1255,8 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
               {/* Bottom Card Footer */}
               <div className="px-1 text-[10.5px] text-slate-300 flex items-center justify-between font-mono">
-                <span className="text-slate-400">Bitcoin & Blockchain Practical Seminar</span>
-                <span className="text-emerald-400 font-bold">Room SB 235</span>
+                <span className="text-slate-400">Academic Project Initiative</span>
+                <span className="text-emerald-400 font-bold">VŠE Praha</span>
               </div>
             </div>
           </div>
@@ -1615,7 +1615,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               <span>Investment Grade</span>
             </span>
             <span className="px-2 py-0.5 rounded-[2px] bg-blue-500/10 text-blue-400 border border-blue-500/30 font-mono">
-              VŠE 2SE307 Framework
+              Academic Research Framework · VŠE Praha
             </span>
           </div>
         </div>
@@ -2444,11 +2444,11 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               <span>Protocol Executive Assembly & Project Team</span>
             </h2>
             <p className="text-[11px] text-slate-400 font-sans">
-              Founded at Prague University of Economics and Business (VŠE Praha) · Course 2SE307 Bitcoin and Blockchain.
+              Started as an academic university project at Prague University of Economics and Business (VŠE Praha).
             </p>
           </div>
           <span className="text-[10px] text-emerald-400 font-bold font-mono">
-            Instructor: M. Bok · Room SB 235
+            Academic Project Initiative · VŠE Praha
           </span>
         </div>
 
@@ -2502,12 +2502,12 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-blue-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
                   <ShieldCheck className="w-6 h-6 text-blue-400 mb-0.5" />
                   <span className="text-[6.5px] text-blue-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
-                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE 2SE307</span>
+                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE Praha</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                     <span>Quality Control Lead</span>
-                    <span className="px-1 py-0.1 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px]">2SE307</span>
+                    <span className="px-1 py-0.1 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px]">VŠE Partner</span>
                   </div>
                   <div className="text-[10.5px] text-blue-400 font-bold">
                     Quality Assurance & Process Verification
@@ -2539,12 +2539,12 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <div className="w-16 h-16 rounded-[3px] bg-[#05070b] border border-purple-500/30 flex flex-col items-center justify-center text-slate-400 shrink-0 relative overflow-hidden shadow-inner">
                   <Compass className="w-6 h-6 text-purple-400 mb-0.5" />
                   <span className="text-[6.5px] text-purple-300 font-mono tracking-tight font-bold uppercase">PORTRAIT PENDING</span>
-                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE 2SE307</span>
+                  <span className="text-[6px] text-slate-400 font-mono tracking-tighter">VŠE Praha</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                     <span>Compliance & Vision Lead</span>
-                    <span className="px-1 py-0.1 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px]">2SE307</span>
+                    <span className="px-1 py-0.1 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px]">VŠE Partner</span>
                   </div>
                   <div className="text-[10.5px] text-purple-400 font-bold">
                     Regulatory Compliance & Market Research
@@ -2895,7 +2895,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    Simon Havlík · VŠE Prague (2SE307 Bitcoin & Blockchain · M. Bok)
+                    Simon Havlík · Started as an academic university project at VŠE Prague
                   </div>
                 </div>
               </div>

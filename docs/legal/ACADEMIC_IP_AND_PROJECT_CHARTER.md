@@ -3,7 +3,7 @@
 
 **Course Module Context:** Prague University of Economics and Business (Vysoká škola ekonomická v Praze – VŠE Praha)  
 **Academic Course:** 2SE307 Bitcoin and Blockchain (Faculty of International Relations / Fakulta mezinárodních vztahů)  
-**Course Instructor:** Ing. M. Bok, SB 235  
+**Course Instructor:** Ing. M. Bok (Faculty of International Relations / Fakulta mezinárodních vztahů, VŠE Praha)  
 **Governing Law:** Laws of the Czech Republic (Act No. 121/2000 Coll., Copyright Act, and Act No. 89/2012 Coll., Civil Code)  
 **Effective Date:** October 27, 2026  
 

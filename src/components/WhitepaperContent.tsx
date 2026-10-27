@@ -77,7 +77,7 @@ export const WhitepaperContent: React.FC = () => {
         {/* Document Header */}
         <div className="space-y-3 border-b border-slate-800/80 pb-6 text-left">
           <div className="text-[11px] font-mono text-blue-400 tracking-wider uppercase font-semibold">
-            Technical Whitepaper — Version 1.0 · VŠE Praha (2SE307 · SB 235 · M. Bok)
+            Technical Whitepaper — Version 1.0 · Started as an Academic University Project at VŠE Praha
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
             Verxl Protocol
@@ -576,7 +576,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
 
         {/* Subdued Academic Attribution Footer */}
         <div className="border-t border-slate-800/80 pt-6 text-center text-[11px] font-mono text-slate-400 space-y-1">
-          <div>Prague University of Economics and Business (VŠE Praha) • 2SE307 Bitcoin and blockchain - practical seminar (M. Bok) • Room SB 235</div>
+          <div>Started as an academic university project at Prague University of Economics and Business (VŠE Praha)</div>
           <div>Project Verxl Protocol • October 2026 • Published to <code className="text-blue-400">verxl.com/whitepaper</code></div>
         </div>
       </article>

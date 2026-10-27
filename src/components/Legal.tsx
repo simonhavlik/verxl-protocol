@@ -460,7 +460,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </h2>
               <ul className="list-disc pl-5 space-y-1 text-slate-300">
                 <li>
-                  <strong>Project Owner & Sole Author (Party A):</strong> Šimon Havlík (Lead Architect, Software Engineer, and Sole Funder). Conceived, coded, funded, and deployed the Protocol, smart contracts, and infrastructure fleet prior to and independently of the academic seminar.
+                  <strong>Project Owner & Sole Author (Party A):</strong> Šimon Havlík (Lead Architect, Software Engineer, and Sole Funder). Conceived, coded, funded, and deployed the Protocol, smart contracts, and infrastructure fleet prior to and independently of the academic project.
                 </li>
                 <li>
                   <strong>Academic Peer Collaborators (Parties B & C):</strong> Student colleagues enrolled in VŠE course 2SE307. Participated in an advisory, editorial, and classroom presentation capacity to satisfy course group prerequisites and achieve course grade credits.

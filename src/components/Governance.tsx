@@ -169,7 +169,7 @@ export const Governance: React.FC = () => {
             </span>
           </div>
           <p className="text-slate-300 text-[10.5px] leading-relaxed">
-            The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposals VIP-1, VIP-2, VIP-3 are live on the Ethereum Sepolia testnet as an academic demonstration for VŠE Praha (2SE307 · SB 235 · M. Bok). All votes, telemetry, and treasury actions are continuously synced into PostgreSQL on Charizard (<code className="text-amber-200">212.227.211.88:5432 · schema verxl</code>).
+            The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposals VIP-1, VIP-2, VIP-3 are live on the Ethereum Sepolia testnet as an academic demonstration started as an academic university project at Prague University of Economics and Business (VŠE Praha). All votes, telemetry, and treasury actions are continuously synced into PostgreSQL on Charizard (<code className="text-amber-200">212.227.211.88:5432 · schema verxl</code>).
           </p>
         </div>
       </div>

@@ -7,7 +7,7 @@
 **Arbitrum Settlement Escrow:** `0x5AE718197a6A87E103B124b660fd49692C857aE0`  
 **Governance Token:** `$VRXL` (ERC-20, Fixed Genesis Supply: 1,000,000)  
 **PostgreSQL Telemetry Target:** Charizard `212.227.211.88:5432/kiam` (schema `verxl`)  
-**Academic Attribution:** Prague University of Economics and Business (VŠE Praha) · 2SE307 Bitcoin and Blockchain Practical Seminar · Room SB 235 · M. Bok  
+**Academic Attribution:** Started as an academic university project at Prague University of Economics and Business (VŠE Praha)  
 **Lead Architect & Author:** Šimon Havlík & Core Contributors  
 **Date:** October 2026  
 
@@ -441,7 +441,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
 ### Phase 2: Proposal Pitch & Peer Review (November 2026)
 * Deliver strictly timed 5-minute proposal pitch at xPort VŠE on November 4, 2026.
 * Complete peer evaluations for student teams.
-* Refine technical architecture based on seminar feedback.
+* Refine technical architecture based on academic peer review and stress-test feedback.
 
 ### Phase 3: Core Proxy & Oracle Engine (November – December 2026)
 * Implement TypeScript Cloudflare Worker for `/v1/chat/completions`.
