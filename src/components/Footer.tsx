@@ -106,7 +106,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div>
             Launched as an applied blockchain and decentralized compute competition project at Prague University of Economics and Business (VŠE Praha).
             <div className="text-amber-400/90 mt-0.5 font-mono text-[9.5px]">
-              [TEST RUN ON SEPOLIA] Demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
+              [SEPOLIA TESTNET] Demonstration on Ethereum Sepolia testnet. Not an official mainnet production deployment.
             </div>
           </div>
           <div className="flex items-center gap-2 font-mono">

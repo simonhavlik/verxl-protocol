@@ -194,13 +194,13 @@ export const Registry: React.FC<RegistryProps> = ({
         <div>
           <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
             <Server className="w-3 h-3" />
-            <span>ON-CHAIN VERXL COMPUTE REGISTRY · SEPOLIA TEST RUN</span>
+            <span>ON-CHAIN VERXL COMPUTE REGISTRY · SEPOLIA TESTNET</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Decentralized GPU Compute Fleet
           </h2>
           <p className="text-xs text-slate-400 font-mono">
-            Audited, independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia test run.
+            Audited, independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
           </p>
         </div>
 

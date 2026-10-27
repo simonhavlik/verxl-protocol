@@ -148,7 +148,7 @@ export const Governance: React.FC = () => {
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 mb-1 uppercase tracking-wider">
           <Shield className="w-3 h-3" />
-          <span>ON-CHAIN GOVERNANCE · SEPOLIA TEST RUN</span>
+          <span>ON-CHAIN GOVERNANCE · SEPOLIA TESTNET</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
           Aragon OSx DAO & Protocol Specification
@@ -165,7 +165,7 @@ export const Governance: React.FC = () => {
           <div className="font-bold text-amber-300 tracking-wider uppercase text-[10px] flex items-center gap-2">
             <span>Sepolia Testnet DAO Deployment</span>
             <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 text-amber-400 text-[9px]">
-              TEST RUN ONLY
+              SEPOLIA TESTNET
             </span>
           </div>
           <p className="text-slate-300 text-[10.5px] leading-relaxed">

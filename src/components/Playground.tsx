@@ -505,7 +505,7 @@ main();`,
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
           <Terminal className="w-3 h-3" />
-          <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TEST RUN</span>
+          <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TESTNET</span>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">

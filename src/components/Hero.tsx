@@ -348,7 +348,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <span className="font-semibold text-white">Verxl Protocol</span>
               <span className="text-slate-400">/</span>
               <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[9.5px] font-semibold tracking-wider">
-                TEST RUN ON SEPOLIA
+                SEPOLIA TESTNET
               </span>
               <span className="text-slate-400">/</span>
               <a
@@ -472,7 +472,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
                 <div className="live">
                   <i />
-                  <span className="text-amber-400">SEPOLIA TEST RUN</span>
+                  <span className="text-amber-400">SEPOLIA TESTNET</span>
                 </div>
               </div>
 

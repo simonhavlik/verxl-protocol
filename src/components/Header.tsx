@@ -48,17 +48,15 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#05070b]/90 border-b border-blue-500/15">
-      {/* Sepolia Test Run Institutional Top Bar */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[9.5px] sm:text-[10.5px] text-amber-300/90 tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto whitespace-nowrap">
-        <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[8.5px] sm:text-[9px] font-bold text-amber-300 tracking-wider shrink-0">
-          TEST RUN ON SEPOLIA
+      {/* Sepolia Testnet Notice Top Bar */}
+      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[9.5px] sm:text-[10px] text-amber-300/90 tracking-wide flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap">
+        <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[8.5px] font-bold text-amber-300 tracking-wider shrink-0">
+          SEPOLIA TESTNET
         </span>
         <span className="text-amber-500/40">/</span>
         <span className="text-slate-300 truncate">
           VŠE Praha Academic Project
         </span>
-        <span className="hidden sm:inline text-amber-500/40">/</span>
-        <span className="hidden sm:inline text-amber-200">Not Official Mainnet Production</span>
         <span className="hidden md:inline text-amber-500/40">/</span>
         <a
           href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
@@ -66,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
           rel="noopener noreferrer"
           className="hidden md:inline text-amber-300/80 hover:text-amber-200 underline decoration-amber-500/40 transition"
         >
-          Sepolia DAO: 0xf0e5...111a
+          DAO: 0xf0e5...111a
         </a>
       </div>
 
@@ -81,20 +79,9 @@ export const Header: React.FC<HeaderProps> = ({
             alt="Verxl Logo"
             className="w-7 h-7 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20"
           />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-wider text-white font-mono">
-                VERXL<span className="text-blue-500">.COM</span>
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                <span className="w-1.5 h-1.5 status-dot bg-amber-400 animate-pulse" />
-                SEPOLIA TEST RUN
-              </span>
-            </div>
-            <p className="text-[9px] text-slate-400 hidden sm:block font-mono tracking-wide">
-              Non-Custodial AI Inference Clearing · Test Run
-            </p>
-          </div>
+          <span className="font-bold text-sm tracking-wider text-white font-mono">
+            VERXL<span className="text-blue-500">.COM</span>
+          </span>
         </div>
 
         {/* Navigation Tabs — Hairline instrument tabs */}

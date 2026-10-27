@@ -96,7 +96,7 @@ export const Oracle: React.FC = () => {
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
           <Activity className="w-3 h-3" />
-          <span>AUTONOMOUS AI QUALITY ORACLE · SEPOLIA TEST RUN</span>
+          <span>AUTONOMOUS AI QUALITY ORACLE · SEPOLIA TESTNET</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
           Deterministic Canary Auditing & Slashing
