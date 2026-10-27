@@ -72,7 +72,7 @@ export const Registry: React.FC<RegistryProps> = ({
         )
       );
       setStakeActionSuccess(
-        `Successfully staked ${amt.toLocaleString()} $VRXL to ${selectedProvider.name}. Collateral is now bonded on Sepolia.`
+        `Successfully staked ${amt.toLocaleString()} $VRXL to ${selectedProvider.name}. Collateral is bonded on Sepolia.`
       );
       setTimeout(() => {
         setIsStakingModalOpen(false);
@@ -85,34 +85,34 @@ export const Registry: React.FC<RegistryProps> = ({
   const activeNodesCount = providers.filter((p) => p.status === "ACTIVE").length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-400 mb-2">
+          <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10.5px] font-mono text-blue-400 mb-2 uppercase tracking-wider">
             <Server className="w-3.5 h-3.5" />
             <span>ON-CHAIN VERXL COMPUTE REGISTRY</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             Decentralized GPU Compute Fleet
           </h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Independent, audited GPU hosts bonded by $VRXL staking collateral on Sepolia.
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-mono">
+            Audited, independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia.
           </p>
         </div>
 
         {/* Global Registry Stats */}
-        <div className="flex items-center gap-4 bg-[#0c1322] border border-slate-800 p-3 rounded-xl font-mono text-xs">
+        <div className="flex items-center gap-4 bg-[#0a0e17] border border-blue-500/20 p-3 rounded-[3px] font-mono text-xs shadow-sm">
           <div>
-            <div className="text-[10px] text-slate-400">TOTAL BONDED</div>
-            <div className="text-sm font-bold text-white">
+            <div className="text-[9.5px] text-slate-400 uppercase tracking-wider">TOTAL BONDED</div>
+            <div className="text-sm font-bold text-white tabular">
               {totalBondedVrxl.toLocaleString()} $VRXL
             </div>
           </div>
           <div className="h-7 w-[1px] bg-slate-800"></div>
           <div>
-            <div className="text-[10px] text-slate-400">ACTIVE CLUSTERS</div>
-            <div className="text-sm font-bold text-emerald-400">
+            <div className="text-[9.5px] text-slate-400 uppercase tracking-wider">ACTIVE CLUSTERS</div>
+            <div className="text-sm font-bold text-emerald-400 tabular">
               {activeNodesCount} / {providers.length}
             </div>
           </div>
@@ -120,33 +120,33 @@ export const Registry: React.FC<RegistryProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#0c1322] border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-3 sm:p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search cluster, location, hardware, model..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700/80 rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
+            className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] pl-9 pr-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
           />
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400 mr-1">
-            <Filter className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 font-mono text-xs">
+          <div className="flex items-center gap-1 text-[11px] text-slate-400 mr-1">
+            <Filter className="w-3 h-3" />
             <span className="hidden sm:inline">Region:</span>
           </div>
           {["ALL", "EU-Central", "EU-West", "EU-East"].map((r) => (
             <button
               key={r}
               onClick={() => setRegionFilter(r)}
-              className={`px-2.5 py-1 rounded text-xs font-mono transition ${
+              className={`px-2 py-1 rounded-[2px] text-[11px] uppercase tracking-wider transition ${
                 regionFilter === r
-                  ? "bg-blue-600 text-white font-medium shadow-sm shadow-blue-500/20"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800"
+                  ? "bg-blue-600 text-white font-medium shadow-sm shadow-blue-500/20 border border-blue-400/40"
+                  : "bg-[#05070b] border border-slate-800 text-slate-400 hover:text-slate-200"
               }`}
             >
               {r}
@@ -159,16 +159,16 @@ export const Registry: React.FC<RegistryProps> = ({
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-2.5 py-1 rounded text-xs font-mono transition ${
+              className={`px-2 py-1 rounded-[2px] text-[11px] uppercase tracking-wider transition ${
                 statusFilter === s
                   ? s === "ACTIVE"
-                    ? "bg-emerald-600 text-white font-medium"
+                    ? "bg-emerald-600 text-white font-medium border border-emerald-400/40"
                     : s === "PROBATION"
-                    ? "bg-amber-600 text-white font-medium"
+                    ? "bg-amber-600 text-white font-medium border border-amber-400/40"
                     : s === "SLASHED"
-                    ? "bg-rose-600 text-white font-medium"
-                    : "bg-blue-600 text-white font-medium"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800"
+                    ? "bg-rose-600 text-white font-medium border border-rose-400/40"
+                    : "bg-blue-600 text-white font-medium border border-blue-400/40"
+                  : "bg-[#05070b] border border-slate-800 text-slate-400 hover:text-slate-200"
               }`}
             >
               {s}
@@ -178,64 +178,64 @@ export const Registry: React.FC<RegistryProps> = ({
       </div>
 
       {/* Providers Table */}
-      <div className="bg-[#0c1322] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse font-mono">
             <thead>
-              <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[11px] font-mono text-slate-400">
-                <th className="py-3 px-4">PROVIDER & HARDWARE</th>
-                <th className="py-3 px-4">LOCATION</th>
-                <th className="py-3 px-4">MODEL HOSTED</th>
-                <th className="py-3 px-4">PERF (TTFT / TPS)</th>
-                <th className="py-3 px-4">RATE ($/1M TKN)</th>
-                <th className="py-3 px-4">STAKED COLLATERAL</th>
-                <th className="py-3 px-4">STATUS & FIDELITY</th>
-                <th className="py-3 px-4 text-right">ACTION</th>
+              <tr className="border-b border-slate-800/80 bg-[#05070b] text-[10.5px] text-slate-400 uppercase tracking-wider">
+                <th className="py-2.5 px-4 font-semibold">PROVIDER & HARDWARE</th>
+                <th className="py-2.5 px-4 font-semibold">LOCATION</th>
+                <th className="py-2.5 px-4 font-semibold">MODEL HOSTED</th>
+                <th className="py-2.5 px-4 font-semibold">PERF (TTFT / TPS)</th>
+                <th className="py-2.5 px-4 font-semibold">RATE ($/1M TKN)</th>
+                <th className="py-2.5 px-4 font-semibold">STAKED COLLATERAL</th>
+                <th className="py-2.5 px-4 font-semibold">STATUS & FIDELITY</th>
+                <th className="py-2.5 px-4 text-right font-semibold">ACTION</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+            <tbody className="divide-y divide-slate-800/60 text-xs">
               {filteredProviders.map((p) => (
                 <tr
                   key={p.id}
-                  className="hover:bg-slate-800/30 transition group"
+                  className="hover:bg-slate-800/25 transition group"
                 >
                   {/* Provider & Hardware */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-200 group-hover:text-blue-400 transition">
+                  <td className="py-3 px-4">
+                    <div className="font-semibold text-slate-100 group-hover:text-blue-400 transition">
                       {p.name}
                     </div>
-                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                    <div className="text-[10.5px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                       <Cpu className="w-3 h-3 text-slate-400" />
                       <span>{p.hardware}</span>
                     </div>
                   </td>
 
                   {/* Location */}
-                  <td className="py-3.5 px-4 text-slate-300">
+                  <td className="py-3 px-4 text-slate-300">
                     <div>{p.location}</div>
                     <div className="text-[10px] text-slate-400">{p.region}</div>
                   </td>
 
                   {/* Model */}
-                  <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-blue-300">
+                  <td className="py-3 px-4">
+                    <span className="px-1.5 py-0.5 rounded-[2px] bg-[#05070b] border border-slate-800 text-[10.5px] text-blue-300">
                       {p.modelIdentifier.split("/")[1] || p.modelIdentifier}
                     </span>
                   </td>
 
                   {/* Perf */}
-                  <td className="py-3.5 px-4 text-slate-300">
+                  <td className="py-3 px-4 text-slate-300">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-white font-semibold">{p.ttftMs}ms</span>
-                      <span className="text-slate-400 text-[10px]">TTFT</span>
+                      <span className="text-white font-semibold tabular">{p.ttftMs}ms</span>
+                      <span className="text-slate-400 text-[9.5px]">TTFT</span>
                     </div>
-                    <div className="text-[11px] text-emerald-400">
+                    <div className="text-[10.5px] text-emerald-400 tabular">
                       {p.throughputTps} TPS
                     </div>
                   </td>
 
                   {/* Rate */}
-                  <td className="py-3.5 px-4 text-slate-300">
+                  <td className="py-3 px-4 text-slate-300 tabular">
                     <div>${p.pricePromptUsd.toFixed(2)} prompt</div>
                     <div className="text-[10px] text-slate-400">
                       ${p.priceCompletionUsd.toFixed(2)} compl
@@ -243,47 +243,47 @@ export const Registry: React.FC<RegistryProps> = ({
                   </td>
 
                   {/* Staked Collateral */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3 px-4 tabular">
                     <div className="font-semibold text-white">
                       {p.stakedAmountVrxl.toLocaleString()} $VRXL
                     </div>
-                    <div className="text-[10px] text-slate-400">Bonded Sepolia</div>
+                    <div className="text-[9.5px] text-slate-400">Bonded Sepolia</div>
                   </td>
 
-                  {/* Status & Fidelity */}
-                  <td className="py-3.5 px-4">
+                  {/* Status & Fidelity — Square badges */}
+                  <td className="py-3 px-4">
                     <div className="flex items-center gap-1.5">
                       {p.status === "ACTIVE" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                           <ShieldCheck className="w-3 h-3" />
                           ACTIVE
                         </span>
                       )}
                       {p.status === "PROBATION" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                           <AlertTriangle className="w-3 h-3" />
                           PROBATION
                         </span>
                       )}
                       {p.status === "SLASHED" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
                           <XCircle className="w-3 h-3" />
                           SLASHED
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-[9.5px] text-slate-400 mt-0.5 tabular">
                       Fidelity: {p.lastAuditScore}%
                     </div>
                   </td>
 
-                  {/* Action */}
-                  <td className="py-3.5 px-4 text-right">
+                  {/* Action — Strictly Square */}
+                  <td className="py-3 px-4 text-right">
                     <button
                       onClick={() => handleOpenStaking(p)}
-                      className="px-2.5 py-1 rounded bg-slate-900 border border-slate-700/80 text-xs text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition"
+                      className="px-2.5 py-1 rounded-[2px] bg-[#05070b] border border-slate-800 text-[11px] text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition uppercase tracking-wider font-semibold"
                     >
-                      Bond Collateral
+                      Bond
                     </button>
                   </td>
                 </tr>
@@ -293,38 +293,38 @@ export const Registry: React.FC<RegistryProps> = ({
         </div>
       </div>
 
-      {/* Staking & Collateral Modal */}
+      {/* Staking & Collateral Modal — Strictly Square */}
       {isStakingModalOpen && selectedProvider && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0c1322] border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0e17] border border-blue-500/30 rounded-[4px] max-w-lg w-full p-6 shadow-2xl relative space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-blue-400" />
-                <h3 className="text-base font-semibold text-white">
+                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
                   Bond Collateral to Cluster
                 </h3>
               </div>
               <button
                 onClick={() => setIsStakingModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-white text-sm font-mono"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs font-mono text-slate-300">
-              <div className="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-1">
-                <div className="text-slate-400 text-[10px]">TARGET NODE</div>
+              <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800 space-y-1">
+                <div className="text-slate-400 text-[9.5px] uppercase tracking-wider">TARGET NODE</div>
                 <div className="font-semibold text-white text-sm">
                   {selectedProvider.name}
                 </div>
-                <div className="text-slate-400 text-[11px]">
+                <div className="text-slate-400 text-[10.5px]">
                   Hardware: {selectedProvider.hardware} • Location: {selectedProvider.location}
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 text-[11px]">
+                <label className="block text-slate-400 mb-1 text-[10.5px] uppercase tracking-wider">
                   BOND AMOUNT ($VRXL)
                 </label>
                 <div className="relative">
@@ -334,7 +334,7 @@ export const Registry: React.FC<RegistryProps> = ({
                     step="500"
                     value={stakeAmount}
                     onChange={(e) => setStakeAmount(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-blue-500"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
                     $VRXL
@@ -342,7 +342,7 @@ export const Registry: React.FC<RegistryProps> = ({
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800/80 space-y-1 text-[11px]">
+              <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800/80 space-y-1 text-[10.5px]">
                 <div className="text-slate-300 font-semibold flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                   <span>Staking Registry Covenants:</span>
@@ -359,23 +359,23 @@ export const Registry: React.FC<RegistryProps> = ({
               </div>
 
               {stakeActionSuccess && (
-                <div className="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
+                <div className="p-2.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{stakeActionSuccess}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-2">
               <button
                 onClick={() => setIsStakingModalOpen(false)}
-                className="w-1/2 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
+                className="w-1/2 py-2 rounded-[2px] bg-[#05070b] border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-mono transition uppercase tracking-wider"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecuteStake}
-                className="w-1/2 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-medium shadow-md shadow-blue-600/30 transition"
+                className="w-1/2 hero-btn hero-btn--primary !justify-center !py-2"
               >
                 {walletAddress ? "Confirm Sepolia Bond" : "Connect Wallet to Stake"}
               </button>

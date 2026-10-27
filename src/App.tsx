@@ -36,7 +36,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Sticky Institutional Header */}
       <Header
         activeTab={activeTab}
@@ -46,18 +46,23 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {activeTab === "overview" && <Hero onNavigate={setActiveTab} />}
-        {activeTab === "playground" && <Playground />}
-        {activeTab === "registry" && (
-          <Registry
-            walletAddress={walletAddress}
-            onConnectWallet={handleConnectWallet}
-          />
-        )}
-        {activeTab === "oracle" && <Oracle />}
-        {activeTab === "governance" && <Governance />}
-      </main>
+      {activeTab === "overview" ? (
+        <div className="flex-1 flex flex-col">
+          <Hero onNavigate={setActiveTab} />
+        </div>
+      ) : (
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          {activeTab === "playground" && <Playground />}
+          {activeTab === "registry" && (
+            <Registry
+              walletAddress={walletAddress}
+              onConnectWallet={handleConnectWallet}
+            />
+          )}
+          {activeTab === "oracle" && <Oracle />}
+          {activeTab === "governance" && <Governance />}
+        </main>
+      )}
 
       {/* Institutional Footer */}
       <Footer />
