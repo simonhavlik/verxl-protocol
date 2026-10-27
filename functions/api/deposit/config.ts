@@ -4,7 +4,7 @@ interface Env {
   TREASURY_ADDRESS?: string;
 }
 
-const TREASURY_WALLET = "0x5AE718197a6A87E103B124b660fd49692C857aE0";
+const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   return new Response(
     JSON.stringify({
       treasury_address: treasury,
-      min_deposit_usd: 1.0,
+      min_deposit_usd: 0.1,
       protocol_fee_bps: 50,
       network: "Arbitrum One Mainnet (Chain ID 42161)",
       settlement_token: "USDC (Arbitrum Native & Bridged USDC.e)",

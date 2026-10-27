@@ -5,8 +5,14 @@ interface Env {
   TREASURY_ADDRESS?: string;
 }
 
-const TREASURY_WALLET = "0x5AE718197a6A87E103B124b660fd49692C857aE0";
+const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+// Recognized settlement/treasury wallets (Šimon MetaMask lead wallet + legacy DAO vault)
+const VALID_TREASURIES = new Set([
+  "0x14f10a865e277c0b1949e18dd9856602db11742b",
+  "0x5ae718197a6a87e103b124b660fd49692c857ae0",
+]);
 
 // Valid Arbitrum One Mainnet USDC contracts (6 decimals)
 const VALID_USDC_CONTRACTS = new Set([
@@ -77,7 +83,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const treasury = (env.TREASURY_ADDRESS || TREASURY_WALLET).toLowerCase();
+  const primaryTreasury = (env.TREASURY_ADDRESS || TREASURY_WALLET).toLowerCase();
+  const acceptedTreasuries = new Set<string>([
+    primaryTreasury,
+    ...Array.from(VALID_TREASURIES),
+  ]);
 
   let creditedAmountUsd = 0;
   let fromAddress = "0x0000000000000000000000000000000000000000";
@@ -141,7 +151,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           ) {
             // topic[2] is recipient padded to 32 bytes (64 hex characters + 0x)
             const recipientInLog = "0x" + log.topics[2].slice(-40).toLowerCase();
-            if (recipientInLog === treasury) {
+            if (acceptedTreasuries.has(recipientInLog)) {
               const hexVal = log.data;
               const valBigInt = BigInt(hexVal);
               creditedAmountUsd = Number(valBigInt) / 1e6; // USDC has 6 decimals on Arbitrum
@@ -171,16 +181,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (creditedAmountUsd === 0) {
     return new Response(
       JSON.stringify({
-        error: `No valid transfer to Verxl Treasury (${treasury}) was found in transaction ${txHash}. Only verified Arbitrum One USDC (Native 0xaf88d065... or USDC.e 0xFF970A61...) transfers are accepted. Testnet tokens, ETH, and other assets are rejected.`,
+        error: `No valid transfer to Verxl Treasury (${primaryTreasury}) was found in transaction ${txHash}. Only verified Arbitrum One USDC (Native 0xaf88d065... or USDC.e 0xFF970A61...) transfers are accepted. Testnet tokens, ETH, and other assets are rejected.`,
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }
 
-  if (creditedAmountUsd < 1.0) {
+  if (creditedAmountUsd < 0.1) {
     return new Response(
       JSON.stringify({
-        error: `Deposit amount of $${creditedAmountUsd.toFixed(2)} USDC is below the minimum threshold of $1.00 USD (1 USDC).`,
+        error: `Deposit amount of $${creditedAmountUsd.toFixed(2)} USDC is below the minimum threshold of $0.10 USD.`,
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
@@ -206,7 +216,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(userId)
     .first<{ balance_usd: number; total_deposited_usd: number }>();
 
-  // 4. Auto-generate initial API Key if user deposited >= $1.00 and has no active key
+  // 4. Auto-generate initial API Key if user deposited >= $0.10 and has no active key
   let newGeneratedKey: string | null = null;
   const existingKey = await db.prepare(
     "SELECT id FROM api_keys WHERE user_id = ? AND is_active = 1 LIMIT 1"
@@ -214,7 +224,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(userId)
     .first();
 
-  if (!existingKey && (updatedUser?.total_deposited_usd || 0) >= 1.0) {
+  if (!existingKey && (updatedUser?.total_deposited_usd || 0) >= 0.1) {
     const rawKeySecret = `vrxl_live_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "")}`.slice(0, 42);
     const keyHash = await hashSha256(rawKeySecret);
     const keyPrefix = rawKeySecret.slice(0, 14) + "...";

@@ -91,7 +91,7 @@ export const WhitepaperContent: React.FC = () => {
             <div><span className="text-slate-500">Date:</span> October 2026 · Prague, Czech Republic</div>
             <div><span className="text-slate-500">DAO Vault:</span> <code className="text-blue-300">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code></div>
             <div><span className="text-slate-500">Governance:</span> $VRXL (Fixed Genesis: 1,000,000)</div>
-            <div><span className="text-slate-500">Settlement:</span> Arbitrum USDC <code className="text-blue-300">0x5AE71819...7aE0</code></div>
+            <div><span className="text-slate-500">Settlement:</span> Arbitrum USDC <code className="text-blue-300">0x14f10A86...742b</code></div>
             <div><span className="text-slate-500">PostgreSQL:</span> Charizard <code className="text-blue-300">212.227.211.88:5432</code> (verxl)</div>
           </div>
 

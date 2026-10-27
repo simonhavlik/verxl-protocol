@@ -96,8 +96,8 @@ const PROPOSALS_DATA: Proposal[] = [
     proposalIndex: 3,
     title: "Arbitrum USDC Settlement Escrow & Provider Payout Minimums (Min $1.00 USD)",
     description:
-      "Authorize non-custodial commercial clearing wallet 0x5AE718197a6A87E103B124b660fd49692C857aE0 on Arbitrum One with $1.00 USD minimum deposit & provider payout threshold, authenticated via passwordless automated@verxl.com Seznam OTP.",
-    creator: "0x14f16b208Fcb3cf56E74B0eA4EaC4f1816eE742b",
+      "Authorize non-custodial commercial clearing wallet 0x14f10A865e277C0B1949e18Dd9856602DB11742b on Arbitrum One with $0.10 USD minimum deposit & provider payout threshold, authenticated via passwordless automated@verxl.com Seznam OTP.",
+    creator: "0x14f10A865e277C0B1949e18Dd9856602DB11742b",
     creatorName: "Šimon Havlík (Project Lead & Head Developer)",
     status: "ACTIVE",
     yesVotes: 750000,

@@ -54,7 +54,7 @@ interface UsageItem {
   created_at: string;
 }
 
-const TREASURY_WALLET = "0x5AE718197a6A87E103B124b660fd49692C857aE0";
+const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 
 export const Console: React.FC = () => {
   // Session & Auth State
@@ -1393,8 +1393,8 @@ main();`,
               {/* Official Verxl Treasury Address */}
               <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
-                  <span>Verxl Treasury Settlement Address</span>
-                  <span className="text-emerald-400 font-bold">Min $1.00 USDC</span>
+                  <span>Verxl Treasury Settlement Address (Arbitrum One)</span>
+                  <span className="text-emerald-400 font-bold">Min $0.10 USDC</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-white truncate select-all">{TREASURY_WALLET}</span>
@@ -1414,7 +1414,7 @@ main();`,
                   Preset Amounts (USDC)
                 </label>
                 <div className="flex gap-2">
-                  {[1.0, 5.0, 10.0, 25.0].map((amt) => (
+                  {[0.5, 1.0, 5.0, 10.0, 25.0].map((amt) => (
                     <button
                       key={amt}
                       type="button"
@@ -1425,7 +1425,7 @@ main();`,
                           : "bg-[#05070b] border-slate-800 text-slate-300 hover:border-slate-600"
                       }`}
                     >
-                      ${amt.toFixed(0)}
+                      ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}
                     </button>
                   ))}
                 </div>
@@ -1446,7 +1446,7 @@ main();`,
                     className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Send at least $1.00 USDC on Arbitrum One (Chain ID 42161) to the treasury address, then paste the confirmed tx hash here.
+                    Send at least $0.10 USDC on Arbitrum One (Chain ID 42161) to the treasury address, then paste the confirmed tx hash here.
                   </p>
                 </div>
 

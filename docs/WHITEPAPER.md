@@ -4,7 +4,7 @@
 **Web Gateway:** [https://verxl.com](https://verxl.com)  
 **Smart Contract Framework:** Aragon OSx on Ethereum Sepolia Testnet  
 **DAO Vault Address:** `0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a`  
-**Arbitrum Settlement Escrow:** `0x5AE718197a6A87E103B124b660fd49692C857aE0`  
+**Arbitrum Settlement Escrow:** `0x14f10A865e277C0B1949e18Dd9856602DB11742b`  
 **Governance Token:** `$VRXL` (ERC-20, Fixed Genesis Supply: 1,000,000)  
 **PostgreSQL Telemetry Target:** Charizard `212.227.211.88:5432/kiam` (schema `verxl`)  
 **Academic Attribution:** Started as an academic university project at Prague University of Economics and Business (VŠE Praha)  
