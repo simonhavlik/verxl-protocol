@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { marked } from "marked";
 import {
   Play,
   Square,
@@ -14,6 +15,23 @@ import {
   Server,
   ShieldAlert,
 } from "lucide-react";
+
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
+
+const renderMarkdown = (content: string): string => {
+  if (!content) return "";
+  try {
+    // LLMs often output bold headers like **Cost:**95x without a space before the next alphanumeric character.
+    // In strict CommonMark, delimiters touching words don't render bold. We normalize this edge case:
+    const preprocessed = content.replace(/\*\*([^\s*][^*]*?)\*\*([a-zA-Z0-9])/g, "**$1** $2");
+    return marked.parse(preprocessed) as string;
+  } catch (err) {
+    return content;
+  }
+};
 
 export const Playground: React.FC = () => {
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
@@ -46,6 +64,15 @@ export const Playground: React.FC = () => {
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const outputContainerRef = useRef<HTMLDivElement | null>(null);
+  const terminalWindowRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll terminal interior whenever new output or reasoning tokens arrive
+  useEffect(() => {
+    if (outputContainerRef.current) {
+      outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
+    }
+  }, [output, reasoningOutput]);
 
   const samplePrompts = [
     {
@@ -66,6 +93,11 @@ export const Playground: React.FC = () => {
   ];
 
   const handleRunInference = async () => {
+    // Smooth scroll to the terminal window if stacked (e.g., on mobile or tablet)
+    if (terminalWindowRef.current) {
+      terminalWindowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
     setIsStreaming(true);
     setOutput("");
     setReasoningOutput("");
@@ -519,7 +551,10 @@ main();`,
         {/* Right Column: Streaming Output & Telemetry */}
         <div className="lg:col-span-7 space-y-3">
           {/* Output Card */}
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] flex flex-col h-[390px] overflow-hidden">
+          <div
+            ref={terminalWindowRef}
+            className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] flex flex-col h-[390px] overflow-hidden scroll-mt-20"
+          >
             {/* Top Bar of Output Card */}
             <div className="px-3 py-2 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -555,7 +590,10 @@ main();`,
             </div>
 
             {/* Output Scrollable Body */}
-            <div className="flex-1 p-3 sm:p-4 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap select-text bg-[#05070b]/60">
+            <div
+              ref={outputContainerRef}
+              className="flex-1 p-3 sm:p-4 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-200 select-text bg-[#05070b]/60"
+            >
               {reasoningOutput && (
                 <div className="mb-3 p-2.5 rounded-[2px] bg-slate-900/60 border border-slate-800/80 text-slate-400 text-[10.5px]">
                   <div className="text-[9px] uppercase tracking-wider text-blue-400/80 font-bold mb-1 flex items-center gap-1.5">
@@ -570,9 +608,12 @@ main();`,
 
               {output ? (
                 <div>
-                  {output}
+                  <div
+                    className="terminal-markdown select-text"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(output) }}
+                  />
                   {isStreaming && (
-                    <span className="inline-block w-2 h-4 bg-blue-400 ml-1 animate-pulse align-middle" />
+                    <span className="inline-block w-2 h-3.5 bg-blue-400 ml-0.5 mt-1 animate-pulse align-middle" />
                   )}
                 </div>
               ) : isStreaming ? (

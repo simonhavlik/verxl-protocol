@@ -571,3 +571,155 @@ td, th, .tabular, .font-mono {
   border-color: rgba(96, 165, 250, 0.4);
   box-shadow: 0 1px 0 rgba(59, 130, 246, 0.1), 0 12px 24px -16px rgba(59, 130, 246, 0.35);
 }
+
+/* =============================================================
+   Terminal Markdown Renderer (Playground / Bulbasaur Terminal)
+   Clean institutional formatting for LLM responses
+   ============================================================= */
+.terminal-markdown {
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.terminal-markdown p {
+  margin-bottom: 0.65rem;
+}
+
+.terminal-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.terminal-markdown h1,
+.terminal-markdown h2,
+.terminal-markdown h3,
+.terminal-markdown h4 {
+  color: #60a5fa;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.terminal-markdown h1 { font-size: 13.5px; border-bottom: 1px solid rgba(59, 130, 246, 0.2); padding-bottom: 4px; }
+.terminal-markdown h2 { font-size: 12.5px; }
+.terminal-markdown h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd; }
+.terminal-markdown h4 { font-size: 11px; }
+
+.terminal-markdown strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.terminal-markdown em {
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+.terminal-markdown ul {
+  list-style-type: none;
+  padding-left: 0.25rem;
+  margin-bottom: 0.65rem;
+}
+
+.terminal-markdown ul > li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.3rem;
+}
+
+.terminal-markdown ul > li::before {
+  content: "•";
+  position: absolute;
+  left: 0.25rem;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+.terminal-markdown ol {
+  list-style-type: decimal;
+  padding-left: 1.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.terminal-markdown ol > li {
+  margin-bottom: 0.3rem;
+  padding-left: 0.2rem;
+}
+
+.terminal-markdown ol > li::marker {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.terminal-markdown code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #38bdf8;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.terminal-markdown pre {
+  background: #03060a;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 3px;
+  padding: 0.75rem 0.85rem;
+  margin: 0.65rem 0;
+  overflow-x: auto;
+}
+
+.terminal-markdown pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #cbd5e1;
+  font-size: 10.5px;
+  display: block;
+  white-space: pre;
+}
+
+.terminal-markdown blockquote {
+  border-left: 2px solid #3b82f6;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.terminal-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.65rem 0;
+  font-size: 10.5px;
+}
+
+.terminal-markdown th {
+  background: rgba(30, 58, 138, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 4px 8px;
+  text-align: left;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.terminal-markdown td {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  padding: 4px 8px;
+  color: #cbd5e1;
+}
+
+.terminal-markdown a {
+  color: #38bdf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terminal-markdown hr {
+  border: none;
+  border-top: 1px solid rgba(59, 130, 246, 0.2);
+  margin: 0.75rem 0;
+}
