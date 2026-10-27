@@ -18,24 +18,29 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       treasury_address: treasury,
       min_deposit_usd: 1.0,
       protocol_fee_bps: 50,
-      chains: {
-        arbitrum: {
-          name: "Arbitrum One",
-          chain_id: 42161,
-          rpc_url: "https://arb1.arbitrum.io/rpc",
-          explorer_url: "https://arbiscan.io",
-          usdc_address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      network: "Arbitrum One Mainnet (Chain ID 42161)",
+      settlement_token: "USDC (Arbitrum Native & Bridged USDC.e)",
+      accepted_tokens: [
+        {
+          symbol: "USDC",
+          type: "Native Arbitrum USDC",
+          address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
           decimals: 6,
         },
-        arbitrum_sepolia: {
-          name: "Arbitrum Sepolia Testnet",
-          chain_id: 421614,
-          rpc_url: "https://sepolia-rollup.arbitrum.io/rpc",
-          explorer_url: "https://sepolia.arbiscan.io",
-          usdc_address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+        {
+          symbol: "USDC.e",
+          type: "Bridged Arbitrum USDC",
+          address: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
           decimals: 6,
         },
-      },
+      ],
+      rpc_endpoints: [
+        "https://arb1.arbitrum.io/rpc",
+        "https://arbitrum-one-rpc.publicnode.com",
+        "https://1rpc.io/arb",
+      ],
+      explorer_url: "https://arbiscan.io",
+      testnet_accepted: false,
     }),
     { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
   );

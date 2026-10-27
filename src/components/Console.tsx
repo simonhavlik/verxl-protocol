@@ -72,7 +72,8 @@ export const Console: React.FC = () => {
 
   // Deposit State
   const [showDepositModal, setShowDepositModal] = useState(false);
-  const [depositChain, setDepositChain] = useState<"arbitrum" | "arbitrum_sepolia">("arbitrum");
+  const depositChain = "arbitrum";
+  const [copiedContract, setCopiedContract] = useState(false);
   const [depositTxHash, setDepositTxHash] = useState("");
   const [depositAmount, setDepositAmount] = useState<number>(5.0);
   const [verifyingDeposit, setVerifyingDeposit] = useState(false);
@@ -875,36 +876,30 @@ main();`,
             </div>
 
             <div className="space-y-3 text-xs">
-              {/* Chain Selection */}
-              <div>
-                <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
-                  Settlement Network
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDepositChain("arbitrum")}
-                    className={`p-2 rounded-[2px] border text-left text-xs ${
-                      depositChain === "arbitrum"
-                        ? "bg-blue-950/40 border-blue-500 text-white font-bold"
-                        : "bg-[#05070b] border-slate-800 text-slate-400 hover:border-slate-700"
-                    }`}
-                  >
-                    <div>Arbitrum One (Live)</div>
-                    <div className="text-[10px] text-slate-400 font-normal">Native USDC · Chain 42161</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDepositChain("arbitrum_sepolia")}
-                    className={`p-2 rounded-[2px] border text-left text-xs ${
-                      depositChain === "arbitrum_sepolia"
-                        ? "bg-blue-950/40 border-blue-500 text-white font-bold"
-                        : "bg-[#05070b] border-slate-800 text-slate-400 hover:border-slate-700"
-                    }`}
-                  >
-                    <div>Arbitrum Sepolia (Testnet)</div>
-                    <div className="text-[10px] text-slate-400 font-normal">Test USDC · Chain 421614</div>
-                  </button>
+              {/* Settlement Network & Token Badge */}
+              <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
+                  <span>Settlement Rail</span>
+                  <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[9px]">
+                    MAINNET ONLY · NO TESTNET
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-white text-xs">Arbitrum One Mainnet</div>
+                  <div className="font-mono text-[10px] text-slate-400">Chain ID: 42161 · Gas: &lt;$0.01</div>
+                </div>
+                <div className="text-[11px] text-slate-300 font-sans border-t border-slate-800/80 pt-2 space-y-1">
+                  <div>Accepted Asset: <strong className="text-white">USDC</strong> (6 Decimals · Arbitrum One)</div>
+                  <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between">
+                    <span>Native: <code className="text-blue-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</code></span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard("0xaf88d065e77c8cC2239327C5EDb3A432268e5831", setCopiedContract)}
+                      className="text-blue-400 hover:text-blue-300 uppercase text-[9px] font-bold"
+                    >
+                      {copiedContract ? "Copied" : "Copy"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -958,28 +953,15 @@ main();`,
                   <input
                     type="text"
                     required
-                    placeholder="0x3a8f9c1e... or test hash"
+                    placeholder="0x3a8f9c1e... (Arbitrum One 66-character tx hash)"
                     value={depositTxHash}
                     onChange={(e) => setDepositTxHash(e.target.value)}
                     className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Send USDC from any wallet (MetaMask, Rabby, Coinbase) to the treasury address, then paste the tx hash here to verify and credit.
+                    Send at least $1.00 USDC on Arbitrum One (Chain ID 42161) to the treasury address, then paste the confirmed tx hash here.
                   </p>
                 </div>
-
-                {depositChain === "arbitrum_sepolia" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const dummyHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`;
-                      setDepositTxHash(dummyHash);
-                    }}
-                    className="text-[10px] text-blue-400 hover:underline uppercase tracking-wider block"
-                  >
-                    ⚡ Generate Arbitrum Sepolia Test Hash
-                  </button>
-                )}
 
                 <button
                   type="submit"

@@ -8,6 +8,18 @@ interface Env {
 const TREASURY_WALLET = "0x5AE718197a6A87E103B124b660fd49692C857aE0";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
+// Valid Arbitrum One Mainnet USDC contracts (6 decimals)
+const VALID_USDC_CONTRACTS = new Set([
+  "0xaf88d065e77c8cc2239327c5edb3a432268e5831", // Native Arbitrum USDC
+  "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8", // Bridged Arbitrum USDC.e
+]);
+
+const ARBITRUM_RPCS = [
+  "https://arb1.arbitrum.io/rpc",
+  "https://arbitrum-one-rpc.publicnode.com",
+  "https://1rpc.io/arb",
+];
+
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 };
@@ -45,12 +57,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const txHash = typeof body.tx_hash === "string" ? body.tx_hash.trim().toLowerCase() : "";
-  const chain = typeof body.chain === "string" ? body.chain.trim() : "arbitrum";
-  const simulatedAmount = typeof body.amount_usd === "number" ? body.amount_usd : null;
 
   if (!txHash || !txHash.startsWith("0x") || txHash.length !== 66) {
     return new Response(
-      JSON.stringify({ error: "Valid 32-byte Ethereum/Arbitrum tx_hash required (0x...)" }),
+      JSON.stringify({ error: "Valid 32-byte Arbitrum tx_hash required (0x... 66 hex characters)" }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }
@@ -62,98 +72,126 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (existingDeposit) {
     return new Response(
-      JSON.stringify({ error: "This transaction has already been credited." }),
+      JSON.stringify({ error: "This transaction has already been credited to an account." }),
       { status: 409, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }
 
   const treasury = (env.TREASURY_ADDRESS || TREASURY_WALLET).toLowerCase();
-  const rpcUrl =
-    chain === "arbitrum_sepolia"
-      ? "https://sepolia-rollup.arbitrum.io/rpc"
-      : "https://arb1.arbitrum.io/rpc";
 
   let creditedAmountUsd = 0;
   let fromAddress = "0x0000000000000000000000000000000000000000";
+  let tokenContractFound = "";
+  let rpcSuccess = false;
 
-  // 2. Query On-Chain Receipt
-  try {
-    const rpcResp = await fetch(rpcUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "eth_getTransactionReceipt",
-        params: [txHash],
-      }),
-    });
+  // 2. Query On-Chain Receipt directly from Arbitrum One Mainnet RPCs
+  for (const rpcUrl of ARBITRUM_RPCS) {
+    try {
+      const rpcResp = await fetch(rpcUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Verxl/1.0",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_getTransactionReceipt",
+          params: [txHash],
+        }),
+      });
 
-    const rpcData = (await rpcResp.json()) as any;
-    const receipt = rpcData && rpcData.result;
+      if (!rpcResp.ok) continue;
 
-    if (receipt) {
+      const rpcData = (await rpcResp.json()) as any;
+      const receipt = rpcData && rpcData.result;
+
+      if (!receipt) {
+        // Transaction pending or not yet mined
+        continue;
+      }
+
+      rpcSuccess = true;
+
+      // Ensure transaction succeeded on Arbitrum One
       if (receipt.status !== "0x1") {
         return new Response(
-          JSON.stringify({ error: "Transaction failed or reverted on Arbitrum." }),
+          JSON.stringify({ error: "Transaction failed or reverted on Arbitrum One Mainnet." }),
           { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       }
 
       fromAddress = receipt.from ? receipt.from.toLowerCase() : fromAddress;
 
-      // Scan ERC20 Transfer logs
+      // Scan ERC-20 Transfer event logs strictly for Arbitrum USDC contracts
       if (Array.isArray(receipt.logs)) {
         for (const log of receipt.logs) {
+          const contractAddr = (log.address || "").toLowerCase();
+
+          // Strictly verify token contract is Native USDC or Bridged USDC.e on Arbitrum
+          if (!VALID_USDC_CONTRACTS.has(contractAddr)) {
+            continue;
+          }
+
           if (
             log.topics &&
             log.topics[0] &&
             log.topics[0].toLowerCase() === TRANSFER_TOPIC &&
             log.topics[2]
           ) {
-            // topic[2] is recipient padded to 32 bytes
+            // topic[2] is recipient padded to 32 bytes (64 hex characters + 0x)
             const recipientInLog = "0x" + log.topics[2].slice(-40).toLowerCase();
             if (recipientInLog === treasury) {
               const hexVal = log.data;
               const valBigInt = BigInt(hexVal);
-              creditedAmountUsd = Number(valBigInt) / 1e6; // USDC has 6 decimals
+              creditedAmountUsd = Number(valBigInt) / 1e6; // USDC has 6 decimals on Arbitrum
+              tokenContractFound = contractAddr;
               break;
             }
           }
         }
       }
-    }
-  } catch (err: any) {
-    // RPC network error fallback
-  }
 
-  // Fallback for Sepolia Testnet demonstration if receipt index lag occurs
-  if (creditedAmountUsd === 0) {
-    if (chain === "arbitrum_sepolia" && simulatedAmount && simulatedAmount >= 1.0) {
-      creditedAmountUsd = simulatedAmount;
-    } else {
-      return new Response(
-        JSON.stringify({
-          error: `Could not verify confirmed USDC transfer to Treasury (${treasury}) in tx ${txHash}. Make sure transaction has at least 1 confirmation and sent >= $1.00 USDC.`,
-        }),
-        { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-      );
+      // If we got a valid receipt and inspected logs, stop trying other RPCs
+      break;
+    } catch {
+      // Try next RPC endpoint
     }
   }
 
-  if (creditedAmountUsd < 1.0) {
+  if (!rpcSuccess) {
     return new Response(
-      JSON.stringify({ error: "Minimum deposit is $1.00 USD (1 USDC)." }),
+      JSON.stringify({
+        error: `Transaction ${txHash} not found on Arbitrum One Mainnet. Please ensure the transaction is submitted on Arbitrum One (Chain ID 42161) and has at least 1 confirmation. No testnet transactions accepted.`,
+      }),
+      { status: 404, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+
+  if (creditedAmountUsd === 0) {
+    return new Response(
+      JSON.stringify({
+        error: `No valid transfer to Verxl Treasury (${treasury}) was found in transaction ${txHash}. Only verified Arbitrum One USDC (Native 0xaf88d065... or USDC.e 0xFF970A61...) transfers are accepted. Testnet tokens, ETH, and other assets are rejected.`,
+      }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }
 
-  // 3. Atomically Record Deposit & Update User Balance in D1
+  if (creditedAmountUsd < 1.0) {
+    return new Response(
+      JSON.stringify({
+        error: `Deposit amount of $${creditedAmountUsd.toFixed(2)} USDC is below the minimum threshold of $1.00 USD (1 USDC).`,
+      }),
+      { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+
+  // 3. Atomically Record Deposit & Update User Balance in Cloudflare D1
   const depositId = `dep_${crypto.randomUUID()}`;
   await env.DB.prepare(
-    "INSERT INTO deposits (id, user_id, tx_hash, chain, token, amount_usd, from_address, to_address, status, created_at) VALUES (?, ?, ?, ?, 'USDC', ?, ?, ?, 'CONFIRMED', datetime('now'))"
+    "INSERT INTO deposits (id, user_id, tx_hash, chain, token, amount_usd, from_address, to_address, status, created_at) VALUES (?, ?, ?, 'arbitrum', 'USDC', ?, ?, ?, 'CONFIRMED', datetime('now'))"
   )
-    .bind(depositId, userId, txHash, chain, creditedAmountUsd, fromAddress, treasury)
+    .bind(depositId, userId, txHash, creditedAmountUsd, fromAddress, treasury)
     .run();
 
   await env.DB.prepare(
@@ -194,8 +232,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   return new Response(
     JSON.stringify({
       success: true,
-      message: `Successfully credited $${creditedAmountUsd.toFixed(2)} USD to your account.`,
+      message: `Successfully verified on-chain Arbitrum One transaction! Credited $${creditedAmountUsd.toFixed(2)} USDC to your account.`,
       deposit_id: depositId,
+      chain: "Arbitrum One Mainnet (42161)",
+      token_contract: tokenContractFound,
       amount_usd: creditedAmountUsd,
       new_balance_usd: updatedUser?.balance_usd || creditedAmountUsd,
       total_deposited_usd: updatedUser?.total_deposited_usd || creditedAmountUsd,
