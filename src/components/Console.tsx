@@ -22,6 +22,8 @@ import {
   Eye,
   EyeOff,
   ShieldAlert,
+  Sparkles,
+  KeyRound,
 } from "lucide-react";
 
 interface UserProfile {
@@ -34,6 +36,20 @@ interface UserProfile {
   has_active_key: boolean;
   has_password?: boolean;
   two_factor_enabled?: boolean;
+  is_admin?: boolean;
+}
+
+interface GrantKeyItem {
+  id: string;
+  name: string;
+  key_prefix: string;
+  is_active: boolean;
+  spend_limit_usd: number;
+  total_spent_usd: number;
+  total_tokens: number;
+  request_count: number;
+  created_at: string;
+  deactivated_at: string | null;
 }
 
 interface ApiKeyItem {
@@ -138,6 +154,110 @@ export const Console: React.FC = () => {
   const [copiedTreasury, setCopiedTreasury] = useState(false);
   const [codeLang, setCodeLang] = useState<"curl" | "python" | "typescript">("curl");
 
+  // Admin Free Grant Keys State (for me@simonhavlik.com)
+  const [grantKeys, setGrantKeys] = useState<GrantKeyItem[]>([]);
+  const [loadingGrantKeys, setLoadingGrantKeys] = useState(false);
+  const [newGrantName, setNewGrantName] = useState("Public Presentation Demo");
+  const [newGrantLimit, setNewGrantLimit] = useState("");
+  const [creatingGrantKey, setCreatingGrantKey] = useState(false);
+  const [createdGrantSecret, setCreatedGrantSecret] = useState<string | null>(null);
+  const [copiedGrantSecret, setCopiedGrantSecret] = useState(false);
+  const [deactivatingGrantId, setDeactivatingGrantId] = useState<string | null>(null);
+
+  const fetchGrantKeys = async (authToken?: string) => {
+    const t = authToken || token;
+    if (!t) return;
+    try {
+      setLoadingGrantKeys(true);
+      const res = await fetch("/api/admin/keys", {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        setGrantKeys(data.grant_keys || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingGrantKeys(false);
+    }
+  };
+
+  const handleCreateGrantKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      setCreatingGrantKey(true);
+      const limitVal = parseFloat(newGrantLimit);
+      const res = await fetch("/api/admin/keys/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newGrantName.trim() || "Public Demo Key",
+          spend_limit_usd: !isNaN(limitVal) && limitVal > 0 ? limitVal : 0,
+        }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success) {
+        setCreatedGrantSecret(data.api_key);
+        setNewGrantName("Public Presentation Demo");
+        setNewGrantLimit("");
+        setStatusMsg({
+          type: "success",
+          text: `Free demo grant key '${data.name}' generated successfully. Copy secret below.`,
+        });
+        fetchGrantKeys(token);
+      } else {
+        setStatusMsg({
+          type: "error",
+          text: data.error || "Failed to generate free grant key.",
+        });
+      }
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error creating grant key." });
+    } finally {
+      setCreatingGrantKey(false);
+    }
+  };
+
+  const handleDeactivateGrantKey = async (keyId: string) => {
+    if (!token) return;
+    if (!window.confirm("Are you sure you want to permanently deactivate this demo grant key? It will stay locked with an immutable audit record.")) {
+      return;
+    }
+    try {
+      setDeactivatingGrantId(keyId);
+      const res = await fetch("/api/admin/keys/revoke", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ key_id: keyId }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success) {
+        setStatusMsg({
+          type: "info",
+          text: "Grant key permanently deactivated. Historical token and cost records remain preserved.",
+        });
+        fetchGrantKeys(token);
+      } else {
+        setStatusMsg({
+          type: "error",
+          text: data.error || "Failed to deactivate grant key.",
+        });
+      }
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error deactivating grant key." });
+    } finally {
+      setDeactivatingGrantId(null);
+    }
+  };
+
   // Fetch Session Data
   const fetchSessionData = async (currentToken: string) => {
     try {
@@ -150,6 +270,9 @@ export const Console: React.FC = () => {
         setUser(data.user);
         setKeys(data.keys || []);
         setUsage(data.usage || []);
+        if (data.user?.email?.toLowerCase() === "me@simonhavlik.com" || data.user?.is_admin) {
+          fetchGrantKeys(currentToken);
+        }
       } else {
         // Token expired
         localStorage.removeItem("vrxl_auth_token");
@@ -967,6 +1090,12 @@ main();`,
                 <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">
                   AUTHENTICATED
                 </span>
+                {(user.email.toLowerCase() === "me@simonhavlik.com" || user.is_admin) && (
+                  <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
+                    <Sparkles className="w-2.5 h-2.5 text-purple-400" />
+                    <span>ADMIN</span>
+                  </span>
+                )}
                 {user.total_deposited_usd >= 1.0 ? (
                   <span className="px-1.5 py-0.2 rounded-[2px] bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[9px] font-bold">
                     PRODUCTION ACTIVE
@@ -1258,6 +1387,237 @@ main();`,
           </div>
         )}
       </div>
+
+      {/* SECTION 3.5: ADMIN CONTROL — PUBLIC DEMO & GRANT KEYS */}
+      {(user?.email?.toLowerCase() === "me@simonhavlik.com" || user?.is_admin) && (
+        <div className="bg-[#0a0e17] border-2 border-purple-500/40 rounded-[3px] p-4 sm:p-5 space-y-4 shadow-xl relative overflow-hidden">
+          {/* Subtle Accent Glow */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-500/30 pb-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-mono font-bold tracking-wider uppercase">
+                  Admin Authority · me@simonhavlik.com
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Grant Hub Active
+                </span>
+              </div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2 pt-0.5">
+                <KeyRound className="w-4 h-4 text-purple-400" />
+                <span>Public Demo & Presentation Free Keys</span>
+              </h3>
+              <p className="text-[11px] text-slate-300 font-sans leading-relaxed">
+                Generate zero-deposit <strong>Free Grant Keys</strong> (<code className="text-purple-300 font-mono">vrxl_grant_...</code>) for live stage presentations, hackathon jury reviews, and investor demos. Usage cost is tracked per key without deducting user balance. When a key is deactivated, it stays locked permanently with an immutable audit record.
+              </p>
+            </div>
+
+            <button
+              onClick={() => fetchGrantKeys()}
+              disabled={loadingGrantKeys}
+              className="self-start sm:self-auto px-2.5 py-1 rounded-[2px] bg-[#05070b] border border-slate-700 text-slate-300 hover:text-white text-[10px] font-mono flex items-center gap-1.5 transition"
+              title="Refresh grant keys audit list"
+            >
+              <RefreshCw className={`w-3 h-3 ${loadingGrantKeys ? "animate-spin text-purple-400" : ""}`} />
+              <span>Sync Ledger</span>
+            </button>
+          </div>
+
+          {/* Metric Summary Ticker */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-mono">
+            <div className="bg-[#05070b] p-2.5 rounded-[2px] border border-slate-800 space-y-0.5">
+              <div className="text-[9.5px] text-slate-400 uppercase">Active Grant Keys</div>
+              <div className="text-base font-bold text-emerald-400">
+                {grantKeys.filter((k) => k.is_active).length}{" "}
+                <span className="text-[10px] text-slate-400 font-normal">
+                  / {grantKeys.length} Total
+                </span>
+              </div>
+            </div>
+            <div className="bg-[#05070b] p-2.5 rounded-[2px] border border-slate-800 space-y-0.5">
+              <div className="text-[9.5px] text-slate-400 uppercase">Cumulative Demo Compute Used</div>
+              <div className="text-base font-bold text-purple-300">
+                ${grantKeys.reduce((acc, k) => acc + k.total_spent_usd, 0).toFixed(4)}{" "}
+                <span className="text-[10px] text-slate-400 font-normal">USD</span>
+              </div>
+            </div>
+            <div className="bg-[#05070b] p-2.5 rounded-[2px] border border-slate-800 space-y-0.5">
+              <div className="text-[9.5px] text-slate-400 uppercase">Total Tokens Cleared</div>
+              <div className="text-base font-bold text-blue-300">
+                {grantKeys.reduce((acc, k) => acc + k.total_tokens, 0).toLocaleString()}{" "}
+                <span className="text-[10px] text-slate-400 font-normal">Tokens</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Creation Form */}
+          <form
+            onSubmit={handleCreateGrantKey}
+            className="bg-[#05070b] border border-purple-500/30 rounded-[2px] p-3 space-y-2.5"
+          >
+            <div className="text-[10.5px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span>Generate New Free Demo Grant Key</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs font-mono">
+              <div className="sm:col-span-6 space-y-1">
+                <label className="text-[10px] text-slate-400 block">
+                  Key Purpose / Presentation Label
+                </label>
+                <input
+                  type="text"
+                  value={newGrantName}
+                  onChange={(e) => setNewGrantName(e.target.value)}
+                  placeholder="e.g. Prague VŠE Seminar Live Demo"
+                  className="w-full bg-[#080c14] border border-slate-700 rounded-[2px] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                  required
+                />
+              </div>
+              <div className="sm:col-span-3 space-y-1">
+                <label className="text-[10px] text-slate-400 block">
+                  Spend Cap USD (0 = Unlimited)
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={newGrantLimit}
+                  onChange={(e) => setNewGrantLimit(e.target.value)}
+                  placeholder="0 (Unlimited)"
+                  className="w-full bg-[#080c14] border border-slate-700 rounded-[2px] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                />
+              </div>
+              <div className="sm:col-span-3 flex items-end">
+                <button
+                  type="submit"
+                  disabled={creatingGrantKey || !newGrantName.trim()}
+                  className="w-full px-3 py-1.5 rounded-[2px] bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition"
+                >
+                  {creatingGrantKey ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5" />}
+                  <span>+ Generate Key</span>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* Revealed Secret Banner for Created Grant Key */}
+          {createdGrantSecret && (
+            <div className="bg-[#05070b] border-2 border-purple-500/70 rounded-[3px] p-3.5 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>New Free Demo Grant Key Generated</span>
+                </span>
+                <button
+                  onClick={() => setCreatedGrantSecret(null)}
+                  className="text-[10px] text-slate-400 hover:text-white uppercase tracking-wider"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-300 font-sans">
+                Copy this key now. It bypasses prepaid deposit checks and tracks usage per-key against the compute host.
+              </p>
+              <div className="flex items-center gap-2 bg-[#080c14] border border-purple-500/40 rounded-[2px] p-2 text-xs font-mono text-purple-200">
+                <span className="truncate select-all font-bold">{createdGrantSecret}</span>
+                <button
+                  onClick={() => copyToClipboard(createdGrantSecret, setCopiedGrantSecret)}
+                  className="ml-auto px-2 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shrink-0"
+                >
+                  {copiedGrantSecret ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedGrantSecret ? "Copied" : "Copy Secret"}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Grant Keys Table */}
+          {grantKeys.length === 0 ? (
+            <div className="text-center py-5 text-xs text-slate-400 bg-[#05070b] border border-slate-800 rounded-[2px]">
+              No free demo grant keys generated yet. Use the form above to create your first presentation key.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#05070b] text-[10px] text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th className="py-2 px-3">Purpose / Label</th>
+                    <th className="py-2 px-3">Prefix</th>
+                    <th className="py-2 px-3">Created</th>
+                    <th className="py-2 px-3">Spend Accrued</th>
+                    <th className="py-2 px-3">Tokens Cleared</th>
+                    <th className="py-2 px-3">Status</th>
+                    <th className="py-2 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {grantKeys.map((k) => (
+                    <tr key={k.id} className="hover:bg-slate-900/40">
+                      <td className="py-2.5 px-3 font-semibold text-white">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                          <span>{k.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-purple-300">{k.key_prefix}</td>
+                      <td className="py-2.5 px-3 text-slate-400 text-[11px]">
+                        {new Date(k.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-200">
+                        ${k.total_spent_usd.toFixed(4)}{" "}
+                        <span className="text-[10px] text-slate-400">
+                          {k.spend_limit_usd > 0 ? `/ $${k.spend_limit_usd.toFixed(2)}` : "(Unlimited)"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-blue-300">
+                        {k.total_tokens.toLocaleString()}{" "}
+                        <span className="text-[10px] text-slate-400">({k.request_count} reqs)</span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        {k.is_active ? (
+                          <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold uppercase">
+                            Active Grant
+                          </span>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <span className="px-1.5 py-0.2 rounded-[2px] bg-rose-500/10 text-rose-400 border border-rose-500/30 text-[9px] font-bold uppercase">
+                              Deactivated
+                            </span>
+                            {k.deactivated_at && (
+                              <div className="text-[8.5px] text-slate-400">
+                                {new Date(k.deactivated_at).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        {k.is_active ? (
+                          <button
+                            onClick={() => handleDeactivateGrantKey(k.id)}
+                            disabled={deactivatingGrantId === k.id}
+                            className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider hover:underline transition"
+                            title="Deactivate this demo key permanently (usage records remain preserved)"
+                          >
+                            {deactivatingGrantId === k.id ? "Deactivating..." : "Deactivate Key"}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 uppercase font-mono">
+                            Permanent Record
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* SECTION 4: INTEGRATION CODE SNIPPETS */}
       <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-4 sm:p-5 space-y-3 shadow-md">

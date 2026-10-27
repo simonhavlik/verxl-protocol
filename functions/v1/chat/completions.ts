@@ -75,24 +75,38 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   // 2. Authentication & Balance Verification
   const authHeader = request.headers.get("Authorization");
-  let authenticatedUser: { id: string; balance_usd: number; key_id: string | null } | null = null;
+  let authenticatedUser: {
+    id: string;
+    balance_usd: number;
+    key_id: string | null;
+    is_grant?: boolean;
+  } | null = null;
 
-  if (authHeader && authHeader.startsWith("Bearer vrxl_live_")) {
-    // API Key Authentication
+  if (authHeader && (authHeader.startsWith("Bearer vrxl_live_") || authHeader.startsWith("Bearer vrxl_grant_"))) {
+    // API Key Authentication (Paid live key or Admin Free Grant key)
     const rawApiKey = authHeader.slice(7).trim();
     const keyHash = await hashSha256(rawApiKey);
 
     const record = await db.prepare(
-      "SELECT u.id as user_id, u.balance_usd, k.id as key_id FROM api_keys k JOIN users u ON k.user_id = u.id WHERE k.key_hash = ? AND k.is_active = 1"
+      "SELECT u.id as user_id, u.balance_usd, k.id as key_id, k.name, k.key_type, k.spend_limit_usd, k.total_spent_usd, k.is_active FROM api_keys k JOIN users u ON k.user_id = u.id WHERE k.key_hash = ?"
     )
       .bind(keyHash)
-      .first<{ user_id: string; balance_usd: number; key_id: string }>();
+      .first<{
+        user_id: string;
+        balance_usd: number;
+        key_id: string;
+        name: string;
+        key_type: string;
+        spend_limit_usd: number;
+        total_spent_usd: number;
+        is_active: number;
+      }>();
 
     if (!record) {
       return new Response(
         JSON.stringify({
           error: {
-            message: "Invalid or revoked Verxl API key.",
+            message: "Invalid or unrecognized Verxl API key.",
             type: "authentication_error",
             code: "invalid_api_key",
           },
@@ -101,7 +115,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    if (Number(record.balance_usd) <= 0.0) {
+    if (Number(record.is_active) !== 1) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: "This Verxl API key has been permanently deactivated by the administrator. Historical records remain preserved.",
+            type: "authentication_error",
+            code: "api_key_deactivated",
+          },
+        }),
+        { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      );
+    }
+
+    const isGrantKey = record.key_type === "grant";
+
+    // Standard live keys require positive account balance.
+    // Admin grant keys are FREE (no payment required)!
+    if (!isGrantKey && Number(record.balance_usd) <= 0.0) {
       return new Response(
         JSON.stringify({
           error: {
@@ -114,10 +145,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
+    // Check optional grant budget limit if specified (> 0)
+    if (isGrantKey && Number(record.spend_limit_usd) > 0 && Number(record.total_spent_usd) >= Number(record.spend_limit_usd)) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: `Free grant budget limit ($${Number(record.spend_limit_usd).toFixed(2)} USD) reached for this demo key.`,
+            type: "insufficient_quota",
+            code: "grant_budget_exhausted",
+          },
+        }),
+        { status: 402, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      );
+    }
+
     authenticatedUser = {
       id: record.user_id,
       balance_usd: Number(record.balance_usd),
       key_id: record.key_id,
+      is_grant: isGrantKey,
     };
   } else if (authHeader && authHeader.startsWith("Bearer vtok_")) {
     // Web Session Token Authentication (from Console or Verxl Chat)
@@ -404,36 +450,71 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
                 const totalDeduction = computeCost + fee;
                 const providerNet = computeCost;
 
-                context.waitUntil(
-                  Promise.all([
-                    db.prepare(
-                      "UPDATE users SET balance_usd = GREATEST(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-                    )
-                      .bind(totalDeduction, totalDeduction, authenticatedUser.id)
-                      .run(),
-                    db.prepare(
-                      "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
-                    )
-                      .bind(providerNet, providerNet, providerId)
-                      .run(),
-                    db.prepare(
-                      "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
-                    )
-                      .bind(
-                        `usg_${crypto.randomUUID()}`,
-                        authenticatedUser.id,
-                        authenticatedUser.key_id || null,
-                        providerId,
-                        requestedModel,
-                        estimatedPromptTokens,
-                        actualTokens,
-                        totalDeduction,
-                        fee,
-                        providerNet
+                if (authenticatedUser.is_grant && authenticatedUser.key_id) {
+                  // Admin Free Grant Key: zero user cost deduction, but record usage on key & DB
+                  context.waitUntil(
+                    Promise.all([
+                      db.prepare(
+                        "UPDATE api_keys SET total_spent_usd = total_spent_usd + ? WHERE id = ?"
                       )
-                      .run(),
-                  ])
-                );
+                        .bind(totalDeduction, authenticatedUser.key_id)
+                        .run(),
+                      db.prepare(
+                        "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
+                      )
+                        .bind(providerNet, providerNet, providerId)
+                        .run(),
+                      db.prepare(
+                        "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
+                      )
+                        .bind(
+                          `usg_${crypto.randomUUID()}`,
+                          authenticatedUser.id,
+                          authenticatedUser.key_id,
+                          providerId,
+                          requestedModel,
+                          estimatedPromptTokens,
+                          actualTokens,
+                          totalDeduction,
+                          fee,
+                          providerNet
+                        )
+                        .run(),
+                    ])
+                  );
+                } else {
+                  // Standard Key / Session: deduct from user balance
+                  context.waitUntil(
+                    Promise.all([
+                      db.prepare(
+                        "UPDATE users SET balance_usd = GREATEST(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+                      )
+                        .bind(totalDeduction, totalDeduction, authenticatedUser.id)
+                        .run(),
+                      db.prepare(
+                        "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
+                      )
+                        .bind(providerNet, providerNet, providerId)
+                        .run(),
+                      db.prepare(
+                        "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
+                      )
+                        .bind(
+                          `usg_${crypto.randomUUID()}`,
+                          authenticatedUser.id,
+                          authenticatedUser.key_id || null,
+                          providerId,
+                          requestedModel,
+                          estimatedPromptTokens,
+                          actualTokens,
+                          totalDeduction,
+                          fee,
+                          providerNet
+                        )
+                        .run(),
+                    ])
+                  );
+                }
               }
             },
           });
@@ -459,36 +540,71 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           const providerNet = computeCost;
 
           if (authenticatedUser) {
-            context.waitUntil(
-              Promise.all([
-                db.prepare(
-                  "UPDATE users SET balance_usd = GREATEST(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-                )
-                  .bind(totalDeduction, totalDeduction, authenticatedUser.id)
-                  .run(),
-                db.prepare(
-                  "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
-                )
-                  .bind(providerNet, providerNet, providerId)
-                  .run(),
-                db.prepare(
-                  "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
-                )
-                  .bind(
-                    `usg_${crypto.randomUUID()}`,
-                    authenticatedUser.id,
-                    authenticatedUser.key_id || null,
-                    providerId,
-                    requestedModel,
-                    promptTokens,
-                    completionTokens,
-                    totalDeduction,
-                    fee,
-                    providerNet
+            if (authenticatedUser.is_grant && authenticatedUser.key_id) {
+              // Admin Free Grant Key: zero user cost deduction, but record usage on key & DB
+              context.waitUntil(
+                Promise.all([
+                  db.prepare(
+                    "UPDATE api_keys SET total_spent_usd = total_spent_usd + ? WHERE id = ?"
                   )
-                  .run(),
-              ])
-            );
+                    .bind(totalDeduction, authenticatedUser.key_id)
+                    .run(),
+                  db.prepare(
+                    "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
+                  )
+                    .bind(providerNet, providerNet, providerId)
+                    .run(),
+                  db.prepare(
+                    "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
+                  )
+                    .bind(
+                      `usg_${crypto.randomUUID()}`,
+                      authenticatedUser.id,
+                      authenticatedUser.key_id,
+                      providerId,
+                      requestedModel,
+                      promptTokens,
+                      completionTokens,
+                      totalDeduction,
+                      fee,
+                      providerNet
+                    )
+                    .run(),
+                ])
+              );
+            } else {
+              // Standard Key / Session: deduct from user balance
+              context.waitUntil(
+                Promise.all([
+                  db.prepare(
+                    "UPDATE users SET balance_usd = GREATEST(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+                  )
+                    .bind(totalDeduction, totalDeduction, authenticatedUser.id)
+                    .run(),
+                  db.prepare(
+                    "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
+                  )
+                    .bind(providerNet, providerNet, providerId)
+                    .run(),
+                  db.prepare(
+                    "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
+                  )
+                    .bind(
+                      `usg_${crypto.randomUUID()}`,
+                      authenticatedUser.id,
+                      authenticatedUser.key_id || null,
+                      providerId,
+                      requestedModel,
+                      promptTokens,
+                      completionTokens,
+                      totalDeduction,
+                      fee,
+                      providerNet
+                    )
+                    .run(),
+                ])
+              );
+            }
           }
 
           return new Response(
