@@ -15,6 +15,81 @@ export async function hashSha256(input: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * PBKDF2 Password Hashing (100,000 iterations, SHA-256)
+ * Format: pbkdf2$100000$<salt_hex>$<hash_hex>
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = new Uint8Array(16);
+  crypto.getRandomValues(salt);
+  const saltHex = Array.from(salt)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const hashHex = Array.from(new Uint8Array(derivedBits))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return `pbkdf2$100000$${saltHex}$${hashHex}`;
+}
+
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  if (!storedHash || !storedHash.startsWith("pbkdf2$100000$")) return false;
+  const parts = storedHash.split("$");
+  if (parts.length !== 4) return false;
+
+  const [, , saltHex, expectedHashHex] = parts;
+  const salt = new Uint8Array(
+    saltHex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || []
+  );
+
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const computedHashHex = Array.from(new Uint8Array(derivedBits))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return computedHashHex === expectedHashHex;
+}
+
 export function generateOtpCode(): string {
   // 6-digit numeric code
   const val = Math.floor(100000 + Math.random() * 900000);
@@ -44,8 +119,32 @@ export async function signSessionToken(payload: Record<string, any>): Promise<st
   return `vtok_${b64Data}.${b64Sig}`;
 }
 
+export async function signChallengeToken(payload: Record<string, any>): Promise<string> {
+  const enc = new TextEncoder();
+  // 5-minute expiration for 2FA login challenge
+  const data = JSON.stringify({ ...payload, exp: Date.now() + 5 * 60 * 1000, type: "2fa_challenge" });
+  const b64Data = btoa(data).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(JWT_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(b64Data));
+  const sigArray = Array.from(new Uint8Array(sigBuf));
+  const b64Sig = btoa(String.fromCharCode(...sigArray))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return `vchl_${b64Data}.${b64Sig}`;
+}
+
 export async function verifySessionToken(token: string): Promise<Record<string, any> | null> {
-  if (!token || !token.startsWith("vtok_")) return null;
+  if (!token || (!token.startsWith("vtok_") && !token.startsWith("vchl_"))) return null;
   const parts = token.slice(5).split(".");
   if (parts.length !== 2) return null;
 

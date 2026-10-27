@@ -1,8 +1,8 @@
 import { CORS_HEADERS, generateOtpCode } from "../lib/auth";
+import { db } from "../lib/db";
 import { sendEmailDirect } from "../lib/smtp";
 
 interface Env {
-  DB: D1Database;
   SMTP_USER?: string;
   SMTP_PASS?: string;
 }
@@ -37,10 +37,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const id = `otp_${crypto.randomUUID()}`;
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-  // Insert code into D1
+  // Insert code into Charizard PostgreSQL (schema: verxl)
   try {
-    await env.DB.prepare(
-      "INSERT INTO auth_codes (id, email, code, expires_at, used, created_at) VALUES (?, ?, ?, ?, 0, datetime('now'))"
+    await db.prepare(
+      "INSERT INTO auth_codes (id, email, code, expires_at, used, created_at) VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)"
     )
       .bind(id, email, code, expiresAt)
       .run();

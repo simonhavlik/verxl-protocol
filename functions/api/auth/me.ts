@@ -1,15 +1,14 @@
 import { CORS_HEADERS, verifySessionToken } from "../lib/auth";
+import { db } from "../lib/db";
 
-interface Env {
-  DB: D1Database;
-}
+interface Env {}
 
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 };
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
 
   const authHeader = request.headers.get("Authorization");
   const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -28,13 +27,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const user = await env.DB.prepare(
-    "SELECT id, email, wallet_address, balance_usd, total_deposited_usd, total_spent_usd FROM users WHERE id = ?"
+  const user = await db.prepare(
+    "SELECT id, email, password_hash, two_factor_enabled, wallet_address, balance_usd, total_deposited_usd, total_spent_usd FROM users WHERE id = ?"
   )
     .bind(payload.sub)
     .first<{
       id: string;
       email: string;
+      password_hash: string | null;
+      two_factor_enabled: boolean;
       wallet_address: string | null;
       balance_usd: number;
       total_deposited_usd: number;
@@ -48,13 +49,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const keys = await env.DB.prepare(
+  const keys = await db.prepare(
     "SELECT id, key_prefix, name, is_active, created_at FROM api_keys WHERE user_id = ? ORDER BY created_at DESC"
   )
     .bind(user.id)
     .all();
 
-  const recentUsage = await env.DB.prepare(
+  const recentUsage = await db.prepare(
     "SELECT id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, created_at FROM usage_records WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
   )
     .bind(user.id)
@@ -66,10 +67,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         id: user.id,
         email: user.email,
         wallet_address: user.wallet_address,
-        balance_usd: user.balance_usd,
-        total_deposited_usd: user.total_deposited_usd,
-        total_spent_usd: user.total_spent_usd,
+        balance_usd: Number(user.balance_usd),
+        total_deposited_usd: Number(user.total_deposited_usd),
+        total_spent_usd: Number(user.total_spent_usd),
         has_active_key: keys.results.some((k: any) => k.is_active === 1),
+        has_password: Boolean(user.password_hash),
+        two_factor_enabled: Boolean(user.two_factor_enabled),
       },
       keys: keys.results,
       usage: recentUsage.results,

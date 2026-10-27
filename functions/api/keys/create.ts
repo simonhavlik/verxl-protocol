@@ -1,15 +1,14 @@
 import { CORS_HEADERS, verifySessionToken, hashSha256 } from "../lib/auth";
+import { db } from "../lib/db";
 
-interface Env {
-  DB: D1Database;
-}
+interface Env {}
 
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
 
   const authHeader = request.headers.get("Authorization");
   const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -31,17 +30,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const userId = payload.sub;
 
   // 1. Verify user deposit threshold >= $1.00
-  const user = await env.DB.prepare(
+  const user = await db.prepare(
     "SELECT total_deposited_usd, balance_usd FROM users WHERE id = ?"
   )
     .bind(userId)
     .first<{ total_deposited_usd: number; balance_usd: number }>();
 
-  if (!user || user.total_deposited_usd < 1.0) {
+  if (!user || Number(user.total_deposited_usd) < 1.0) {
     return new Response(
       JSON.stringify({
         error: "Minimum initial deposit of $1.00 USD (USDC on Arbitrum) required to generate an API key.",
-        current_deposited_usd: user?.total_deposited_usd || 0.0,
+        current_deposited_usd: Number(user?.total_deposited_usd || 0.0),
       }),
       { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
@@ -60,8 +59,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const keyPrefix = rawKeySecret.slice(0, 14) + "...";
   const keyId = `key_${crypto.randomUUID()}`;
 
-  await env.DB.prepare(
-    "INSERT INTO api_keys (id, user_id, key_hash, key_prefix, name, is_active, created_at) VALUES (?, ?, ?, ?, ?, 1, datetime('now'))"
+  await db.prepare(
+    "INSERT INTO api_keys (id, user_id, key_hash, key_prefix, name, is_active, created_at) VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)"
   )
     .bind(keyId, userId, keyHash, keyPrefix, keyName)
     .run();

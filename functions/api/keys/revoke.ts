@@ -1,15 +1,14 @@
 import { CORS_HEADERS, verifySessionToken } from "../lib/auth";
+import { db } from "../lib/db";
 
-interface Env {
-  DB: D1Database;
-}
+interface Env {}
 
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
 
   const authHeader = request.headers.get("Authorization");
   const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -41,13 +40,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const res = await env.DB.prepare(
+  const res = await db.prepare(
     "UPDATE api_keys SET is_active = 0 WHERE id = ? AND user_id = ?"
   )
     .bind(keyId, payload.sub)
     .run();
 
-  if (res.meta.changes === 0) {
+  if (res.changes === 0) {
     return new Response(JSON.stringify({ error: "API key not found or already revoked." }), {
       status: 404,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },

@@ -16,6 +16,12 @@ import {
   Activity,
   Send,
   LogOut,
+  Smartphone,
+  Shield,
+  Download,
+  Eye,
+  EyeOff,
+  ShieldAlert,
 } from "lucide-react";
 
 interface UserProfile {
@@ -26,6 +32,8 @@ interface UserProfile {
   total_deposited_usd: number;
   total_spent_usd: number;
   has_active_key: boolean;
+  has_password?: boolean;
+  two_factor_enabled?: boolean;
 }
 
 interface ApiKeyItem {
@@ -60,10 +68,48 @@ export const Console: React.FC = () => {
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   // Auth Inputs
+  const [authMode, setAuthMode] = useState<"otp" | "password">("otp");
   const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpSending, setOtpSending] = useState(false);
+
+  // 2FA Challenge during Login
+  const [loginRequires2fa, setLoginRequires2fa] = useState(false);
+  const [loginChallengeToken, setLoginChallengeToken] = useState<string | null>(null);
+  const [loginTotpInput, setLoginTotpInput] = useState("");
+  const [loginRecoveryInput, setLoginRecoveryInput] = useState("");
+  const [useRecoveryLogin, setUseRecoveryLogin] = useState(false);
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
+
+  // Security Management Modal
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [securityTab, setSecurityTab] = useState<"2fa" | "password">("2fa");
+
+  // Password Setup States
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+
+  // 2FA Setup States
+  const [totpStep, setTotpStep] = useState<"view" | "setup" | "codes">("view");
+  const [totpSecret, setTotpSecret] = useState("");
+  const [totpFormattedSecret, setTotpFormattedSecret] = useState("");
+  const [totpOtpAuthUrl, setTotpOtpAuthUrl] = useState("");
+  const [totpRecoveryCodes, setTotpRecoveryCodes] = useState<string[]>([]);
+  const [totpVerifyCode, setTotpVerifyCode] = useState("");
+  const [enablingTotp, setEnablingTotp] = useState(false);
+  const [totpError, setTotpError] = useState<string | null>(null);
+  const [totpSuccess, setTotpSuccess] = useState<string | null>(null);
+  const [copiedTotpSecret, setCopiedTotpSecret] = useState(false);
+  const [copiedRecoveryCodes, setCopiedRecoveryCodes] = useState(false);
+  const [disablingTotp, setDisablingTotp] = useState(false);
+  const [disablePasswordConfirm, setDisablePasswordConfirm] = useState("");
 
   // Key Creation Modal
   const [newKeyName, setNewKeyName] = useState("Production Key");
@@ -203,6 +249,246 @@ export const Console: React.FC = () => {
       setStatusMsg({ type: "error", text: "Authentication error: " + err.message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handlers: Password Login
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput || !passwordInput) {
+      setStatusMsg({ type: "error", text: "Email and password are required." });
+      return;
+    }
+    setLoginSubmitting(true);
+    setStatusMsg(null);
+    try {
+      const res = await fetch("/api/auth/login-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim(), password: passwordInput }),
+      });
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        setStatusMsg({ type: "error", text: data.error || "Login failed." });
+        return;
+      }
+
+      // Check if 2FA is required
+      if (data.require_2fa) {
+        setLoginChallengeToken(data.challenge_token);
+        setLoginRequires2fa(true);
+        setStatusMsg({ type: "info", text: "Password verified. Please enter your 6-digit TOTP code." });
+        return;
+      }
+
+      // Authenticated directly
+      localStorage.setItem("vrxl_auth_token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setPasswordInput("");
+      setStatusMsg({ type: "success", text: "Authenticated successfully." });
+      fetchSessionData(data.token);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: "Login error: " + err.message });
+    } finally {
+      setLoginSubmitting(false);
+    }
+  };
+
+  // Handlers: Verify Login 2FA
+  const handleVerifyLogin2fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginChallengeToken) return;
+    setLoginSubmitting(true);
+    setStatusMsg(null);
+    try {
+      const payload: any = { challenge_token: loginChallengeToken };
+      if (useRecoveryLogin) {
+        if (!loginRecoveryInput) {
+          setStatusMsg({ type: "error", text: "Please enter your emergency recovery code." });
+          setLoginSubmitting(false);
+          return;
+        }
+        payload.recovery_code = loginRecoveryInput.trim();
+      } else {
+        if (!loginTotpInput || loginTotpInput.trim().length !== 6) {
+          setStatusMsg({ type: "error", text: "Please enter the 6-digit code from your authenticator app." });
+          setLoginSubmitting(false);
+          return;
+        }
+        payload.totp_code = loginTotpInput.trim();
+      }
+
+      const res = await fetch("/api/auth/2fa/verify-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        setStatusMsg({ type: "error", text: data.error || "Invalid 2FA code." });
+        return;
+      }
+
+      localStorage.setItem("vrxl_auth_token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setLoginRequires2fa(false);
+      setLoginChallengeToken(null);
+      setLoginTotpInput("");
+      setLoginRecoveryInput("");
+      setPasswordInput("");
+      setStatusMsg({ type: "success", text: "Two-Factor Authentication verified. Access granted." });
+      fetchSessionData(data.token);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: "2FA error: " + err.message });
+    } finally {
+      setLoginSubmitting(false);
+    }
+  };
+
+  // Handlers: Set / Change Password
+  const handleSavePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+
+    setSavingPassword(true);
+    setPasswordError(null);
+    setPasswordSuccess(null);
+    try {
+      const res = await fetch("/api/auth/set-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        setPasswordError(data.error || "Failed to set password.");
+        return;
+      }
+
+      setPasswordSuccess("Password saved and encrypted in Charizard PostgreSQL.");
+      setNewPassword("");
+      setConfirmPassword("");
+      if (user) {
+        setUser({ ...user, has_password: true });
+      }
+    } catch (err: any) {
+      setPasswordError("Network error: " + err.message);
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  // Handlers: Initiate 2FA Setup
+  const handleStart2faSetup = async () => {
+    setEnablingTotp(true);
+    setTotpError(null);
+    setTotpSuccess(null);
+    try {
+      const res = await fetch("/api/auth/2fa/setup", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = (await res.json()) as any;
+      if (!res.ok) {
+        setTotpError(data.error || "Failed to start 2FA setup.");
+        return;
+      }
+
+      setTotpSecret(data.secret);
+      setTotpFormattedSecret(data.formatted_secret);
+      setTotpOtpAuthUrl(data.otpauth_url);
+      setTotpRecoveryCodes(data.recovery_codes || []);
+      setTotpStep("setup");
+    } catch (err: any) {
+      setTotpError("Error initializing 2FA: " + err.message);
+    } finally {
+      setEnablingTotp(false);
+    }
+  };
+
+  // Handlers: Confirm & Activate 2FA
+  const handleConfirm2fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!totpVerifyCode || totpVerifyCode.trim().length !== 6) {
+      setTotpError("Please enter the 6-digit verification code from your authenticator app.");
+      return;
+    }
+    setEnablingTotp(true);
+    setTotpError(null);
+    try {
+      const res = await fetch("/api/auth/2fa/enable", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: totpVerifyCode.trim() }),
+      });
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        setTotpError(data.error || "Verification failed.");
+        return;
+      }
+
+      setTotpStep("codes");
+      setTotpSuccess("Two-Factor Authentication is now active and enforced!");
+      if (user) {
+        setUser({ ...user, two_factor_enabled: true });
+      }
+    } catch (err: any) {
+      setTotpError("Network error: " + err.message);
+    } finally {
+      setEnablingTotp(false);
+    }
+  };
+
+  // Handlers: Disable 2FA
+  const handleDisable2fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDisablingTotp(true);
+    setTotpError(null);
+    try {
+      const res = await fetch("/api/auth/2fa/disable", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password: disablePasswordConfirm }),
+      });
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        setTotpError(data.error || "Failed to disable 2FA.");
+        return;
+      }
+
+      setTotpStep("view");
+      setTotpSuccess("Two-Factor Authentication disabled.");
+      setDisablePasswordConfirm("");
+      if (user) {
+        setUser({ ...user, two_factor_enabled: false });
+      }
+    } catch (err: any) {
+      setTotpError("Error: " + err.message);
+    } finally {
+      setDisablingTotp(false);
     }
   };
 
@@ -444,76 +730,227 @@ main();`,
             <div className="space-y-1.5 text-center">
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] text-blue-400 uppercase tracking-wider">
                 <Lock className="w-3 h-3" />
-                <span>Passwordless Cryptographic Authentication</span>
+                <span>Non-Custodial Developer Authentication</span>
               </div>
               <h2 className="text-lg font-bold text-white uppercase tracking-wider">
                 Access Developer Console
               </h2>
               <p className="text-xs text-slate-300 font-sans">
-                Authenticate via one-time verification code dispatched from our verified mail node{" "}
-                <span className="text-blue-400 font-mono">automated@verxl.com</span>. Zero passwords, zero custodial float.
+                Sign in using passwordless email OTP or cryptographic password with hardware TOTP 2FA.
               </p>
             </div>
 
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp} className="space-y-3 pt-2">
-                <div>
-                  <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
-                    Institutional Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            {/* Auth Mode Toggle Tabs */}
+            <div className="flex border-b border-slate-800 text-xs font-bold uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={() => { setAuthMode("otp"); setLoginRequires2fa(false); }}
+                className={`flex-1 py-2 text-center border-b-2 transition ${
+                  authMode === "otp"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/5"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                Email OTP (Passwordless)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthMode("password"); }}
+                className={`flex-1 py-2 text-center border-b-2 transition ${
+                  authMode === "password"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/5"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                Password + 2FA
+              </button>
+            </div>
+
+            {authMode === "otp" ? (
+              !otpSent ? (
+                <form onSubmit={handleSendOtp} className="space-y-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                      Institutional Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="developer@acme.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={otpSending}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                  >
+                    {otpSending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    <span>{otpSending ? "Dispatching Code via SMTP..." : "Send Verification Code"}</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} className="space-y-3 pt-1">
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                      <span>Enter 6-Digit Code sent to {emailInput}</span>
+                      <button
+                        type="button"
+                        onClick={() => setOtpSent(false)}
+                        className="text-blue-400 hover:underline text-[10px]"
+                      >
+                        Change Email
+                      </button>
+                    </div>
                     <input
-                      type="email"
+                      type="text"
+                      maxLength={6}
                       required
-                      placeholder="developer@acme.com"
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                      placeholder="123456"
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ""))}
+                      className="w-full bg-[#05070b] border border-blue-500/50 rounded-[2px] px-3 py-2.5 text-center text-lg tracking-[8px] font-mono text-white focus:outline-none focus:border-blue-400"
                     />
                   </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={otpSending}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
-                >
-                  {otpSending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                  <span>{otpSending ? "Dispatching Code via SMTP..." : "Send Verification Code"}</span>
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                  >
+                    {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Verify Code & Login</span>
+                  </button>
+                </form>
+              )
             ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-3 pt-2">
-                <div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 uppercase tracking-wider mb-1">
-                    <span>Enter 6-Digit Code sent to {emailInput}</span>
+              /* Password + 2FA Login Form */
+              !loginRequires2fa ? (
+                <form onSubmit={handlePasswordLogin} className="space-y-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="developer@acme.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                      Cryptographic Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                      <input
+                        type={showPasswordInput ? "text" : "password"}
+                        required
+                        placeholder="••••••••••••"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-10 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordInput(!showPasswordInput)}
+                        className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
+                      >
+                        {showPasswordInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loginSubmitting}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                  >
+                    {loginSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
+                    <span>Sign In with Password</span>
+                  </button>
+                  <p className="text-[10px] text-slate-400 text-center">
+                    Forgot password or not configured? Use the <strong className="text-blue-400 cursor-pointer" onClick={() => setAuthMode("otp")}>Email OTP</strong> tab to log in passwordlessly.
+                  </p>
+                </form>
+              ) : (
+                /* 2FA Challenge Prompt */
+                <form onSubmit={handleVerifyLogin2fa} className="space-y-3 pt-1">
+                  <div className="bg-[#05070b] border border-blue-500/40 rounded-[2px] p-3 text-center space-y-1">
+                    <Smartphone className="w-5 h-5 text-blue-400 mx-auto" />
+                    <div className="text-xs font-bold text-white uppercase tracking-wider">
+                      Two-Factor Authentication Required
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      {useRecoveryLogin
+                        ? "Enter one of your 8 emergency recovery codes"
+                        : "Enter the 6-digit code from Google Authenticator / 1Password"}
+                    </p>
+                  </div>
+
+                  {!useRecoveryLogin ? (
+                    <div>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        autoFocus
+                        required
+                        placeholder="123456"
+                        value={loginTotpInput}
+                        onChange={(e) => setLoginTotpInput(e.target.value.replace(/\D/g, ""))}
+                        className="w-full bg-[#05070b] border border-blue-500/50 rounded-[2px] px-3 py-2.5 text-center text-lg tracking-[8px] font-mono text-white focus:outline-none focus:border-blue-400"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="text"
+                        autoFocus
+                        required
+                        placeholder="xxxx-xxxx"
+                        value={loginRecoveryInput}
+                        onChange={(e) => setLoginRecoveryInput(e.target.value)}
+                        className="w-full bg-[#05070b] border border-blue-500/50 rounded-[2px] px-3 py-2 text-center text-sm font-mono text-white focus:outline-none focus:border-blue-400"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loginSubmitting}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                  >
+                    {loginSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Verify 2FA & Access Console</span>
+                  </button>
+
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
                     <button
                       type="button"
-                      onClick={() => setOtpSent(false)}
-                      className="text-blue-400 hover:underline text-[10px]"
+                      onClick={() => setUseRecoveryLogin(!useRecoveryLogin)}
+                      className="text-blue-400 hover:underline"
                     >
-                      Change Email
+                      {useRecoveryLogin ? "Use 6-digit TOTP code instead" : "Use emergency recovery code"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setLoginRequires2fa(false); setLoginChallengeToken(null); }}
+                      className="text-slate-400 hover:text-white"
+                    >
+                      Cancel
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    required
-                    placeholder="123456"
-                    value={otpInput}
-                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ""))}
-                    className="w-full bg-[#05070b] border border-blue-500/50 rounded-[2px] px-3 py-2.5 text-center text-lg tracking-[8px] font-mono text-white focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
-                >
-                  {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                  <span>Verify Code & Login</span>
-                </button>
-              </form>
+                </form>
+              )
             )}
           </div>
         </div>
@@ -556,6 +993,20 @@ main();`,
               <span className="hidden sm:inline">Sync</span>
             </button>
             <button
+              onClick={() => {
+                setShowSecurityModal(true);
+                setTotpStep(user.two_factor_enabled ? "view" : "setup");
+              }}
+              className={`px-2.5 py-1.5 rounded-[2px] bg-[#05070b] border ${
+                user.two_factor_enabled && user.has_password
+                  ? "border-emerald-500/40 hover:border-emerald-400 text-emerald-300"
+                  : "border-amber-500/50 hover:border-amber-400 text-amber-300 animate-pulse"
+              } text-[11px] font-bold flex items-center gap-1.5 transition`}
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-400" />
+              <span>Security & 2FA</span>
+            </button>
+            <button
               onClick={() => setShowPayoutModal(true)}
               className="px-2.5 py-1.5 rounded-[2px] bg-[#05070b] border border-purple-500/40 hover:border-purple-400 text-purple-300 text-[11px] font-bold flex items-center gap-1.5 transition"
             >
@@ -570,6 +1021,42 @@ main();`,
               <span>Logout</span>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* SECURITY RECOMMENDATION CARD */}
+      {user && (!user.two_factor_enabled || !user.has_password) && (
+        <div className="bg-gradient-to-r from-amber-950/30 via-[#0a0e17] to-amber-950/10 border border-amber-500/50 rounded-[3px] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-[2px] text-amber-400 shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <span>Security Recommendation: Enhance Account Protection</span>
+                <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-[2px] font-bold">
+                  Recommended
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                {!user.two_factor_enabled && !user.has_password
+                  ? "Your account currently uses only email OTP. Configure cryptographic password protection and RFC 6238 two-factor authentication (2FA) with emergency recovery codes."
+                  : !user.two_factor_enabled
+                  ? "Enable RFC 6238 TOTP Two-Factor Authentication (Google Authenticator, 1Password) to secure protocol key generation and withdrawals."
+                  : "Add cryptographic password protection to enable dual-login capability alongside email OTP."}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setShowSecurityModal(true);
+              setSecurityTab(!user.two_factor_enabled ? "2fa" : "password");
+            }}
+            className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider rounded-[2px] transition flex items-center gap-1.5 shadow"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Configure Security</span>
+          </button>
         </div>
       )}
 
@@ -1089,6 +1576,403 @@ main();`,
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: SECURITY MANAGEMENT MODAL (2FA & PASSWORD) */}
+      {showSecurityModal && user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-5 sm:p-6 shadow-2xl space-y-4 my-8">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Security & Account Protection
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSecurityModal(false);
+                  setTotpStep(user.two_factor_enabled ? "view" : "setup");
+                  setTotpError(null);
+                  setTotpSuccess(null);
+                  setPasswordError(null);
+                  setPasswordSuccess(null);
+                }}
+                className="text-slate-400 hover:text-white text-xs uppercase"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Security Tabs */}
+            <div className="flex border-b border-slate-800 gap-1">
+              <button
+                type="button"
+                onClick={() => setSecurityTab("2fa")}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-2 transition ${
+                  securityTab === "2fa"
+                    ? "border-blue-400 text-white bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Two-Factor Auth (2FA)</span>
+                {user.two_factor_enabled ? (
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1 rounded-[2px]">
+                    ON
+                  </span>
+                ) : (
+                  <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1 rounded-[2px]">
+                    OFF
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSecurityTab("password")}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-2 transition ${
+                  securityTab === "password"
+                    ? "border-blue-400 text-white bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Password Protection</span>
+                {user.has_password ? (
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1 rounded-[2px]">
+                    SET
+                  </span>
+                ) : (
+                  <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1 rounded-[2px]">
+                    NONE
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* TAB 1: TWO-FACTOR AUTH (2FA) */}
+            {securityTab === "2fa" && (
+              <div className="space-y-4 text-xs">
+                {totpError && (
+                  <div className="p-2.5 rounded-[2px] bg-red-950/40 border border-red-500/40 text-red-300 text-xs">
+                    {totpError}
+                  </div>
+                )}
+                {totpSuccess && (
+                  <div className="p-2.5 rounded-[2px] bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{totpSuccess}</span>
+                  </div>
+                )}
+
+                {totpStep === "view" && (
+                  <div className="space-y-3">
+                    {user.two_factor_enabled ? (
+                      <div className="bg-[#05070b] border border-emerald-500/30 rounded-[2px] p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase tracking-wider text-xs">
+                          <Check className="w-4 h-4" />
+                          <span>2FA Protection Active (RFC 6238 TOTP)</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed">
+                          Your account requires a 6-digit TOTP authenticator code or emergency recovery code during password login and security modifications.
+                        </p>
+
+                        <div className="border-t border-slate-800 pt-3 space-y-2">
+                          <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                            Disable Two-Factor Authentication
+                          </div>
+                          <p className="text-[10px] text-slate-400">
+                            Enter your password to confirm disabling 2FA. We strongly recommend keeping 2FA enabled.
+                          </p>
+                          <form onSubmit={handleDisable2fa} className="space-y-2">
+                            <input
+                              type="password"
+                              required
+                              placeholder="Confirm current account password"
+                              value={disablePasswordConfirm}
+                              onChange={(e) => setDisablePasswordConfirm(e.target.value)}
+                              className="w-full bg-[#0a0e17] border border-slate-700 rounded-[2px] px-3 py-1.5 text-xs text-white focus:outline-none focus:border-red-500"
+                            />
+                            <button
+                              type="submit"
+                              disabled={disablingTotp || !disablePasswordConfirm}
+                              className="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/50 disabled:opacity-50 text-red-200 font-bold text-xs uppercase tracking-wider py-2 rounded-[2px] transition flex items-center justify-center gap-2"
+                            >
+                              {disablingTotp ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldAlert className="w-3.5 h-3.5" />}
+                              <span>Confirm & Disable 2FA</span>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-[#05070b] border border-amber-500/30 rounded-[2px] p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-xs">
+                          <ShieldAlert className="w-4 h-4" />
+                          <span>Two-Factor Authentication Inactive</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed">
+                          Add an extra layer of defense with an RFC 6238 compliant authenticator (Google Authenticator, 1Password, Bitwarden). You will receive 8 one-time emergency recovery codes in case you lose access to your authenticator app.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleStart2faSetup}
+                          disabled={enablingTotp}
+                          className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                        >
+                          {enablingTotp ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Smartphone className="w-3.5 h-3.5" />}
+                          <span>Set Up 2FA Authenticator</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {totpStep === "setup" && (
+                  <div className="space-y-4">
+                    <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider">
+                        Step 1: Add to Your Authenticator App
+                      </div>
+                      <p className="text-[11px] text-slate-300">
+                        In Google Authenticator, 1Password, or Bitwarden, add a new account manually with this secret key:
+                      </p>
+                      <div className="flex items-center gap-2 bg-[#0a0e17] border border-slate-700 p-2.5 rounded-[2px]">
+                        <span className="font-mono text-xs sm:text-sm text-emerald-400 font-bold tracking-widest break-all select-all flex-1">
+                          {totpFormattedSecret || totpSecret}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(totpSecret);
+                            setCopiedTotpSecret(true);
+                            setTimeout(() => setCopiedTotpSecret(false), 2000);
+                          }}
+                          className="px-2 py-1 bg-[#05070b] border border-slate-600 hover:border-slate-400 rounded-[2px] text-[10px] text-slate-300 uppercase tracking-wider flex items-center gap-1 shrink-0"
+                        >
+                          {copiedTotpSecret ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedTotpSecret ? "Copied" : "Copy"}</span>
+                        </button>
+                      </div>
+
+                      <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1">
+                        <span>Account: {user.email}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(totpOtpAuthUrl);
+                            setStatusMsg({ type: "success", text: "otpauth:// URI copied." });
+                          }}
+                          className="text-blue-400 hover:underline"
+                        >
+                          Copy otpauth URI
+                        </button>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleConfirm2fa} className="space-y-3">
+                      <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
+                        <div className="text-xs font-bold text-white uppercase tracking-wider">
+                          Step 2: Enter 6-Digit Code to Verify
+                        </div>
+                        <p className="text-[11px] text-slate-300">
+                          Enter the current 6-digit code shown in your authenticator app to confirm setup:
+                        </p>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          autoFocus
+                          required
+                          placeholder="123456"
+                          value={totpVerifyCode}
+                          onChange={(e) => setTotpVerifyCode(e.target.value.replace(/\D/g, ""))}
+                          className="w-full bg-[#0a0e17] border border-blue-500/50 rounded-[2px] px-3 py-2 text-center text-lg tracking-[8px] font-mono text-white focus:outline-none focus:border-blue-400"
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setTotpStep("view")}
+                          className="flex-1 py-2 bg-[#05070b] border border-slate-700 hover:border-slate-500 text-xs text-slate-300 font-bold uppercase tracking-wider rounded-[2px]"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={enablingTotp || totpVerifyCode.length !== 6}
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2 rounded-[2px] transition flex items-center justify-center gap-2"
+                        >
+                          {enablingTotp ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                          <span>Verify & Enable 2FA</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {totpStep === "codes" && (
+                  <div className="space-y-3">
+                    <div className="bg-emerald-950/20 border border-emerald-500/50 rounded-[2px] p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase tracking-wider text-xs">
+                        <Check className="w-4 h-4" />
+                        <span>2FA Activated Successfully!</span>
+                      </div>
+                      <div className="bg-amber-950/30 border border-amber-500/30 rounded-[2px] p-2.5 text-[11px] text-amber-200">
+                        <strong>IMPORTANT:</strong> Save these 8 emergency recovery codes now. If you lose access to your authenticator app, these codes are the only way to recover your account. Each code can be used once.
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 bg-[#05070b] p-3 border border-slate-800 rounded-[2px]">
+                        {totpRecoveryCodes.map((code, idx) => (
+                          <div
+                            key={idx}
+                            className="font-mono text-xs text-slate-200 bg-[#0a0e17] px-2 py-1 rounded-[2px] border border-slate-800 text-center select-all"
+                          >
+                            {code}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(totpRecoveryCodes.join("\n"));
+                            setCopiedRecoveryCodes(true);
+                            setTimeout(() => setCopiedRecoveryCodes(false), 2000);
+                          }}
+                          className="flex-1 py-1.5 bg-[#05070b] border border-slate-700 hover:border-slate-500 text-xs text-slate-200 font-bold uppercase tracking-wider rounded-[2px] flex items-center justify-center gap-1.5"
+                        >
+                          {copiedRecoveryCodes ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedRecoveryCodes ? "Copied" : "Copy Codes"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const blob = new Blob([
+                              `VERXL PROTOCOL EMERGENCY RECOVERY CODES\nAccount: ${user.email}\nGenerated: ${new Date().toISOString()}\n\n` +
+                              totpRecoveryCodes.join("\n") +
+                              `\n\nKeep these codes in a secure offline location or password manager.`
+                            ], { type: "text/plain" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `verxl-recovery-codes-${user.email.replace(/[^a-zA-Z0-9]/g, "_")}.txt`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="flex-1 py-1.5 bg-[#05070b] border border-slate-700 hover:border-slate-500 text-xs text-slate-200 font-bold uppercase tracking-wider rounded-[2px] flex items-center justify-center gap-1.5"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download .txt</span>
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTotpStep("view");
+                          setShowSecurityModal(false);
+                        }}
+                        className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider py-2 rounded-[2px] transition"
+                      >
+                        I Have Saved My Recovery Codes
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 2: PASSWORD PROTECTION */}
+            {securityTab === "password" && (
+              <div className="space-y-4 text-xs">
+                {passwordError && (
+                  <div className="p-2.5 rounded-[2px] bg-red-950/40 border border-red-500/40 text-red-300 text-xs">
+                    {passwordError}
+                  </div>
+                )}
+                {passwordSuccess && (
+                  <div className="p-2.5 rounded-[2px] bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{passwordSuccess}</span>
+                  </div>
+                )}
+
+                <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Key className="w-4 h-4 text-blue-400" />
+                      <span>{user.has_password ? "Update Account Password" : "Create Account Password"}</span>
+                    </div>
+                    {user.has_password ? (
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-[2px] font-bold">
+                        Password Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded-[2px] font-bold">
+                        No Password Set
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Setting a password enables cryptographic login (PBKDF2-HMAC-SHA256, 100,000 rounds) alongside passwordless email OTP. If 2FA is enabled, password login will require your 6-digit TOTP code.
+                  </p>
+
+                  <form onSubmit={handleSavePassword} className="space-y-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                        New Password (Minimum 8 Characters)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          required
+                          minLength={8}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          className="w-full bg-[#0a0e17] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-blue-400 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        minLength={8}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full bg-[#0a0e17] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-blue-400"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={savingPassword || !newPassword || newPassword !== confirmPassword}
+                      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+                    >
+                      {savingPassword ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      <span>{user.has_password ? "Update Password" : "Save & Enable Password Login"}</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

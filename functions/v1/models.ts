@@ -64,21 +64,6 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       },
     },
     {
-      id: "xiaomi/mimo-2.6-pro",
-      object: "model",
-      created: 1730000000,
-      owned_by: "xiaomi-official-bridge",
-      permission: [],
-      root: "xiaomi/mimo-2.6-pro",
-      context_window: 131072,
-      tier: "Official Bridge to Public API",
-      pricing: {
-        prompt_usd_per_1m: 0.35,
-        completion_usd_per_1m: 0.45,
-        protocol_fee_bps: 50,
-      },
-    },
-    {
       id: "deepseek/deepseek-v4.1-flash",
       object: "model",
       created: 1730000000,

@@ -1,8 +1,7 @@
 import { CORS_HEADERS } from "../lib/auth";
+import { db } from "../lib/db";
 
-interface Env {
-  DB: D1Database;
-}
+interface Env {}
 
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -10,14 +9,14 @@ export const onRequestOptions: PagesFunction<Env> = async () => {
 
 // GET /api/provider/payout?provider_id=...
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
   const url = new URL(request.url);
   const providerId = url.searchParams.get("provider_id");
 
   if (!providerId) {
     // Return all providers summary
-    const allProviders = await env.DB.prepare(
-      "SELECT id, name, payout_address, total_earned_usd, pending_payout_usd, paid_out_usd, created_at FROM providers"
+    const allProviders = await db.prepare(
+      "SELECT id, name, payout_address, total_earned_usd, pending_payout_usd, created_at FROM providers"
     ).all();
 
     return new Response(
@@ -26,8 +25,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const provider = await env.DB.prepare(
-    "SELECT id, name, payout_address, total_earned_usd, pending_payout_usd, paid_out_usd, created_at FROM providers WHERE id = ?"
+  const provider = await db.prepare(
+    "SELECT id, name, payout_address, total_earned_usd, pending_payout_usd, created_at FROM providers WHERE id = ?"
   )
     .bind(providerId)
     .first();
@@ -39,8 +38,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const history = await env.DB.prepare(
-    "SELECT id, payout_address, amount_usd, protocol_fee_usd, net_payout_usd, status, tx_hash, created_at FROM payout_requests WHERE provider_id = ? ORDER BY created_at DESC"
+  const history = await db.prepare(
+    "SELECT id, recipient_address, amount_usd, status, created_at FROM payout_requests WHERE provider_id = ? ORDER BY created_at DESC"
   )
     .bind(providerId)
     .all();
@@ -58,7 +57,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
 // POST /api/provider/payout
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
 
   let body: any;
   try {
@@ -91,9 +90,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  // 1. Look up provider in D1
-  const provider = await env.DB.prepare(
-    "SELECT id, name, payout_address, pending_payout_usd, paid_out_usd, total_earned_usd FROM providers WHERE id = ?"
+  // 1. Look up provider in Charizard PostgreSQL
+  const provider = await db.prepare(
+    "SELECT id, name, payout_address, pending_payout_usd, total_earned_usd FROM providers WHERE id = ?"
   )
     .bind(providerId)
     .first<{
@@ -101,7 +100,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       name: string;
       payout_address: string;
       pending_payout_usd: number;
-      paid_out_usd: number;
       total_earned_usd: number;
     }>();
 
@@ -112,11 +110,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (provider.pending_payout_usd < requestedAmount) {
+  if (Number(provider.pending_payout_usd) < requestedAmount) {
     return new Response(
       JSON.stringify({
-        error: `Insufficient accrued balance. Available pending payout: $${provider.pending_payout_usd.toFixed(4)} USD. Requested: $${requestedAmount.toFixed(2)} USD.`,
-        available_pending_usd: provider.pending_payout_usd,
+        error: `Insufficient accrued balance. Available pending payout: $${Number(provider.pending_payout_usd).toFixed(4)} USD. Requested: $${requestedAmount.toFixed(2)} USD.`,
+        available_pending_usd: Number(provider.pending_payout_usd),
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
@@ -131,31 +129,29 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   // 2. Compute 50 bps protocol fee and net payout
-  // 50 bps = 0.5% (0.005)
   const protocolFeeUsd = Math.round(requestedAmount * 0.005 * 10000) / 10000;
   const netPayoutUsd = Math.round((requestedAmount - protocolFeeUsd) * 10000) / 10000;
 
   const payoutId = `pay_${crypto.randomUUID()}`;
-  const simulatedTxHash = `0x${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "")}`;
 
   // 3. Atomically update provider pending balance & insert payout record
-  await env.DB.prepare(
-    "UPDATE providers SET pending_payout_usd = pending_payout_usd - ?, paid_out_usd = paid_out_usd + ? WHERE id = ?"
+  await db.prepare(
+    "UPDATE providers SET pending_payout_usd = pending_payout_usd - ? WHERE id = ?"
   )
-    .bind(requestedAmount, requestedAmount, providerId)
+    .bind(requestedAmount, providerId)
     .run();
 
-  await env.DB.prepare(
-    "INSERT INTO payout_requests (id, provider_id, payout_address, amount_usd, protocol_fee_usd, net_payout_usd, status, tx_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, 'QUEUED', ?, datetime('now'))"
+  await db.prepare(
+    "INSERT INTO payout_requests (id, provider_id, recipient_address, amount_usd, status, created_at) VALUES (?, ?, ?, ?, 'QUEUED', CURRENT_TIMESTAMP)"
   )
-    .bind(payoutId, providerId, destinationAddress, requestedAmount, protocolFeeUsd, netPayoutUsd, simulatedTxHash)
+    .bind(payoutId, providerId, destinationAddress, requestedAmount)
     .run();
 
-  const updatedProvider = await env.DB.prepare(
-    "SELECT pending_payout_usd, paid_out_usd FROM providers WHERE id = ?"
+  const updatedProvider = await db.prepare(
+    "SELECT pending_payout_usd, total_earned_usd FROM providers WHERE id = ?"
   )
     .bind(providerId)
-    .first<{ pending_payout_usd: number; paid_out_usd: number }>();
+    .first<{ pending_payout_usd: number; total_earned_usd: number }>();
 
   return new Response(
     JSON.stringify({
@@ -169,9 +165,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       protocol_fee_usd: protocolFeeUsd,
       net_payout_usd: netPayoutUsd,
       status: "QUEUED",
-      arbitrum_tx_ref: simulatedTxHash,
-      remaining_pending_usd: updatedProvider?.pending_payout_usd || 0.0,
-      total_paid_out_usd: updatedProvider?.paid_out_usd || 0.0,
+      remaining_pending_usd: Number(updatedProvider?.pending_payout_usd || 0.0),
+      total_earned_usd: Number(updatedProvider?.total_earned_usd || 0.0),
     }),
     { status: 201, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
   );

@@ -2,10 +2,9 @@
 // Non-Custodial OpenAI API Drop-in Proxy with 50 bps Protocol Fee & Real-time Balance Clearing
 // Dual Upstream: Charizard Port 11645 Zero-Overhead Tunnel + Cloudflare Tunnel node1.verxl.com
 import { hashSha256 } from "../../api/lib/auth";
+import { db } from "../../api/lib/db";
 
-interface Env {
-  DB?: D1Database;
-}
+interface Env {}
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -21,7 +20,7 @@ export const onRequestOptions: PagesFunction<Env> = async () => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+  const { request } = context;
 
   // 1. Strict Security & Input Validation (Zero Injection, Strict JSON Schema)
   let body: any;
@@ -68,11 +67,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const authHeader = request.headers.get("Authorization");
   let authenticatedUser: { id: string; balance_usd: number; key_id: string } | null = null;
 
-  if (authHeader && authHeader.startsWith("Bearer vrxl_live_") && env.DB) {
+  if (authHeader && authHeader.startsWith("Bearer vrxl_live_")) {
     const rawApiKey = authHeader.slice(7).trim();
     const keyHash = await hashSha256(rawApiKey);
 
-    const record = await env.DB.prepare(
+    const record = await db.prepare(
       "SELECT u.id as user_id, u.balance_usd, k.id as key_id FROM api_keys k JOIN users u ON k.user_id = u.id WHERE k.key_hash = ? AND k.is_active = 1"
     )
       .bind(keyHash)
@@ -91,11 +90,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    if (record.balance_usd <= 0.0) {
+    if (Number(record.balance_usd) <= 0.0) {
       return new Response(
         JSON.stringify({
           error: {
-            message: `Insufficient Verxl account balance ($${record.balance_usd.toFixed(2)} USD). Deposit at least $1.00 USD (USDC on Arbitrum) at https://verxl.com/console to continue.`,
+            message: `Insufficient Verxl account balance ($${Number(record.balance_usd).toFixed(2)} USD). Deposit at least $1.00 USD (USDC on Arbitrum) at https://verxl.com/console to continue.`,
             type: "insufficient_quota",
             code: "insufficient_balance",
           },
@@ -106,7 +105,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     authenticatedUser = {
       id: record.user_id,
-      balance_usd: record.balance_usd,
+      balance_usd: Number(record.balance_usd),
       key_id: record.key_id,
     };
   }
@@ -136,30 +135,93 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     "X-Verxl-DAO-Vault": "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
   };
 
-  const upstreamPayload = JSON.stringify({
-    model: requestedModel,
-    messages,
-    temperature,
-    max_tokens: maxTokens,
-    stream,
-  });
+  // Upstream Routing: For Xiaomi MiMo & DeepSeek, route via upstream provider API with active key
+  const OPENCODE_GO_KEY = "";
 
-  // Endpoints: Charizard tunnel port 11645 primary, Cloudflare tunnel secondary
-  const upstreamEndpoints = [
-    "http://212.227.211.88:11645/v1/chat/completions",
-    "https://node1.verxl.com/v1/chat/completions",
-  ];
+  let upstreamEndpoints: Array<{ url: string; headers: Record<string, string>; modelName: string }> = [];
 
-  for (const endpoint of upstreamEndpoints) {
+  if (requestedModel.includes("mimo") || requestedModel.includes("deepseek")) {
+    const upstreamModel = requestedModel.includes("mimo")
+      ? "mimo-v2.6-flash"
+      : "deepseek-v4.1-flash";
+
+    upstreamEndpoints = [
+      {
+        url: "https://opencode.ai/zen/go/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+          "x-opencode-session": "verxl-router",
+        },
+        modelName: upstreamModel,
+      },
+      {
+        url: "https://opencode.ai/zen/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+        },
+        modelName: upstreamModel,
+      },
+      {
+        url: "https://opencode.ai/inference/openai/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+        },
+        modelName: upstreamModel,
+      },
+      {
+        url: "http://212.227.211.88:11645/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: requestedModel,
+      },
+      {
+        url: "https://node1.verxl.com/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: requestedModel,
+      },
+    ];
+  } else {
+    // Bulbasaur / Qwen resident 32k cluster
+    upstreamEndpoints = [
+      {
+        url: "http://212.227.211.88:11645/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: requestedModel,
+      },
+      {
+        url: "https://node1.verxl.com/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: requestedModel,
+      },
+    ];
+  }
+
+  for (const ep of upstreamEndpoints) {
     try {
       const upstreamController = new AbortController();
       const timeoutId = setTimeout(() => upstreamController.abort(), 6000);
 
-      const upstreamResponse = await fetch(endpoint, {
+      const upstreamPayload = JSON.stringify({
+        model: ep.modelName,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+        stream,
+      });
+
+      const upstreamResponse = await fetch(ep.url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: ep.headers,
         body: upstreamPayload,
         signal: upstreamController.signal,
       });
@@ -167,8 +229,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       clearTimeout(timeoutId);
 
       if (upstreamResponse.ok && upstreamResponse.body) {
-        // Record token usage asynchronously if authenticated
-        if (authenticatedUser && env.DB) {
+        // Record token usage asynchronously in Charizard PostgreSQL if authenticated
+        if (authenticatedUser) {
           const estimatedPromptTokens = Math.max(16, Math.ceil(JSON.stringify(messages).length / 4));
           const estimatedCompletionTokens = stream ? 64 : 128;
           const computeCost =
@@ -180,18 +242,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
           context.waitUntil(
             Promise.all([
-              env.DB.prepare(
-                "UPDATE users SET balance_usd = MAX(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = datetime('now') WHERE id = ?"
+              db.prepare(
+                "UPDATE users SET balance_usd = GREATEST(0, balance_usd - ?), total_spent_usd = total_spent_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
               )
                 .bind(totalDeduction, totalDeduction, authenticatedUser.id)
                 .run(),
-              env.DB.prepare(
+              db.prepare(
                 "UPDATE providers SET pending_payout_usd = pending_payout_usd + ?, total_earned_usd = total_earned_usd + ? WHERE id = ?"
               )
                 .bind(providerNet, providerNet, providerId)
                 .run(),
-              env.DB.prepare(
-                "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))"
+              db.prepare(
+                "INSERT INTO usage_records (id, user_id, api_key_id, provider_id, model, prompt_tokens, completion_tokens, total_cost_usd, protocol_fee_usd, provider_revenue_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
               )
                 .bind(
                   `usg_${crypto.randomUUID()}`,
@@ -218,7 +280,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
               "Cache-Control": "no-cache",
               Connection: "keep-alive",
               ...protocolHeaders,
-              "X-Verxl-Origin": endpoint.includes("212.227")
+              "X-Verxl-Origin": ep.url.includes("212.227")
                 ? "charizard-tunnel-11645"
                 : "cloudflare-tunnel-node1",
             },
@@ -232,7 +294,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
                 protocol_fee_bps: 50,
                 clearing_status: "SETTLED",
                 selected_node: providerId,
-                gateway: endpoint.includes("212.227") ? "charizard-11645" : "cloudflare-node1",
+                gateway: ep.url.includes("212.227") ? "charizard-11645" : "cloudflare-node1",
               },
             }),
             {

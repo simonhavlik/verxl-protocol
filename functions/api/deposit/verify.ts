@@ -1,7 +1,7 @@
 import { CORS_HEADERS, verifySessionToken, hashSha256 } from "../lib/auth";
+import { db } from "../lib/db";
 
 interface Env {
-  DB: D1Database;
   TREASURY_ADDRESS?: string;
 }
 
@@ -66,7 +66,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   // 1. Replay Attack Prevention
-  const existingDeposit = await env.DB.prepare("SELECT id FROM deposits WHERE tx_hash = ?")
+  const existingDeposit = await db.prepare("SELECT id FROM deposits WHERE tx_hash = ?")
     .bind(txHash)
     .first();
 
@@ -186,21 +186,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  // 3. Atomically Record Deposit & Update User Balance in Cloudflare D1
+  // 3. Atomically Record Deposit & Update User Balance in Charizard PostgreSQL
   const depositId = `dep_${crypto.randomUUID()}`;
-  await env.DB.prepare(
-    "INSERT INTO deposits (id, user_id, tx_hash, chain, token, amount_usd, from_address, to_address, status, created_at) VALUES (?, ?, ?, 'arbitrum', 'USDC', ?, ?, ?, 'CONFIRMED', datetime('now'))"
+  await db.prepare(
+    "INSERT INTO deposits (id, tx_hash, user_id, amount_usd, chain_id, status, created_at) VALUES (?, ?, ?, ?, 42161, 'SETTLED', CURRENT_TIMESTAMP)"
   )
-    .bind(depositId, userId, txHash, creditedAmountUsd, fromAddress, treasury)
+    .bind(depositId, txHash, userId, creditedAmountUsd)
     .run();
 
-  await env.DB.prepare(
-    "UPDATE users SET balance_usd = balance_usd + ?, total_deposited_usd = total_deposited_usd + ?, updated_at = datetime('now') WHERE id = ?"
+  await db.prepare(
+    "UPDATE users SET balance_usd = balance_usd + ?, total_deposited_usd = total_deposited_usd + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
   )
     .bind(creditedAmountUsd, creditedAmountUsd, userId)
     .run();
 
-  const updatedUser = await env.DB.prepare(
+  const updatedUser = await db.prepare(
     "SELECT balance_usd, total_deposited_usd FROM users WHERE id = ?"
   )
     .bind(userId)
@@ -208,7 +208,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   // 4. Auto-generate initial API Key if user deposited >= $1.00 and has no active key
   let newGeneratedKey: string | null = null;
-  const existingKey = await env.DB.prepare(
+  const existingKey = await db.prepare(
     "SELECT id FROM api_keys WHERE user_id = ? AND is_active = 1 LIMIT 1"
   )
     .bind(userId)
@@ -220,8 +220,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const keyPrefix = rawKeySecret.slice(0, 14) + "...";
     const keyId = `key_${crypto.randomUUID()}`;
 
-    await env.DB.prepare(
-      "INSERT INTO api_keys (id, user_id, key_hash, key_prefix, name, is_active, created_at) VALUES (?, ?, ?, ?, 'Default Production Key', 1, datetime('now'))"
+    await db.prepare(
+      "INSERT INTO api_keys (id, user_id, key_hash, key_prefix, name, is_active, created_at) VALUES (?, ?, ?, ?, 'Default Production Key', 1, CURRENT_TIMESTAMP)"
     )
       .bind(keyId, userId, keyHash, keyPrefix)
       .run();
