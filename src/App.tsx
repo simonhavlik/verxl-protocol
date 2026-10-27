@@ -22,15 +22,16 @@ function getTabFromPath(): string {
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
   if (path.includes("governance") || path.includes("dao")) return "governance";
-  if (path.includes("privacy") || path.includes("terms") || path.includes("legal") || path.includes("mica")) return "legal";
+  if (path.includes("privacy") || path.includes("terms") || path.includes("legal") || path.includes("mica") || path.includes("charter") || path.includes("ip")) return "legal";
   return "overview";
 }
 
-function getLegalSubTab(): "privacy" | "terms" | "mica" {
+function getLegalSubTab(): "privacy" | "terms" | "mica" | "charter" {
   if (typeof window === "undefined") return "privacy";
   const path = window.location.pathname.toLowerCase();
   if (path.includes("terms")) return "terms";
   if (path.includes("mica")) return "mica";
+  if (path.includes("charter") || path.includes("ip") || path.includes("attribution")) return "charter";
   return "privacy";
 }
 

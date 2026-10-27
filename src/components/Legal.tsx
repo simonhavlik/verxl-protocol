@@ -9,11 +9,11 @@ import {
 } from "lucide-react";
 
 interface LegalProps {
-  initialTab?: "privacy" | "terms" | "mica";
+  initialTab?: "privacy" | "terms" | "mica" | "charter";
 }
 
 export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
-  const [activeTab, setActiveTab] = useState<"privacy" | "terms" | "mica">(initialTab);
+  const [activeTab, setActiveTab] = useState<"privacy" | "terms" | "mica" | "charter">(initialTab);
 
   return (
     <div className="space-y-6 font-mono text-slate-200">
@@ -78,6 +78,17 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
         >
           <Building className="w-3.5 h-3.5" />
           <span>EU MiCA & Regulatory Statement</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("charter")}
+          className={`py-2.5 px-4 font-bold uppercase tracking-wider border-b-2 flex items-center gap-2 transition ${
+            activeTab === "charter"
+              ? "border-blue-400 text-white bg-blue-500/10"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Scale className="w-3.5 h-3.5" />
+          <span>Academic Project Charter & IP Attribution</span>
         </button>
       </div>
 
@@ -406,6 +417,136 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </h2>
               <p>
                 Protocol parameters, fee distribution ratios, and slashing adjustments are governed exclusively through the Aragon OSx DAO on Ethereum Sepolia and Arbitrum One. No individual or corporate entity retains administrative override keys, multi-sig backdoors, or arbitrary freeze capabilities over settled balances.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DOCUMENT 4: ACADEMIC PROJECT CHARTER & IP ATTRIBUTION AGREEMENT */}
+      {activeTab === "charter" && (
+        <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[3px] p-5 sm:p-7 space-y-6 shadow-xl text-xs font-sans">
+          <div className="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h1 className="text-base sm:text-lg font-bold text-white font-mono uppercase tracking-wider">
+                Academic Collaboration, IP Attribution & Project Charter
+              </h1>
+              <div className="text-[11px] text-slate-400 font-mono">
+                VŠE Course 2SE307 (Bitcoin & Blockchain · M. Bok) · Czech Law (Act No. 121/2000 Coll. & Act No. 89/2012 Coll.)
+              </div>
+            </div>
+            <span className="text-[10px] text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] font-mono">
+              Sole Ownership & IP Protection
+            </span>
+          </div>
+
+          <div className="space-y-4 text-slate-300 leading-relaxed text-[11px]">
+            {/* Context Notice Box */}
+            <div className="bg-[#05070b] border border-blue-500/30 p-3.5 rounded-[2px] space-y-1 font-mono text-[10.5px]">
+              <div className="text-white font-bold flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <span>Executive Academic Context & Legal Characterization</span>
+              </div>
+              <p className="text-slate-400 font-sans">
+                This charter establishes the definitive legal and intellectual property (IP) boundary for Verxl Protocol in connection with course <strong>2SE307 Bitcoin and Blockchain</strong> (taught by M. Bok at the Prague University of Economics and Business — VŠE Praha). The course syllabus explicitly required student projects to be presented by groups of a minimum of three (3) enrolled individuals.
+              </p>
+            </div>
+
+            {/* Section 1: Parties to the Charter */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">1.</span>
+                <span>Parties to the Charter & Role Characterization</span>
+              </h2>
+              <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                <li>
+                  <strong>Project Owner & Sole Author (Party A):</strong> Šimon Havlík (Lead Architect, Software Engineer, and Sole Funder). Conceived, coded, funded, and deployed the Protocol, smart contracts, and infrastructure fleet prior to and independently of the academic seminar.
+                </li>
+                <li>
+                  <strong>Academic Peer Collaborators (Parties B & C):</strong> Student colleagues enrolled in VŠE course 2SE307. Participated in an advisory, editorial, and classroom presentation capacity to satisfy course group prerequisites and achieve course grade credits.
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 2: Intellectual Property & Non-Co-Authorship */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">2.</span>
+                <span>Exclusive Intellectual Property Rights & Non-Co-Authorship (§ 2 & § 8 Autorského zákona)</span>
+              </h2>
+              <p>
+                Pursuant to Act No. 121/2000 Coll. on Copyright (Autorský zákon):
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                <li>
+                  <strong>Exclusive IP Ownership (§ 2):</strong> 100.0% of all software source code, smart contracts (<code className="text-blue-300">VerxlStakingRegistry.sol</code>, <code className="text-blue-300">VerxlQualityOracle.sol</code>, <code className="text-blue-300">VerxlToken.sol</code>), deterministic <code className="text-blue-300">seed=42</code> verification algorithms, database schemas (PostgreSQL on Charizard), domains (<code className="text-blue-300">verxl.com</code>), and technical whitepapers are the sole, exclusive, and undivided property of Šimon Havlík.
+                </li>
+                <li>
+                  <strong>Non-Co-Authorship (§ 8):</strong> The Academic Collaborators explicitly declare and confirm that their advisory participation, editorial commentary, and classroom presentation delivery do not constitute co-authorship (*spoluautorství*) under Section 8 of the Copyright Act, as they have not authored any independently protectable software, contract code, or system architecture.
+                </li>
+                <li>
+                  <strong>Confirmatory Assignment (§ 12 a násl.):</strong> To the maximum extent any peer feedback, review commentary, or presentation work product could be construed under law as copyrightable, the Academic Collaborators irrevocably, exclusively, and royalty-free assign to Šimon Havlík all economic exploitation rights on a worldwide, perpetual, and transferable basis.
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 3: Financial Capital, Infrastructure & Risk Allocation */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">3.</span>
+                <span>Financial Investment, Infrastructure Fleet & 100% Risk Allocation</span>
+              </h2>
+              <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                <li>
+                  <strong>100% Capital Provision:</strong> All operational expenses, domain acquisitions, server hosting costs (IONOS Charizard VM, Bulbasaur Prague Vulkan GPU node, Oracle Cloud Diglett VM, Cloudflare Workers edge proxy), and Web3 RPC nodes (Alchemy Ethereum & Arbitrum) are funded 100.0% by Šimon Havlík.
+                </li>
+                <li>
+                  <strong>Zero Peer Contribution:</strong> The Academic Collaborators contributed 0.00 CZK / $0.00 USD toward project capital, infrastructure costs, or operational overhead.
+                </li>
+                <li>
+                  <strong>Complete Indemnification & Liability Release:</strong> Šimon Havlík assumes 100.0% of all commercial, regulatory (EU MiCA, GDPR, AI Act), operational, and financial liabilities. The Academic Collaborators are fully indemnified, held harmless, and released from any commercial or legal claims.
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 4: Zero Commercial Equity & Academic Pitch Narrative */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">4.</span>
+                <span>Zero Commercial Equity, No Token Rights & Academic Presentation Clarification</span>
+              </h2>
+              <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                <li>
+                  <strong>Zero Commercial Equity:</strong> The Academic Collaborators hold 0.00% equity, shares, or corporate ownership in Verxl Protocol, its intellectual property, or any future operating entity.
+                </li>
+                <li>
+                  <strong>Zero Token & Revenue Rights:</strong> The Academic Collaborators possess no claim or warrant to native $VRXL tokens, protocol routing fee distributions (the 50 bps switch), or DAO treasury accruals.
+                </li>
+                <li>
+                  <strong>Academic Simulation Artifacts:</strong> Any visual mockups, pitch slide diagrams, or executive role titles (such as "Founding Partner" or "33.33% Tranche" on Vision pitch cards) are academic simulation constructs designed solely to satisfy the 3-person evaluation rubric of course 2SE307 and carry <strong>zero legal, corporate, or financial effect</strong>.
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 5: Academic Attribution & Grading Covenant */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">5.</span>
+                <span>Academic Attribution Covenant</span>
+              </h2>
+              <p>
+                In recognition of their peer advisory review and active classroom presentation participation, Šimon Havlík covenants that the Academic Collaborators shall be fully credited on all academic submissions, presentation decks, and evaluation dossiers submitted to instructor M. Bok for course 2SE307, guaranteeing their eligibility for academic evaluation and grading.
+              </p>
+            </div>
+
+            {/* Section 6: Governing Law & Jurisdiction */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">6.</span>
+                <span>Governing Law & Jurisdiction</span>
+              </h2>
+              <p>
+                This Charter is governed exclusively by the laws of the Czech Republic, specifically Act No. 89/2012 Coll. (Civil Code) and Act No. 121/2000 Coll. (Copyright Act). Any disputes arising hereunder shall be subject to the exclusive jurisdiction of the competent courts of Prague, Czech Republic.
               </p>
             </div>
           </div>
