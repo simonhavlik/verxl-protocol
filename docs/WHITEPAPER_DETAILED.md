@@ -3,10 +3,13 @@
 **Technical Whitepaper — Version 1.0**  
 **Web Gateway:** [https://verxl.com](https://verxl.com)  
 **Smart Contract Framework:** Aragon OSx on Ethereum Sepolia Testnet  
+**DAO Vault Address:** `0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a`  
+**Arbitrum Settlement Escrow:** `0x5AE718197a6A87E103B124b660fd49692C857aE0`  
 **Governance Token:** `$VRXL` (ERC-20, Fixed Genesis Supply: 1,000,000)  
-**Academic Context:** Faculty of International Relations (FIR / FMV), Prague University of Economics and Business (VŠE Prague)  
+**PostgreSQL Telemetry Target:** Charizard `212.227.211.88:5432/kiam` (schema `verxl`)  
+**Academic Attribution:** Prague University of Economics and Business (VŠE Praha) · 2SE307 Bitcoin and Blockchain Practical Seminar · Room SB 235 · M. Bok  
 **Lead Architect & Author:** Šimon Havlík & Core Contributors  
-**Date:** October 26, 2026  
+**Date:** October 2026  
 
 ---
 
@@ -24,9 +27,9 @@ __      ________ _____  __   __ _
 
 ## Abstract
 
-Artificial Intelligence (AI) inference workloads represent the fastest-growing computational demand in modern computing. However, developers and enterprise builders face severe economic friction imposed by centralized API aggregators (e.g., OpenRouter). Incumbent platforms charge a 5.5% platform take-rate, compounded by credit card processing fees (2.9% + $0.30) and foreign exchange markups, imposing an effective **8% to 10% fee drag** on developers while demanding custodial fiat pre-funding and offering zero recourse against arbitrary account termination. Concurrently, regional GPU data centers and transitioning cryptocurrency mining facilities across Europe possess significant idle compute capacity but lack a permissionless liquidity rail due to developer distrust and the pervasive risk of **Model Spoofing** (advertising premium unquantized weights while serving quantized, degraded models).
+Artificial Intelligence (AI) inference workloads represent the fastest-growing computational demand in modern computing. However, developers and enterprise builders face severe economic friction imposed by centralized API aggregators. Incumbent platforms charge a 5.5% platform take-rate, compounded by credit card processing fees (2.9% + $0.30) and foreign exchange markups, imposing an effective **8% to 10% fee drag** on developers while demanding unsegregated custodial fiat pre-funding and offering zero recourse against arbitrary account termination. Concurrently, regional GPU data centers and transitioning cryptocurrency mining facilities across Europe possess significant idle compute capacity but lack a permissionless liquidity rail due to developer distrust and the pervasive risk of **Model Spoofing** (advertising premium unquantized weights while serving quantized, degraded models).
 
-**Verxl Protocol** (`verxl.com`) is a decentralized, non-custodial AI inference router and compute marketplace governed by the **Verxl Aragon DAO** on Ethereum Sepolia. Verxl replaces rent-seeking fiat intermediaries with a fixed **0.5% protocol routing fee**—reducing developer routing overhead by over 90%. By pairing a globally distributed Cloudflare Edge Worker with an **Autonomous AI Quality Oracle** executing seed-locked deterministic probe queries, Verxl continuously benchmarks Time to First Token (TTFT), tokens-per-second (TPS), and output perplexity. Dishonest providers forfeit their staked `$VRXL` collateral through automated smart contract slashing, while routing fees accrue non-custodially to the Aragon DAO Vault. This paper presents the end-to-end architecture, mathematical fee models, oracle verification algorithms, on-chain governance parameters, and execution roadmap through January 2027.
+**Verxl Protocol** (`verxl.com`) is a decentralized, non-custodial AI inference router and compute marketplace governed by the **Verxl Aragon DAO** on Ethereum Sepolia. Verxl replaces rent-seeking fiat intermediaries with a fixed **0.5% protocol routing fee (50 bps)**—compressing intermediary fee drag by over 94%. By pairing a globally distributed Cloudflare Edge Worker with an **Autonomous AI Quality Oracle** executing seed-locked deterministic probe queries, Verxl continuously benchmarks Time to First Token (TTFT), tokens-per-second (TPS), and output perplexity. Dishonest providers forfeit their staked `$VRXL` collateral through automated smart contract slashing, while routing fees accrue non-custodially to the Aragon DAO Vault. This paper presents the end-to-end architecture, mathematical fee models, oracle verification algorithms, on-chain governance parameters, and execution roadmap through January 2027.
 
 ---
 
@@ -51,7 +54,13 @@ Modern AI applications consume billions of prompt and completion tokens per mont
 3. **Foreign Exchange (FX) Spread (1.0%–2.0%):** Non-US developers incur currency conversion spreads when billing in USD via European banking rails.
 4. **Counterparty & Custodial Risk:** Users must deposit funds into centralized custodial balances. Accounts can be terminated, throttled, or frozen unilaterally without on-chain recourse.
 
-### 1.2 The Verxl Zero-Margin Protocol Economics
+### 1.2 The Akerlof Lemons Equilibrium in Machine Learning Compute
+
+The contemporary compute market suffers from asymmetric information, characterized by the economic lemons problem first formulated by George Akerlof (1970). Because deep neural networks execute across opaque HTTP boundaries, compute suppliers face an acute moral hazard incentive to engage in quality degradation. An operator can advertise full-precision 16-bit floating-point weights (FP16) at prevailing market prices while secretly serving 4-bit quantized representations (AWQ / GPTQ) or distilled student architectures on depreciated hardware.
+
+The computational cost to the supplier drops by up to 70%, yet the buyer absorbs degraded reasoning, higher perplexity, and severe hallucination variance. Because buyers cannot audit weight matrices ex ante over standard network layers, rational buyers discount their reservation prices to reflect the expected value of adulterated hardware. This discount depresses equilibrium market clearing prices below the marginal operational cost of authentic high-tier GPU clusters, driving institutional compute operators from open networks and leaving an adverse selection equilibrium dominated by degraded endpoints.
+
+### 1.3 The Verxl Zero-Margin Protocol Economics
 
 Verxl completely bypasses centralized fiat rails by settling usage non-custodially on-chain via smart contracts and state channels:
 
@@ -72,7 +81,7 @@ $$\Delta \text{Savings} = \frac{\text{Take-Rate}_{\text{Incumbent}} - \text{Take
 ```
 
 * **99.50% Direct Payout:** The compute provider receives 99.5% of gross token expenditures.
-* **0.50% DAO Revenue:** The 0.5% protocol routing fee is routed directly into the **Verxl Aragon DAO Vault**.
+* **0.50% DAO Revenue:** The 0.5% protocol routing fee is routed directly into the **Verxl Aragon DAO Vault** (`0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a`).
 * **Zero Custodial Risk:** Balances are governed by smart contracts; unused balances can be withdrawn at any time.
 
 ---
@@ -81,7 +90,7 @@ $$\Delta \text{Savings} = \frac{\text{Take-Rate}_{\text{Incumbent}} - \text{Take
 
 ### 2.1 System Architecture Overview
 
-Verxl implements a hybrid architecture: latency-critical request routing and streaming take place at the global network edge via Cloudflare Workers, while trust, identity, collateral, and governance are anchored immutably on Ethereum Sepolia.
+Verxl implements a hybrid architecture: latency-critical request routing and streaming take place at the global network edge via Cloudflare Workers, while trust, identity, collateral, and governance are anchored immutably on Ethereum Sepolia and Arbitrum One.
 
 ```
 [ Developer Client Application ]
@@ -100,11 +109,12 @@ Verxl implements a hybrid architecture: latency-critical request routing and str
        ▼                                           ▼
 +──────────────────────────+             +────────────────────────+
 | Verified GPU Provider    |             | PostgreSQL Server      |
-| (vLLM / TGI / SGLang)    |             | - users & api_keys     |
-| Direct SSE Stream Return |             | - usage_logs & audits  |
-+──────────────────────────+             +────────────────────────+
-                                                   ▲
-                                                   │ Audit Telemetry
+| (vLLM / TGI / SGLang)    |             | - Charizard : 5432     |
+| Direct SSE Stream Return |             | - verxl.dao_stats      |
++──────────────────────────+             | - verxl.proposals      |
+                                         +────────────────────────+
+                                                    ▲
+                                                    │ Audit Telemetry
 +──────────────────────────────────────────────────┴──────────────+
 | Autonomous AI Quality Oracle (Scheduled 30-Min Probe Worker)    |
 | - Seed-locked deterministic prompts against registered nodes    |
@@ -135,7 +145,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="meta-llama/llama-3-70b-instruct",
+    model="qwen-2.5-coder-32b",
     messages=[{"role": "user", "content": "Explain Verxl Protocol staking."}],
     stream=True
 )
@@ -199,7 +209,7 @@ Verxl introduces deterministic Canary Probing executed by autonomous edge worker
    * For authentic weights: $\text{Fidelity} \ge 0.98$.
    * Quantized or spoofed models display architectural divergence: $\text{Fidelity} \le 0.75$.
 3. **Hardware Telemetry Verification:** The probe measures physical GPU bandwidth:
-   $$\text{TPS} = \frac{N_{\text{completion}}}{\Delta t_{\text{generation}}} \ge \text{TPS}_{\text{min}}$$
+   $$\text{TPS} = \frac{N_{\text{completion}}}{\Delta t_{\text{generation}}} \ge \text{TPS}_{\min}$$
    If a host claims to run a 70B model on 4x H100s but delivers a TTFT of $3,500\text{ ms}$ and throughput of $8\text{ tokens/s}$, the oracle flags the provider for hardware under-provisioning.
 
 ---
@@ -298,17 +308,17 @@ Verxl DAO is structured using the **Aragon OSx** protocol standard, providing no
 The Aragon Token Voting plugin is deployed on Sepolia with the following mathematical rules:
 
 * **Support Threshold (Majority):** $> 50.0\%$ (Simple majority of cast votes).
+* **Multisig Threshold:** $66.7\%$ (2 / 3 Multisig for emergency parameter adjustments).
 * **Minimum Participation (Quorum):** $20.0\%$ of total circulating `$VRXL` (200,000 tokens).
 * **Voting Duration:** 24 hours (configured to 1 hour during Sepolia testnet evaluation to ensure agile grading).
 * **Early Execution:** Enabled. If mathematical certainty is reached before duration expiry, the proposal executes immediately.
 
-### 5.3 Genesis Proposal: VIP-001
+### 5.3 On-Chain Proposals: VIP-1, VIP-2, VIP-3
 
-The inaugural on-chain proposal for Task 1 academic evaluation is **VIP-001**:
-* **Proposal Title:** `VIP-001: Approve Verxl Gateway V1 Routing Specs & Seed Liquidity`
-* **On-Chain Actions:**
-  1. Sets protocol routing fee switch to 0.5% in `VerxlStakingRegistry.sol`.
-  2. Approves transfer of 0.01 SepoliaETH from the DAO Vault to fund oracle gas fees and domain ENS records.
+* **VIP-1:** `Verxl Protocol Stage 1 Architecture & Seed Collateral Authorization` (Active, 66.7% approved by Šimon Havlík).
+* **VIP-2:** `Onboard Prague Bare-Metal Bulbasaur Node (Qwen 3.5 4B) & Route 50 bps Protocol Fee` (Passed, 100% approved).
+* **VIP-3:** `Arbitrum USDC Settlement Escrow & Provider Payout Minimums (Min $1.00 USD)` (Active, 75% approved).
+* **ADMIN-1:** `Initial Treasury Verification & 0.001 SepoliaETH Test Transfer` (Executed on-chain, tx `0x247d5...b6b6`).
 
 ---
 
@@ -328,10 +338,10 @@ In compliance with the project charter, genesis voting weight is allocated in eq
 
 | Recipient / Pillar | Role | Wallet Address | Allocation ($VRXL) | Share (%) |
 |---|---|---|---|---|
-| **Šimon Havlík** | Lead Architect & Smart Contracts | `0x14f10A865e277C0B1949e18Dd9856602DB11742b` | 250,000 | 25.0% |
-| **Founding Contributor 2** | Edge & Proxy Systems Lead | `0x2222222222222222222222222222222222222222` | 250,000 | 25.0% |
-| **Founding Contributor 3** | AI Quality & Data Systems Lead | `0x3333333333333333333333333333333333333333` | 250,000 | 25.0% |
-| **Founding Contributor 4** | Frontend & Economic Design Lead | `0x4444444444444444444444444444444444444444` | 250,000 | 25.0% |
+| **Šimon Havlík** | Project Lead & Head Developer | `0x14f10A865e277C0B1949e18Dd9856602DB11742b` | 250,000 | 25.0% |
+| **Founding Contributor 2** | Edge & Proxy Systems Lead | `0x4E5e69DcFE7DF0D3E5bA074C7a66CE0597cF05Ab` | 250,000 | 25.0% |
+| **Founding Contributor 3** | AI Quality & Data Systems Lead | `0xE4a112C573a750b2d3Cc418CFF45FFEf9Fd1272F` | 250,000 | 25.0% |
+| **DAO Treasury Vault** | Community & Staking Reserve | `0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a` | 250,000 | 25.0% |
 | **Total Genesis Supply** | | | **1,000,000** | **100.0%** |
 
 ### 6.3 Token Utility
@@ -343,61 +353,64 @@ In compliance with the project charter, genesis voting weight is allocated in eq
 
 ## 7. Technical Implementation Details
 
-### 7.1 PostgreSQL Telemetry Schema
+### 7.1 PostgreSQL Telemetry Schema on Charizard
 
-The off-chain routing engine tracks balances and provider health through a schema optimized for high concurrency:
+The off-chain routing engine tracks balances and provider health through a schema optimized for high concurrency on Charizard (`212.227.211.88:5432`, schema `verxl`):
 
 ```sql
-CREATE TYPE provider_status AS ENUM ('ACTIVE', 'PROBATION', 'SLASHED', 'OFFLINE');
+CREATE SCHEMA IF NOT EXISTS verxl;
 
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_address VARCHAR(42) UNIQUE NOT NULL,
-    prepaid_balance_usd NUMERIC(12, 6) DEFAULT 0.000000,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TYPE verxl.provider_status AS ENUM ('ACTIVE', 'PROBATION', 'SLASHED', 'OFFLINE');
+
+CREATE TABLE verxl.dao_stats (
+    dao_address VARCHAR(42) PRIMARY KEY,
+    treasury_eth NUMERIC(18, 6) DEFAULT 0.040000,
+    treasury_usd NUMERIC(12, 2) DEFAULT 106.00,
+    voting_token VARCHAR(42),
+    token_symbol VARCHAR(10) DEFAULT 'VRXL',
+    total_supply NUMERIC(18, 4) DEFAULT 1000000.0000,
+    approval_threshold_pct NUMERIC(5, 2) DEFAULT 66.70,
+    quorum_pct NUMERIC(5, 2) DEFAULT 20.00,
+    active_proposals_count INTEGER DEFAULT 2,
+    last_synced_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE api_keys (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    key_hash VARCHAR(64) UNIQUE NOT NULL,
-    key_prefix VARCHAR(10) NOT NULL,
-    revoked BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE verxl.proposals (
+    id VARCHAR(32) PRIMARY KEY,
+    dao_address VARCHAR(42) NOT NULL,
+    proposal_index INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    creator VARCHAR(42) NOT NULL,
+    start_date TIMESTAMP WITHOUT TIME ZONE,
+    end_date TIMESTAMP WITHOUT TIME ZONE,
+    status VARCHAR(20) NOT NULL,
+    yes_votes NUMERIC(18, 4) DEFAULT 0,
+    no_votes NUMERIC(18, 4) DEFAULT 0,
+    abstain_votes NUMERIC(18, 4) DEFAULT 0,
+    quorum_reached BOOLEAN DEFAULT TRUE,
+    aragon_url TEXT,
+    tx_hash TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE providers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    operator_wallet VARCHAR(42) NOT NULL,
-    endpoint_url TEXT NOT NULL,
-    model_identifier VARCHAR(100) NOT NULL,
-    price_per_1m_prompt_tokens NUMERIC(10, 4) NOT NULL,
-    price_per_1m_completion_tokens NUMERIC(10, 4) NOT NULL,
-    staked_amount_vrxl NUMERIC(18, 4) NOT NULL,
-    status provider_status DEFAULT 'PROBATION',
-    last_audit_score NUMERIC(5, 2),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE verxl.votes (
+    id SERIAL PRIMARY KEY,
+    proposal_id VARCHAR(32) REFERENCES verxl.proposals(id) ON DELETE CASCADE,
+    voter VARCHAR(42) NOT NULL,
+    vote_option VARCHAR(20) NOT NULL,
+    voting_power NUMERIC(18, 4) NOT NULL,
+    tx_hash TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE audit_runs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    provider_id UUID REFERENCES providers(id) ON DELETE CASCADE,
-    latency_ms INTEGER NOT NULL,
-    ttft_ms INTEGER NOT NULL,
-    fidelity_score NUMERIC(5, 2) NOT NULL,
-    passed BOOLEAN NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    provider_id UUID REFERENCES providers(id),
-    prompt_tokens INTEGER NOT NULL,
-    completion_tokens INTEGER NOT NULL,
-    total_cost_usd NUMERIC(12, 6) NOT NULL,
-    protocol_fee_usd NUMERIC(12, 6) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE verxl.sync_logs (
+    id SERIAL PRIMARY KEY,
+    source VARCHAR(64) NOT NULL,
+    proposals_synced INTEGER DEFAULT 0,
+    details TEXT,
+    synced_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -414,20 +427,21 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
 • Aragon DAO On      • 5-Min Pitch at    • Worker Proxy     • Multi-Node Live
   Sepolia Deploy       xPort VŠE (Nov 4)   Engineering        Stress Test Demo
 • $VRXL Token        • Peer Feedback     • Slashing Oracle  • Public Beta at
-• VIP-001 Proposal     Integration         Integration        verxl.com
-• Charter Signed     • Contract Auditing • Testnet Honeypot • Final Report
+• VIP-1 Proposal       Integration         Integration        verxl.com
+• Charter Signed     • Contract Auditing • Testnet Honeypot • Final Defense
 ```
 
 ### Phase 1: Foundation & On-Chain Governance (October 2026) — [COMPLETE]
-* Deploy Aragon OSx DAO on Ethereum Sepolia.
-* Mint 1,000,000 `$VRXL` and distribute 25% equal tranches to founding team members.
+* Deploy Aragon OSx DAO on Ethereum Sepolia (`0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a`).
+* Mint 1,000,000 `$VRXL` and distribute founding tranches.
 * Draft and ratify 1-page Memorandum of Association (Founders Agreement).
-* Create and execute Genesis Proposal VIP-001; deposit SepoliaETH into DAO Vault.
+* Create and execute Genesis Proposal VIP-1; deposit SepoliaETH into DAO Vault.
+* Persist on-chain state to Charizard PostgreSQL 17 (`verxl` schema).
 
 ### Phase 2: Proposal Pitch & Peer Review (November 2026)
 * Deliver strictly timed 5-minute proposal pitch at xPort VŠE on November 4, 2026.
-* Complete peer evaluations for other student teams.
-* Refine technical architecture based on instructor feedback.
+* Complete peer evaluations for student teams.
+* Refine technical architecture based on seminar feedback.
 
 ### Phase 3: Core Proxy & Oracle Engine (November – December 2026)
 * Implement TypeScript Cloudflare Worker for `/v1/chat/completions`.
@@ -441,6 +455,47 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
 
 ---
 
-## 9. Conclusion
+## 9. Game Theoretic Proof of Honest Inference
 
-Verxl Protocol dismantles the rent-seeking monopoly of centralized AI model aggregators. By combining a fixed **0.5% protocol fee** with non-custodial smart contracts, seed-locked deterministic quality auditing, and Aragon OSx decentralized governance, Verxl provides developers with a 90% cheaper inference rail while enabling GPU data centers to monetize idle capacity trustlessly.
+Consider a compute provider choosing whether to serve authentic FP16 weights ($a = \text{Honest}$) or quantized AWQ-4bit weights ($a = \text{Spoof}$).
+
+Let:
+* $R$: Gross revenue generated per epoch.
+* $C$: Operational cost of serving authentic FP16 compute.
+* $\gamma \cdot C$: Operational cost of serving quantized compute, where $\gamma \approx 0.30$ (a 70% cost reduction).
+* $S$: Bonded stake in `$VRXL` ($S \ge 1,000\text{ \$VRXL}$).
+* $p_{\text{audit}}$: Probability that the oracle audits the provider during the epoch ($p_{\text{audit}} = 1.0$ over rolling 30-minute intervals).
+* $\rho_{\text{slash}} = 0.10$ (10% slashing penalty).
+
+The expected payoff of honest operation:
+$$\mathbb{E}[\Pi_{\text{Honest}}] = R - C$$
+
+The expected payoff of spoofing:
+$$\mathbb{E}[\Pi_{\text{Spoof}}] = R - \gamma \cdot C - p_{\text{audit}} \cdot (\rho_{\text{slash}} \cdot S + L_{\text{reputation}})$$
+
+For honest execution to be a strictly dominant Nash strategy:
+$$\mathbb{E}[\Pi_{\text{Honest}}] > \mathbb{E}[\Pi_{\text{Spoof}}]$$
+$$R - C > R - \gamma \cdot C - \rho_{\text{slash}} \cdot S$$
+$$(1 - \gamma) C < \rho_{\text{slash}} \cdot S$$
+$$S > \frac{(1 - \gamma) C}{\rho_{\text{slash}}}$$
+
+Given $\rho_{\text{slash}} = 0.10$ and $(1 - \gamma) = 0.70$:
+$$S > 7 \cdot C$$
+
+Because the minimum required stake is $1,000\text{ \$VRXL}$ and an average hourly batch cost $C \ll 100\text{ USD}$, the slashing penalty strictly dominates any marginal profit from downsampling weights. Intentional model degradation is strictly economically irrational.
+
+---
+
+## 10. Conclusion
+
+Verxl Protocol dismantles the rent-seeking monopoly of centralized AI model aggregators. By combining a fixed **0.5% protocol fee** with non-custodial smart contracts, seed-locked deterministic quality auditing, and Aragon OSx decentralized governance, Verxl provides developers with a 94% cheaper inference rail while enabling GPU data centers to monetize idle capacity trustlessly.
+
+---
+
+## References
+
+1. **Akerlof, G. A.** (1970). *The Market for "Lemons": Quality Uncertainty and the Market Mechanism.* The Quarterly Journal of Economics, 84(3), 488–500.
+2. **Nakamoto, S.** (2008). *Bitcoin: A Peer-to-Peer Electronic Cash System.* https://bitcoin.org/bitcoin.pdf.
+3. **Buterin, V.** (2014). *Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform.* https://ethereum.org/whitepaper/.
+4. **Williamson, O. E.** (1981). *The Economics of Organization: The Transaction Cost Approach.* American Journal of Sociology, 87(3), 548–577.
+5. **Aragon Association.** (2023). *Aragon OSx: Modular, Upgradeable Smart Contract Framework for Decentralized Organizations.* https://aragon.org.

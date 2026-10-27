@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { WhitepaperContent } from "./WhitepaperContent";
 import {
   Shield,
   ExternalLink,
@@ -570,76 +571,7 @@ export const Governance: React.FC = () => {
 
       {/* SubTab 2: Institutional Whitepaper */}
       {activeSubTab === "whitepaper" && (
-        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-6 sm:p-10 shadow-2xl space-y-8 font-serif leading-relaxed text-slate-200">
-          <div className="border-b border-slate-800 pb-6 text-center font-sans space-y-2">
-            <div className="text-xs font-mono text-blue-400 tracking-widest uppercase">
-              Academic Protocol Whitepaper • VŠE Praha (2SE307 · SB 235 · M. Bok)
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
-              VERXL PROTOCOL
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 font-mono">
-              Non-Custodial Decentralized Artificial Intelligence Inference Routing And Compute Clearinghouse
-            </p>
-            <div className="text-xs text-slate-400 font-mono pt-2">
-              Author Šimon Havlík • Prague • October 2026
-            </div>
-          </div>
-
-          <div className="prose prose-invert max-w-none space-y-6 text-sm text-slate-300">
-            <h3 className="text-base sm:text-lg font-bold text-white font-sans uppercase tracking-wide">
-              1. The Theoretical Failure Of Centralized Inference Intermediation
-            </h3>
-            <p>
-              The contemporary market for machine learning compute exhibits an acute structural market failure.
-              While physical high performance hardware undergoes rapid commoditization across decentralized data centres
-              and specialized hosting facilities throughout Central Europe and North America, retail and enterprise consumers
-              remain captive to concentrated cloud cartels. Centralized aggregators extract take rates ranging between
-              eight hundred and forty basis points and one thousand and forty basis points above raw hardware marginal depreciation.
-            </p>
-            <p>
-              This rent extraction generates severe deadweight loss across the global technological frontier.
-              Early stage venture teams, autonomous machine learning agents, and quantitative algorithmic systems
-              are forced to absorb substantial financial spreads. Furthermore, centralized routing creates concentrated
-              single points of structural failure, proprietary surveillance bottlenecks, and systematic vulnerability
-              to localized data center outages.
-            </p>
-
-            <h3 className="text-base sm:text-lg font-bold text-white font-sans uppercase tracking-wide">
-              2. Pareto Optimum And Mechanism Design Of The Verxl Protocol
-            </h3>
-            <p>
-              Verxl Protocol resolves this systemic market distortion through an unbundled, decentralized clearing architecture.
-              By separating compute execution from transaction clearing and governance, Verxl introduces a trust minimized
-              clearinghouse operating at a fixed protocol fee of exactly fifty basis points.
-            </p>
-            <p>
-              This architectural design achieves a ninety four point one percent compression in intermediary rent extraction.
-              Consumer surplus expands while independent high performance compute providers retain the complete economic
-              proceeds of their hardware operations. Transactions settle atomically without centralized custody of capital
-              or arbitrary gatekeeping.
-            </p>
-
-            <h3 className="text-base sm:text-lg font-bold text-white font-sans uppercase tracking-wide">
-              3. Verxl Operational Realization And Game Theoretic Enforcement
-            </h3>
-            <p>
-              The operational implementation of Verxl unites edge routing via Cloudflare global workers, deterministic
-              quality assurance, and cryptographic staking governed by the Aragon smart contract framework on Ethereum.
-            </p>
-            <p>
-              Compute providers bond digital collateral in the native protocol currency VRXL before receiving routed inference traffic.
-              To guarantee that hardware clusters serve authentic floating point precision rather than secretly downsampled
-              quantized weights, autonomous oracle nodes dispatch cryptographic canary probes with fixed random seeds.
-            </p>
-            <p>
-              Any verified deviation in token output distribution or execution latency beyond agreed service level thresholds
-              triggers an automated ten percent collateral slash. Half of the forfeited collateral is permanently burned from
-              the circulating monetary supply, while the remainder flows directly to the decentralized autonomous organization treasury vault.
-              This asymmetric penalty structure renders intentional protocol defection strictly economically irrational under Nash equilibrium.
-            </p>
-          </div>
-        </div>
+        <WhitepaperContent />
       )}
 
       {/* SubTab 3: Founders' Agreement */}
