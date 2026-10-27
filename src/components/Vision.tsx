@@ -619,45 +619,6 @@ const BENCHMARK_DIMENSIONS: { key: keyof CompetitorMetric; label: string }[] = [
   { key: "slaVerification", label: "Quality SLA Verification" },
 ];
 
-const HERO_TEAM_MEMBERS = {
-  simon: {
-    id: "simon",
-    name: "Šimon Havlík",
-    role: "Project Lead & Head Developer",
-    domain: "Lead Protocol Architect · Smart Contracts & Core Infrastructure",
-    photo: "/team/simon-havlik.jpg",
-    location: "Prague, Czech Republic",
-    tranche: "33.34% Genesis Voting Tranche",
-    badge: "Head Developer",
-    badgeColor: "bg-blue-600 text-white",
-    academicAttribution: "Lead Architect · VŠE Praha",
-  },
-  daniel: {
-    id: "daniel",
-    name: "Daniel Kolárovský",
-    role: "Quality Assurance & Process Verification",
-    domain: "Empirical SLA Benchmarking & Deterministic Invariant Probing",
-    photo: "/team/daniel-kolarovsky.jpg",
-    location: "Prague · VŠE Partner",
-    tranche: "33.33% Genesis Voting Tranche",
-    badge: "QA & Audit Lead",
-    badgeColor: "bg-blue-600 text-white",
-    academicAttribution: "Founding Partner · VŠE Praha",
-  },
-  miroslava: {
-    id: "miroslava",
-    name: "Miroslava Valová",
-    role: "Regulatory Compliance & Market Strategy",
-    domain: "EU AI Act, MiCA Compliance & Institutional Market Sizing",
-    photo: "/team/miroslava-valova.jpg",
-    location: "Prague · VŠE Partner",
-    tranche: "33.33% Genesis Voting Tranche",
-    badge: "Strategy Lead",
-    badgeColor: "bg-purple-600 text-white",
-    academicAttribution: "Founding Partner · VŠE Praha",
-  },
-};
-
 export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1251,9 +1212,9 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Right Column: Core Executive Assembly with ALL 3 FOUNDERS VISIBLE */}
+          {/* Right Column: Executive Assembly with Šimon's FULL LARGE PORTRAIT + Teammates */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-2.5 relative backdrop-blur-md">
+            <div className="w-full bg-[#05070b]/95 border-2 border-blue-500/50 rounded-[4px] p-3.5 shadow-2xl space-y-3 relative backdrop-blur-md">
               {/* Top Bar */}
               <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
                 <span className="text-blue-400 font-bold flex items-center gap-1.5">
@@ -1263,43 +1224,84 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <span className="text-emerald-400 font-mono font-bold text-[9.5px]">VŠE Praha · 1:1:1 Consensus</span>
               </div>
 
-              {/* All 3 Founders Visible Simultaneously */}
-              <div className="space-y-2">
-                {(["simon", "daniel", "miroslava"] as const).map((key) => {
-                  const m = HERO_TEAM_MEMBERS[key];
-                  return (
-                    <div
-                      key={key}
-                      className="bg-[#090d16] border border-slate-800/90 rounded-[3px] p-2 flex items-center gap-3 hover:border-blue-400/80 transition-all duration-200 group"
-                    >
-                      <div className="relative w-14 h-14 rounded-[3px] overflow-hidden border border-slate-700 shrink-0 bg-[#080c14] shadow">
-                        <img
-                          src={m.photo}
-                          alt={m.name}
-                          className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                          loading="eager"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-bold text-white uppercase tracking-wider truncate">
-                            {m.name}
-                          </span>
-                          <span className={`px-1.5 py-0.5 rounded-[2px] font-bold text-[8.5px] uppercase tracking-wider shrink-0 ${m.badgeColor}`}>
-                            {m.badge}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-blue-300 font-medium truncate">
-                          {m.role}
-                        </div>
-                        <div className="text-[9px] text-slate-400 font-mono flex items-center justify-between pt-0.5 border-t border-slate-800/60">
-                          <span>{m.academicAttribution}</span>
-                          <span className="text-emerald-400 font-semibold">{m.tranche.split(" ")[0]} Tranche</span>
-                        </div>
-                      </div>
+              {/* Šimon Havlík: FULL LARGE PHOTO (Not an icon!) */}
+              <div className="relative rounded-[3px] overflow-hidden border-2 border-blue-500/60 shadow-2xl bg-[#080c14] group">
+                <div className="aspect-[4/3] w-full overflow-hidden">
+                  <img
+                    src="/team/simon-havlik.jpg"
+                    alt="Šimon Havlík"
+                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                    loading="eager"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#05070b] via-[#05070b]/40 to-transparent opacity-95" />
+
+                <div className="absolute bottom-2.5 left-3 right-3 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider">
+                      Šimon Havlík
+                    </span>
+                    <span className="px-2 py-0.5 rounded-[2px] font-bold text-[9px] uppercase tracking-wider bg-blue-600 text-white shadow">
+                      Project Lead & Head Developer
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-blue-300 font-medium">
+                    Lead Protocol Architect · Smart Contracts & Core Infrastructure
+                  </div>
+                  <div className="text-[9.5px] text-slate-300 font-mono flex items-center justify-between pt-1">
+                    <span>Lead Architect · VŠE Praha</span>
+                    <span className="text-emerald-400 font-bold">33.34% Genesis Tranche</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Other 2 Founders: Smaller Face Photos Side-by-Side */}
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                {/* Daniel Kolárovský */}
+                <div className="bg-[#090d16] border border-slate-800 rounded-[3px] p-2 flex items-center gap-2.5 hover:border-blue-400/80 transition group">
+                  <div className="relative w-11 h-11 rounded-[2px] overflow-hidden border border-slate-700 shrink-0 bg-[#080c14] shadow">
+                    <img
+                      src="/team/daniel-kolarovsky.jpg"
+                      alt="Daniel Kolárovský"
+                      className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                      loading="eager"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="text-[11px] font-bold text-white uppercase tracking-tight truncate">
+                      Daniel Kolárovský
                     </div>
-                  );
-                })}
+                    <div className="text-[9px] text-blue-400 font-medium truncate">
+                      QA & Process Audit
+                    </div>
+                    <div className="text-[8px] text-emerald-400 font-mono">
+                      33.33% · VŠE Partner
+                    </div>
+                  </div>
+                </div>
+
+                {/* Miroslava Valová */}
+                <div className="bg-[#090d16] border border-slate-800 rounded-[3px] p-2 flex items-center gap-2.5 hover:border-purple-400/80 transition group">
+                  <div className="relative w-11 h-11 rounded-[2px] overflow-hidden border border-slate-700 shrink-0 bg-[#080c14] shadow">
+                    <img
+                      src="/team/miroslava-valova.jpg"
+                      alt="Miroslava Valová"
+                      className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                      loading="eager"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="text-[11px] font-bold text-white uppercase tracking-tight truncate">
+                      Miroslava Valová
+                    </div>
+                    <div className="text-[9px] text-purple-400 font-medium truncate">
+                      Compliance & Strategy
+                    </div>
+                    <div className="text-[8px] text-emerald-400 font-mono">
+                      33.33% · VŠE Partner
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Bottom Card Footer */}
@@ -2501,38 +2503,61 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Card 1: Šimon Havlík (Project Lead & Head Developer) in FULL COLOR */}
-          <div className="bg-[#0a0e17] border-2 border-blue-500/50 rounded-[4px] p-4 space-y-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Šimon Havlík: PROMINENT FULL-PHOTO FEATURE CARD (Not an icon!) */}
+          <div className="lg:col-span-7 bg-[#0a0e17] border-2 border-blue-500/60 rounded-[4px] p-5 space-y-4 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] overflow-hidden border-2 border-blue-500/60 shadow-lg shrink-0">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                {/* Šimon Havlík: FULL LARGE PHOTO (Not an icon) */}
+                <div className="w-full sm:w-44 aspect-[3/4] rounded-[3px] overflow-hidden border-2 border-blue-500/80 shadow-2xl shrink-0 bg-[#080c14] relative group">
                   <img
-                    src="/simon-pudong.jpg"
+                    src="/team/simon-havlik.jpg"
                     alt="Šimon Havlík"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105"
+                    loading="eager"
                   />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-extrabold text-white uppercase tracking-wider">
-                      Šimon Havlík
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#05070b]/90 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-2 left-2 right-2 text-center">
+                    <span className="px-2 py-0.5 rounded-[2px] bg-blue-600 text-white font-mono text-[9px] uppercase tracking-wider font-extrabold shadow">
+                      Head Developer
                     </span>
                   </div>
-                  <div className="text-[10.5px] text-blue-400 font-bold">
+                </div>
+
+                {/* Details */}
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <span className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
+                      Šimon Havlík
+                    </span>
+                    <span className="px-2 py-0.5 text-[9px] bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded-[2px] font-mono font-bold uppercase">
+                      Lead Architect
+                    </span>
+                  </div>
+
+                  <div className="text-xs font-bold text-blue-400">
                     Project Lead & Head Developer
                   </div>
-                  <div className="text-[9.5px] text-slate-400 font-mono">
-                    Lead Protocol Architect
+                  <div className="text-[10.5px] text-slate-300 font-mono">
+                    Lead Protocol Architect · Smart Contracts & Core Infrastructure
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 leading-relaxed font-sans pt-1">
+                    Led end-to-end design and coding of the decentralized clearing architecture: Aragon OSx DAO settlement on Ethereum Sepolia, the <code className="text-blue-300">VerxlStakingRegistry.sol</code> smart contract, deterministic <code className="text-blue-300">seed=42</code> invariant verification, Prague bare-metal cluster orchestration, and the Arbitrum One USDC clearing pipeline.
+                  </p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    <span className="px-2 py-0.5 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[9.5px] font-mono rounded-[2px]">
+                      VŠE Praha · Lead
+                    </span>
+                    <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[9.5px] font-mono rounded-[2px] font-bold">
+                      33.34% Genesis Tranche
+                    </span>
                   </div>
                 </div>
               </div>
-
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Led end-to-end design and coding of the decentralized clearing architecture: Aragon OSx DAO settlement on Ethereum Sepolia, the <code className="text-blue-300">VerxlStakingRegistry.sol</code> smart contract, deterministic <code className="text-blue-300">seed=42</code> invariant verification, and the Arbitrum One USDC clearing pipeline.
-              </p>
             </div>
 
             <div className="border-t border-slate-800/80 pt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
@@ -2540,89 +2565,98 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Team Captain · 33.34% Tranche</span>
               </span>
-              <span className="text-slate-300">VŠE Lead</span>
+              <span className="text-slate-300">VŠE Executive Lead</span>
             </div>
           </div>
 
-          {/* Card 2: Daniel Kolárovský (QA & Process Verification Lead) in FULL COLOR */}
-          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden group hover:border-blue-400 transition-all">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] overflow-hidden border-2 border-blue-500/50 shadow-lg shrink-0 bg-[#05070b]">
-                  <img
-                    src="/team/daniel-kolarovsky.jpg"
-                    alt="Daniel Kolárovský"
-                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105"
-                  />
+          {/* Right Column: Daniel Kolárovský & Miroslava Valová with SMALLER FACE PHOTOS */}
+          <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
+            {/* Daniel Kolárovský: Smaller Face Photo Card */}
+            <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] p-3.5 space-y-2.5 shadow-md flex-1 flex flex-col justify-between hover:border-blue-400 transition-all">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  {/* Smaller Face Photo */}
+                  <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-[2px] overflow-hidden border border-blue-500/50 shadow-md shrink-0 bg-[#05070b]">
+                    <img
+                      src="/team/daniel-kolarovsky.jpg"
+                      alt="Daniel Kolárovský"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-extrabold text-white uppercase tracking-wider truncate">
+                        Daniel Kolárovský
+                      </span>
+                      <span className="px-1.5 py-0.2 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px] font-mono shrink-0">
+                        VŠE Partner
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-blue-400 font-bold truncate">
+                      Quality Assurance & Process Verification
+                    </div>
+                    <div className="text-[9px] text-slate-400 font-mono truncate">
+                      Founding Partner · VŠE Praha
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-extrabold text-white uppercase tracking-wider">
-                      Daniel Kolárovský
-                    </span>
-                    <span className="px-1 py-0.2 text-[8px] bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-[2px] font-mono">VŠE Partner</span>
-                  </div>
-                  <div className="text-[10.5px] text-blue-400 font-bold">
-                    Quality Assurance & Process Verification
-                  </div>
-                  <div className="text-[9.5px] text-slate-400 font-mono">
-                    Founding Partner · VŠE Praha
-                  </div>
-                </div>
+
+                <p className="text-[10.5px] text-slate-300 leading-relaxed font-sans line-clamp-3">
+                  Directs protocol quality control frameworks, independent process audit verification, and empirical SLA benchmarking across European compute hosting providers. Establishes verification methodologies ensuring deterministic output fidelity and academic rigor.
+                </p>
               </div>
 
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Directs protocol quality control frameworks, independent process audit verification, and empirical SLA benchmarking across European compute hosting providers. Establishes verification methodologies ensuring deterministic output fidelity, Time-to-First-Token (TTFT) compliance, and academic evaluation rigor.
-              </p>
+              <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[9.5px] text-slate-400 font-mono">
+                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>33.33% Tranche</span>
+                </span>
+                <span className="text-slate-300">QA & Audit Lead</span>
+              </div>
             </div>
 
-            <div className="border-t border-slate-800/80 pt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Founding Partner · 33.33% Tranche</span>
-              </span>
-              <span className="text-slate-300">QA & Audit Lead</span>
-            </div>
-          </div>
+            {/* Miroslava Valová: Smaller Face Photo Card */}
+            <div className="bg-[#0a0e17] border border-purple-500/40 rounded-[4px] p-3.5 space-y-2.5 shadow-md flex-1 flex flex-col justify-between hover:border-purple-400 transition-all">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  {/* Smaller Face Photo */}
+                  <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-[2px] overflow-hidden border border-purple-500/50 shadow-md shrink-0 bg-[#05070b]">
+                    <img
+                      src="/team/miroslava-valova.jpg"
+                      alt="Miroslava Valová"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-extrabold text-white uppercase tracking-wider truncate">
+                        Miroslava Valová
+                      </span>
+                      <span className="px-1.5 py-0.2 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px] font-mono shrink-0">
+                        VŠE Partner
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-purple-400 font-bold truncate">
+                      Regulatory Compliance & Market Strategy
+                    </div>
+                    <div className="text-[9px] text-slate-400 font-mono truncate">
+                      Founding Partner · VŠE Praha
+                    </div>
+                  </div>
+                </div>
 
-          {/* Card 3: Miroslava Valová (Regulatory Compliance & Market Strategy Lead) in FULL COLOR */}
-          <div className="bg-[#0a0e17] border border-purple-500/40 rounded-[4px] p-4 space-y-3.5 shadow-md flex flex-col justify-between relative overflow-hidden group hover:border-purple-400 transition-all">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-[3px] overflow-hidden border-2 border-purple-500/50 shadow-lg shrink-0 bg-[#05070b]">
-                  <img
-                    src="/team/miroslava-valova.jpg"
-                    alt="Miroslava Valová"
-                    className="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-extrabold text-white uppercase tracking-wider">
-                      Miroslava Valová
-                    </span>
-                    <span className="px-1 py-0.2 text-[8px] bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-[2px] font-mono">VŠE Partner</span>
-                  </div>
-                  <div className="text-[10.5px] text-purple-400 font-bold">
-                    Regulatory Compliance & Market Strategy
-                  </div>
-                  <div className="text-[9.5px] text-slate-400 font-mono">
-                    Founding Partner · VŠE Praha
-                  </div>
-                </div>
+                <p className="text-[10.5px] text-slate-300 leading-relaxed font-sans line-clamp-3">
+                  Heads competitive market intelligence, macroeconomic cost benchmarking against legacy centralized cloud aggregators, and regulatory compliance alignment (EU AI Act &amp; MiCA non-custodial boundaries). Oversees institutional risk governance.
+                </p>
               </div>
 
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Heads competitive market intelligence, macroeconomic cost benchmarking against legacy centralized cloud aggregators, and regulatory compliance alignment (EU AI Act &amp; MiCA non-custodial boundaries). Oversees institutional risk governance, charter alignment, and stakeholder relations for enterprise compute buyers.
-              </p>
-            </div>
-
-            <div className="border-t border-slate-800/80 pt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Founding Partner · 33.33% Tranche</span>
-              </span>
-              <span className="text-slate-300">Strategy & Compliance Lead</span>
+              <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[9.5px] text-slate-400 font-mono">
+                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>33.33% Tranche</span>
+                </span>
+                <span className="text-slate-300">Strategy & Compliance Lead</span>
+              </div>
             </div>
           </div>
         </div>

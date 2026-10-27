@@ -377,8 +377,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
     ];
   } else {
-    // Bulbasaur / Qwen resident 32k cluster
+    // Bulbasaur / Qwen resident 32k cluster — Bare-metal node first, then genuine Qwen upstream backup
     upstreamEndpoints = [
+      {
+        url: "http://212.227.211.88:11645/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        modelName: "qwen3.5-4b-uncensored-32k:latest",
+        timeoutMs: 15000,
+      },
       {
         url: "https://opencode.ai/zen/go/v1/chat/completions",
         headers: {
@@ -386,16 +394,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           Authorization: `Bearer ${OPENCODE_GO_KEY}`,
           "x-opencode-session": opencodeSessionId,
         },
-        modelName: "mimo-v2.6-flash",
-        timeoutMs: 12000,
+        modelName: "qwen3.6-plus",
+        timeoutMs: 15000,
       },
       {
-        url: "http://212.227.211.88:11645/v1/chat/completions",
+        url: "https://opencode.ai/zen/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+          "x-opencode-session": opencodeSessionId,
         },
-        modelName: "qwen3.5:4b",
-        timeoutMs: 3500,
+        modelName: "qwen3.6-plus",
+        timeoutMs: 15000,
       },
     ];
   }
