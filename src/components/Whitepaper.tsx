@@ -186,7 +186,7 @@ export const Whitepaper: React.FC = () => {
 
         {/* Subdued Academic Attribution */}
         <div className="border-t border-slate-800/80 pt-6 text-center text-[11px] font-mono text-slate-400 space-y-1">
-          <div>Prague University of Economics and Business (VŠE Praha) • Faculty of International Relations (FIR)</div>
+          <div>Prague University of Economics and Business (VŠE Praha) • 2SE307 Bitcoin and blockchain - practical seminar (M. Bok) • SB 235</div>
           <div>Project Verxl Protocol • October 2026 • Published to <code className="text-blue-400">verxl.com/whitepaper</code></div>
         </div>
       </article>

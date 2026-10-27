@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
         </span>
         <span className="text-amber-500/40">/</span>
         <span className="hidden sm:inline text-slate-300">
-          Academic Pilot · VŠE Praha (2SE307 Bitcoin & Blockchain · M. Bok)
+          Project at VŠE
         </span>
         <span className="hidden sm:inline text-amber-500/40">/</span>
         <span className="text-amber-200">Not Official Mainnet Production</span>

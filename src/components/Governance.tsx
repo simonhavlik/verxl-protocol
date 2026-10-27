@@ -52,7 +52,7 @@ export const Governance: React.FC = () => {
             </span>
           </div>
           <p className="text-slate-300 text-[10.5px] leading-relaxed">
-            The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposal VIP-1 are live on the Ethereum Sepolia testnet as an academic demonstration for FIR VŠE Prague. All votes and treasury actions use Sepolia test assets and do not constitute an official production governance launch.
+            The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposal VIP-1 are live on the Ethereum Sepolia testnet as an academic demonstration for VŠE Praha (2SE307 · SB 235 · M. Bok). All votes and treasury actions use Sepolia test assets and do not constitute an official production governance launch.
           </p>
         </div>
       </div>
@@ -321,7 +321,7 @@ export const Governance: React.FC = () => {
         <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-6 sm:p-10 shadow-2xl space-y-8 font-serif leading-relaxed text-slate-200">
           <div className="border-b border-slate-800 pb-6 text-center font-sans space-y-2">
             <div className="text-xs font-mono text-blue-400 tracking-widest uppercase">
-              Academic Protocol Whitepaper • Course 4KE404/4KE505 Crypto • FIR VŠE Prague
+              Academic Protocol Whitepaper • VŠE Praha (2SE307 · SB 235 · M. Bok)
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
               VERXL PROTOCOL
