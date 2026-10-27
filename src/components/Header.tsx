@@ -15,10 +15,32 @@ export const Header: React.FC<HeaderProps> = ({
   walletAddress,
   onConnectWallet,
 }) => {
-  const { user } = useAuth();
+  const { user, loginWithWallet } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [connectingWallet, setConnectingWallet] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const daoAddress = "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a";
+
+  const handleConnectWalletClick = async () => {
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      try {
+        setConnectingWallet(true);
+        const eth = (window as any).ethereum;
+        const accounts = await eth.request({ method: "eth_requestAccounts" });
+        if (accounts && accounts.length > 0) {
+          const account = accounts[0];
+          await loginWithWallet(account);
+          onConnectWallet();
+          return;
+        }
+      } catch (err) {
+        console.warn("Wallet connect error:", err);
+      } finally {
+        setConnectingWallet(false);
+      }
+    }
+    onConnectWallet();
+  };
 
   // Center active mobile tab button smoothly when switched
   useEffect(() => {
@@ -132,20 +154,21 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Web3 Wallet Connect Button — Strictly Square */}
-          {walletAddress ? (
+          {walletAddress || user?.wallet_address ? (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-[#090d16] border border-blue-500/40 text-xs font-mono text-blue-300">
               <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
               <span>
-                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                {((user?.wallet_address || walletAddress) as string).slice(0, 6)}...{((user?.wallet_address || walletAddress) as string).slice(-4)}
               </span>
             </div>
           ) : (
             <button
-              onClick={onConnectWallet}
-              className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px]"
+              onClick={handleConnectWalletClick}
+              disabled={connectingWallet}
+              className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px] disabled:opacity-50"
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>Connect</span>
+              <span>{connectingWallet ? "Connecting..." : "Connect"}</span>
             </button>
           )}
 

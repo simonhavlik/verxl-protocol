@@ -1,5 +1,6 @@
 import { CORS_HEADERS, verifySessionToken, signSessionToken, hashSha256 } from "../lib/auth";
 import { db, setDbEnv } from "../lib/db";
+import { recoverMessageAddress } from "viem";
 
 interface Env {
   DB?: any;
@@ -9,6 +10,19 @@ interface Env {
 
 const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+async function verifyWalletSignature(txHash: string, fromAddress: string, signature?: string): Promise<boolean> {
+  if (!signature || typeof signature !== "string" || !signature.startsWith("0x")) return false;
+  try {
+    const recovered = await recoverMessageAddress({
+      message: `Verxl Deposit Verification: ${txHash.toLowerCase()}`,
+      signature: signature as `0x${string}`,
+    });
+    return Boolean(recovered && recovered.toLowerCase() === fromAddress.toLowerCase());
+  } catch {
+    return false;
+  }
+}
 
 // Recognized settlement/treasury wallets (Verxl Treasury + legacy DAO vault)
 const VALID_TREASURIES = new Set([
@@ -94,6 +108,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )
           .bind(existingDeposit.user_id)
           .first<{ id: string; key_prefix: string }>();
+
+        // Anti-Snatching Proof of Ownership:
+        // Caller MUST either be authenticated as this exact user or have signed with the depositing wallet
+        const isOwnerSession = Boolean(payload && payload.sub === existingDeposit.user_id);
+        const isWalletSigner = creditedUser?.wallet_address
+          ? await verifyWalletSignature(txHash, creditedUser.wallet_address, body.signature)
+          : false;
+
+        if (!isOwnerSession && !isWalletSigner) {
+          return new Response(
+            JSON.stringify({
+              error: "This deposit has already been claimed. To prevent unauthorized access, please sign in with your API Key or connect the depositor wallet with a cryptographic signature.",
+              already_settled: true,
+              requires_auth: true,
+            }),
+            { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
 
         const sessionToken = await signSessionToken({
           sub: creditedUser?.id || existingDeposit.user_id,
@@ -247,7 +279,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    // 3. Resolve User Identity (Authenticated Session or Wallet-derived Account)
+    // 3. Anti-Snatching Proof of Ownership:
+    // Unauthenticated callers MUST provide a cryptographic signature on "Verxl Deposit Verification: <hash>"
+    // to prove they own the sender wallet and prevent bots from stealing unconfirmed transactions.
+    const isAuthenticated = Boolean(payload && payload.sub);
+    const hasValidSignature = await verifyWalletSignature(txHash, fromAddress, body.signature);
+
+    if (!isAuthenticated && !hasValidSignature) {
+      return new Response(
+        JSON.stringify({
+          error: `Cryptographic proof of wallet ownership required. To prevent mempool front-running, please sign the verification message with wallet ${fromAddress.slice(0, 6)}...${fromAddress.slice(-4)}.`,
+          requires_signature: true,
+          sender_address: fromAddress,
+        }),
+        { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      );
+    }
+
+    // 4. Resolve User Identity (Authenticated Session or Wallet-derived Account)
     let userId = payload?.sub;
     let userEmail = payload?.email;
 

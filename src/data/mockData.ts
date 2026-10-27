@@ -11,6 +11,8 @@ export interface GpuProvider {
   throughputTps: number;
   pricePromptUsd: number;     // per 1M tokens
   priceCompletionUsd: number; // per 1M tokens
+  priceCachedPromptUsd?: number; // per 1M cached tokens
+  specialHoursDiscount?: string;
   stakedAmountVrxl: number;
   status: "ACTIVE" | "PROBATION" | "SLASHED" | "OFFLINE" | "PENDING_AUDIT";
   lastAuditScore: number;     // e.g. 99.4%
@@ -18,6 +20,7 @@ export interface GpuProvider {
   providerType?: "SELF_HOSTED" | "OFFICIAL_BRIDGE" | "COMMUNITY_NODE";
   contextWindow?: number;
   operatorAddress?: string;
+  fallbacks?: string[];
 }
 
 export interface AuditRun {
@@ -46,15 +49,18 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     latencyMs: 12,
     ttftMs: 38,
     throughputTps: 52.4,
-    pricePromptUsd: 0.06,
-    priceCompletionUsd: 0.09,
+    pricePromptUsd: 0.05,
+    priceCompletionUsd: 0.10,
+    priceCachedPromptUsd: 0.010,
+    specialHoursDiscount: "Flat bare-metal $0.025 / $0.05",
     stakedAmountVrxl: 35000,
     status: "ACTIVE",
     lastAuditScore: 99.8,
     uptimePercent: 99.99,
-    providerType: "SELF_HOSTED",
-    contextWindow: 32768,
+    providerType: "OFFICIAL_BRIDGE",
+    contextWindow: 1000000,
     operatorAddress: "0x8F590f2098D71A8253ad50450D7A73F3201402F0",
+    fallbacks: ["http://212.227.211.88:11645/v1"],
   },
   {
     id: "xiaomi-bridge-1",
@@ -67,15 +73,18 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     latencyMs: 22,
     ttftMs: 85,
     throughputTps: 110.0,
-    pricePromptUsd: 0.12,
-    priceCompletionUsd: 0.18,
+    pricePromptUsd: 0.14,
+    priceCompletionUsd: 0.28,
+    priceCachedPromptUsd: 0.0028,
+    specialHoursDiscount: "Official Overseas: $0.14 Input / $0.28 Output (Cache Hit $0.0028)",
     stakedAmountVrxl: 45000,
     status: "ACTIVE",
     lastAuditScore: 99.6,
     uptimePercent: 99.95,
     providerType: "OFFICIAL_BRIDGE",
-    contextWindow: 131072,
+    contextWindow: 1000000,
     operatorAddress: "0x1b7A7e9308F6B62f8D91Ce78D7e47761Af1E72A2",
+    fallbacks: ["https://opencode.ai/zen/go/v1"],
   },
   {
     id: "deepseek-bridge-1",
@@ -83,20 +92,23 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     location: "Global Edge / Hangzhou & Tokyo",
     region: "GLOBAL",
     endpointUrl: "https://api.deepseek.com/v1 (via Verxl Bridge)",
-    modelIdentifier: "deepseek/deepseek-v4.1-flash",
+    modelIdentifier: "deepseek/deepseek-v4.1-flash & pro",
     hardware: "DeepSeek MoE Inference Engine",
     latencyMs: 28,
     ttftMs: 92,
     throughputTps: 135.0,
-    pricePromptUsd: 0.14,
-    priceCompletionUsd: 0.28,
+    pricePromptUsd: 0.30,
+    priceCompletionUsd: 1.20,
+    priceCachedPromptUsd: 0.006,
+    specialHoursDiscount: "50% Off-Peak ($0.15 / $0.60, Cache $0.003) outside 01:00-04:00 & 06:00-10:00 UTC",
     stakedAmountVrxl: 50000,
     status: "ACTIVE",
     lastAuditScore: 99.5,
     uptimePercent: 99.92,
     providerType: "OFFICIAL_BRIDGE",
-    contextWindow: 131072,
+    contextWindow: 1000000,
     operatorAddress: "0x789C19f85D208b07221C3470F16C6A08534C08D3",
+    fallbacks: ["https://opencode.ai/zen/go/v1", "https://api.deepseek.com/v1"],
   },
 ];
 

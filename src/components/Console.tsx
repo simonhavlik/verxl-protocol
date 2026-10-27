@@ -25,7 +25,34 @@ import {
   ShieldAlert,
   Sparkles,
   KeyRound,
+  Server,
 } from "lucide-react";
+
+export interface ProviderModelConfig {
+  id: string;
+  name: string;
+  context_window?: number;
+  price_prompt_usd?: number;
+  price_completion_usd?: number;
+  price_cached_prompt_usd?: number;
+  special_hours_discount?: string;
+}
+
+export interface ProviderNode {
+  id: string;
+  name: string;
+  user_id?: string;
+  base_url: string | null;
+  api_key: string | null;
+  payout_address: string;
+  is_official_bridge: boolean;
+  status: string;
+  models_config: ProviderModelConfig[] | string;
+  fallbacks: string[] | string;
+  pending_payout_usd: number;
+  total_earned_usd: number;
+  created_at: string;
+}
 
 interface GrantKeyItem {
   id: string;
@@ -59,6 +86,7 @@ export const Console: React.FC = () => {
     user,
     keys,
     loginWithToken,
+    loginWithWallet,
     logout,
     refreshSession,
     setUser,
@@ -117,13 +145,36 @@ export const Console: React.FC = () => {
   const [generatedKeySecret, setGeneratedKeySecret] = useState<string | null>(null);
   const [creatingKey, setCreatingKey] = useState(false);
 
-  // Deposit State
+  // Deposit State with 1-Click MetaMask & Anti-Snatching Proof
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositTab, setDepositTab] = useState<"1click" | "manual">("1click");
+  const [depositAmountPreset, setDepositAmountPreset] = useState<number>(5.0);
+  const [customDepositAmount, setCustomDepositAmount] = useState<string>("");
+  const [isDepositingWeb3, setIsDepositingWeb3] = useState(false);
+  const [depositStatus, setDepositStatus] = useState<string | null>(null);
   const depositChain = "arbitrum";
   const [copiedContract, setCopiedContract] = useState(false);
   const [depositTxHash, setDepositTxHash] = useState("");
-  const [depositAmount, setDepositAmount] = useState<number>(5.0);
   const [verifyingDeposit, setVerifyingDeposit] = useState(false);
+
+  // Compute Provider Fleet & Model Routing State
+  const [providerNodes, setProviderNodes] = useState<ProviderNode[]>([]);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [showNodeModal, setShowNodeModal] = useState(false);
+  const [savingNode, setSavingNode] = useState(false);
+  const [showNodeKey, setShowNodeKey] = useState<{ [nodeId: string]: boolean }>({});
+  const [nodeForm, setNodeForm] = useState({
+    id: "",
+    name: "",
+    base_url: "",
+    api_key: "",
+    payout_address: "",
+    is_official_bridge: false,
+    status: "ACTIVE",
+    models_config_str: "",
+    fallbacks_str: "",
+  });
 
   // Provider Payout State
   const [showPayoutModal, setShowPayoutModal] = useState(false);
@@ -256,8 +307,10 @@ export const Console: React.FC = () => {
         setKeys(data.keys || []);
         setUsage(data.usage || []);
         if (data.user?.email?.toLowerCase() === "me@simonhavlik.com" || data.user?.is_admin) {
+          setIsAdminUser(true);
           fetchGrantKeys(currentToken);
         }
+        fetchProviderNodes(currentToken);
       } else {
         logout();
       }
@@ -645,7 +698,306 @@ export const Console: React.FC = () => {
     } catch {}
   };
 
-  // Handlers: Verify Deposit
+  // Provider Fleet Handlers
+  const fetchProviderNodes = async (currentToken: string) => {
+    try {
+      setLoadingProviders(true);
+      const res = await fetch("/api/provider/manage", {
+        headers: { Authorization: `Bearer ${currentToken}` },
+      });
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        setProviderNodes(data.providers || []);
+        setIsAdminUser(Boolean(data.is_admin));
+      }
+    } catch (err) {
+      console.warn("Failed to fetch provider nodes:", err);
+    } finally {
+      setLoadingProviders(false);
+    }
+  };
+
+  const handleOpenEditNode = (node: ProviderNode) => {
+    let models: any[] = [];
+    try {
+      if (Array.isArray(node.models_config)) models = node.models_config;
+      else if (typeof node.models_config === "string") models = JSON.parse(node.models_config);
+    } catch {}
+
+    let falls: any[] = [];
+    try {
+      if (Array.isArray(node.fallbacks)) falls = node.fallbacks;
+      else if (typeof node.fallbacks === "string") falls = JSON.parse(node.fallbacks);
+    } catch {}
+
+    const fallbackStrings = (Array.isArray(falls) ? falls : []).map((f: any) =>
+      typeof f === "string" ? f : (f?.base_url || f?.url || f?.name || JSON.stringify(f))
+    );
+
+    setNodeForm({
+      id: node.id,
+      name: node.name,
+      base_url: node.base_url || "",
+      api_key: node.api_key || "",
+      payout_address: node.payout_address || "",
+      is_official_bridge: Boolean(node.is_official_bridge),
+      status: node.status || "ACTIVE",
+      models_config_str: JSON.stringify(Array.isArray(models) ? models : [], null, 2),
+      fallbacks_str: fallbackStrings.join("\n"),
+    });
+    setShowNodeModal(true);
+  };
+
+  const handleSaveNode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nodeForm.name.trim()) {
+      setStatusMsg({ type: "error", text: "Provider node name is required." });
+      return;
+    }
+    setSavingNode(true);
+    setStatusMsg(null);
+    try {
+      let parsedModels: any[] = [];
+      try {
+        parsedModels = nodeForm.models_config_str ? JSON.parse(nodeForm.models_config_str) : [];
+      } catch {
+        parsedModels = [
+          {
+            id: nodeForm.name.toLowerCase().includes("deepseek") ? "deepseek-v4.1-flash" : "qwen-3.5-4b-uncensored-32k",
+            name: nodeForm.name,
+            context_window: 1000000,
+            price_prompt_usd: 0.05,
+            price_completion_usd: 0.10,
+            price_cached_prompt_usd: 0.010,
+            special_hours_discount: "Flat bare-metal $0.025 / $0.05",
+          },
+        ];
+      }
+
+      let parsedFallbacks: string[] = [];
+      if (nodeForm.fallbacks_str) {
+        parsedFallbacks = nodeForm.fallbacks_str
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      const res = await fetch("/api/provider/manage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({
+          id: nodeForm.id || undefined,
+          name: nodeForm.name.trim(),
+          base_url: nodeForm.base_url.trim() || null,
+          api_key: nodeForm.api_key.trim() || null,
+          payout_address: nodeForm.payout_address.trim() || undefined,
+          is_official_bridge: Boolean(nodeForm.is_official_bridge),
+          status: nodeForm.status,
+          models_config: parsedModels,
+          fallbacks: parsedFallbacks,
+        }),
+      });
+
+      const data = (await res.json()) as any;
+      if (res.ok && data.success) {
+        setStatusMsg({ type: "success", text: data.message || "Provider node saved successfully!" });
+        setShowNodeModal(false);
+        if (token) fetchProviderNodes(token);
+      } else {
+        setStatusMsg({ type: "error", text: data.error || "Failed to save provider node." });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: "Network error saving provider: " + err.message });
+    } finally {
+      setSavingNode(false);
+    }
+  };
+
+  const handleToggleOfficialBridge = async (node: ProviderNode) => {
+    if (!isAdminUser && user?.email?.toLowerCase() !== "me@simonhavlik.com") {
+      setStatusMsg({
+        type: "error",
+        text: "Permission denied: Official Bridge designation is exclusive to protocol admin (me@simonhavlik.com).",
+      });
+      return;
+    }
+    try {
+      let models: any[] = [];
+      try {
+        if (Array.isArray(node.models_config)) models = node.models_config;
+        else if (typeof node.models_config === "string") models = JSON.parse(node.models_config);
+      } catch {}
+
+      let falls: any[] = [];
+      try {
+        if (Array.isArray(node.fallbacks)) falls = node.fallbacks;
+        else if (typeof node.fallbacks === "string") falls = JSON.parse(node.fallbacks);
+      } catch {}
+
+      const res = await fetch("/api/provider/manage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({
+          id: node.id,
+          name: node.name,
+          base_url: node.base_url,
+          api_key: node.api_key,
+          payout_address: node.payout_address,
+          is_official_bridge: !node.is_official_bridge,
+          status: node.status,
+          models_config: models,
+          fallbacks: falls,
+        }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success) {
+        setStatusMsg({ type: "success", text: `Node ${node.name} bridge status updated.` });
+        if (token) fetchProviderNodes(token);
+      } else {
+        setStatusMsg({ type: "error", text: data.error || "Failed to update bridge status." });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: "Error toggling bridge: " + err.message });
+    }
+  };
+
+  // 1-Click In-App MetaMask Deposit with Cryptographic Ownership Proof (Anti-Snatching)
+  const handle1ClickWeb3Deposit = async () => {
+    const amountUsd = customDepositAmount ? parseFloat(customDepositAmount) : depositAmountPreset;
+    if (!amountUsd || amountUsd < 0.1) {
+      setDepositStatus("Minimum deposit is $0.10 USD.");
+      return;
+    }
+    if (typeof window === "undefined" || !(window as any).ethereum) {
+      setDepositStatus("MetaMask or Web3 wallet not detected. Switch to Manual tab or install MetaMask.");
+      return;
+    }
+
+    setIsDepositingWeb3(true);
+    setDepositStatus("Connecting MetaMask...");
+    try {
+      const eth = (window as any).ethereum;
+      const [account] = await eth.request({ method: "eth_requestAccounts" });
+
+      // Verify network is Arbitrum One (Chain ID 42161 = 0xa4b1)
+      const chainId = await eth.request({ method: "eth_chainId" });
+      if (chainId !== "0xa4b1" && chainId !== "42161") {
+        setDepositStatus("Switching to Arbitrum One network in MetaMask...");
+        try {
+          await eth.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0xa4b1" }],
+          });
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
+            await eth.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0xa4b1",
+                  chainName: "Arbitrum One",
+                  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                  rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+                  blockExplorerUrls: ["https://arbiscan.io"],
+                },
+              ],
+            });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      setDepositStatus(`Confirming $${amountUsd.toFixed(2)} USDC transfer in MetaMask...`);
+      // Native Arbitrum USDC contract: 0xaf88d065e77c8cc2239327c5edb3a432268e5831 (6 decimals)
+      const usdcContract = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
+      const treasuryPadded = TREASURY_WALLET.slice(2).padStart(64, "0").toLowerCase();
+      const rawUnits = Math.round(amountUsd * 1e6);
+      const amountPadded = rawUnits.toString(16).padStart(64, "0");
+      const transferCalldata = `0xa9059cbb${treasuryPadded}${amountPadded}`;
+
+      const txHash = await eth.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: account,
+            to: usdcContract,
+            data: transferCalldata,
+          },
+        ],
+      });
+
+      setDepositStatus(`Transaction sent (${txHash.slice(0, 10)}...)! Signing zero-gas anti-snatching ownership proof...`);
+      let signature = "";
+      try {
+        signature = await eth.request({
+          method: "personal_sign",
+          params: [`Verxl Deposit Verification: ${txHash.toLowerCase()}`, account],
+        });
+      } catch (sigErr) {
+        console.warn("Signature skipped/cancelled:", sigErr);
+      }
+
+      setDepositStatus("Waiting for Arbitrum block confirmation & settlement...");
+      // Poll verify endpoint
+      let settled = false;
+      for (let attempt = 1; attempt <= 12; attempt++) {
+        try {
+          const res = await fetch("/api/deposit/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token || ""}`,
+            },
+            body: JSON.stringify({
+              tx_hash: txHash,
+              signature: signature || undefined,
+              wallet_address: account,
+            }),
+          });
+          const data = (await res.json()) as any;
+          if (res.ok && data.success) {
+            const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? amountUsd);
+            setDepositStatus(`🎉 Deposit confirmed on Arbitrum One! +$${added.toFixed(2)} USD added.`);
+            if (data.token && !token) {
+              await loginWithToken(data.token);
+            } else {
+              await refreshSession();
+            }
+            if (data.new_api_key) {
+              setGeneratedKeySecret(data.new_api_key);
+            }
+            settled = true;
+            setTimeout(() => {
+              setShowDepositModal(false);
+              setDepositStatus(null);
+            }, 2000);
+            if (token || data.token) {
+              fetchSessionData(data.token || token);
+            }
+            break;
+          }
+        } catch {}
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+
+      if (!settled) {
+        setDepositStatus(`Broadcasted: ${txHash.slice(0, 14)}... Blockchain receipt is settling. Your balance will update shortly.`);
+      }
+    } catch (err: any) {
+      setDepositStatus(err.message || "Transaction was rejected or failed.");
+    } finally {
+      setIsDepositingWeb3(false);
+    }
+  };
+
+  // Handlers: Verify Deposit (Manual Tx Hash with Anti-Snatching Cryptographic Signature)
   const handleVerifyDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!depositTxHash || !depositTxHash.startsWith("0x")) {
@@ -654,7 +1006,23 @@ export const Console: React.FC = () => {
     }
     setVerifyingDeposit(true);
     setStatusMsg(null);
+    setDepositStatus(null);
     try {
+      let signature = "";
+      if (typeof window !== "undefined" && (window as any).ethereum) {
+        try {
+          const eth = (window as any).ethereum;
+          const [account] = await eth.request({ method: "eth_accounts" });
+          if (account) {
+            setDepositStatus("Prompting wallet signature to verify ownership...");
+            signature = await eth.request({
+              method: "personal_sign",
+              params: [`Verxl Deposit Verification: ${depositTxHash.trim().toLowerCase()}`, account],
+            });
+          }
+        } catch {}
+      }
+
       const res = await fetch("/api/deposit/verify", {
         method: "POST",
         headers: {
@@ -664,7 +1032,8 @@ export const Console: React.FC = () => {
         body: JSON.stringify({
           tx_hash: depositTxHash.trim(),
           chain: depositChain,
-          amount_usd: depositAmount,
+          amount_usd: customDepositAmount ? parseFloat(customDepositAmount) || depositAmountPreset : depositAmountPreset,
+          signature: signature || undefined,
         }),
       });
       const data = (await res.json()) as any;
@@ -675,6 +1044,7 @@ export const Console: React.FC = () => {
           type: "success",
           text: `Deposit confirmed! Credited $${added.toFixed(2)} USD. Your balance is now $${newBal.toFixed(2)} USD.`,
         });
+        setDepositStatus(`Deposit confirmed! +$${added.toFixed(2)} USD credited.`);
         if (data.token && !token) {
           await loginWithToken(data.token);
         } else {
@@ -688,9 +1058,11 @@ export const Console: React.FC = () => {
         fetchSessionData(data.token || token);
       } else {
         setStatusMsg({ type: "error", text: data.error || "Deposit verification failed." });
+        setDepositStatus(data.error || "Deposit verification failed.");
       }
     } catch (err: any) {
       setStatusMsg({ type: "error", text: "Verification network error: " + err.message });
+      setDepositStatus("Verification network error: " + err.message);
     } finally {
       setVerifyingDeposit(false);
     }
@@ -838,8 +1210,53 @@ main();`,
                 Access Developer Console
               </h2>
               <p className="text-xs text-slate-300 font-sans">
-                Sign in using passwordless email OTP or cryptographic password with hardware TOTP 2FA.
+                Sign in with your Web3 wallet, passwordless email OTP, or cryptographic password with hardware TOTP 2FA.
               </p>
+            </div>
+
+            {/* 1-Click MetaMask Web3 Wallet Quick Sign-In */}
+            <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
+                <span>Web3 Instant Access</span>
+                <span className="text-emerald-400 font-bold">METAMASK ENABLED</span>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (typeof window !== "undefined" && (window as any).ethereum) {
+                    try {
+                      setStatusMsg({ type: "info", text: "Connecting MetaMask..." });
+                      const eth = (window as any).ethereum;
+                      const [account] = await eth.request({ method: "eth_requestAccounts" });
+                      if (account) {
+                        const res = await loginWithWallet(account);
+                        if (res.success) {
+                          setStatusMsg({
+                            type: "success",
+                            text: `Connected wallet ${account.slice(0, 6)}...${account.slice(-4)}. Welcome back!`,
+                          });
+                        } else {
+                          setStatusMsg({ type: "error", text: res.error || "Wallet authentication failed." });
+                        }
+                      }
+                    } catch (err: any) {
+                      setStatusMsg({ type: "error", text: err.message || "MetaMask connect cancelled." });
+                    }
+                  } else {
+                    setStatusMsg({ type: "error", text: "MetaMask not detected in browser." });
+                  }
+                }}
+                className="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Sign In via MetaMask</span>
+              </button>
+            </div>
+
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-800"></div>
+              <span className="flex-shrink mx-2 text-[10px] text-slate-400 uppercase">Or Continue With Email</span>
+              <div className="flex-grow border-t border-slate-800"></div>
             </div>
 
             {/* Auth Mode Toggle Tabs */}
@@ -1598,6 +2015,319 @@ main();`,
         </div>
       )}
 
+      {/* SECTION 3.5: COMPUTE PROVIDER FLEET & MODEL ROUTING */}
+      {user && (
+        <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-4 sm:p-5 space-y-4 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Server className="w-4 h-4 text-purple-400" />
+                  <span>Compute Provider Fleet & Model Routing</span>
+                </h3>
+                {isAdminUser && (
+                  <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
+                    <Sparkles className="w-2.5 h-2.5 text-purple-400" />
+                    <span>Bridge Master</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 font-sans">
+                Manage your resident GPU compute clusters, upstream Base URLs, provider API keys, 1M context limits, and routing fallbacks.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setNodeForm({
+                    id: "",
+                    name: "",
+                    base_url: "",
+                    api_key: "",
+                    payout_address: user.wallet_address || "",
+                    is_official_bridge: false,
+                    status: "ACTIVE",
+                    models_config_str: JSON.stringify([
+                      {
+                        id: "qwen-3.5-4b-uncensored-32k",
+                        name: "Qwen 3.5 4B Uncensored (1M Context)",
+                        context_window: 1000000,
+                        price_prompt_usd: 0.05,
+                        price_completion_usd: 0.10,
+                        price_cached_prompt_usd: 0.010,
+                        special_hours_discount: "Flat bare-metal $0.025 / $0.05"
+                      }
+                    ], null, 2),
+                    fallbacks_str: "http://212.227.211.88:11645/v1",
+                  });
+                  setShowNodeModal(true);
+                }}
+                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition"
+              >
+                <span>+ Register Provider Node</span>
+              </button>
+            </div>
+          </div>
+
+          {loadingProviders ? (
+            <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2 font-mono">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-400" />
+              <span>Hydrating registered GPU nodes from PostgreSQL cluster...</span>
+            </div>
+          ) : providerNodes.length === 0 ? (
+            <div className="text-center py-6 text-xs text-slate-400 bg-[#05070b] border border-slate-800 rounded-[2px]">
+              No compute provider nodes registered under this account yet. Click "+ Register Provider Node" above to connect your bare-metal GPU or API bridge.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3.5">
+              {providerNodes.map((node) => {
+                let models: any[] = [];
+                try {
+                  if (Array.isArray(node.models_config)) {
+                    models = node.models_config;
+                  } else if (typeof node.models_config === "string") {
+                    const parsed = JSON.parse(node.models_config);
+                    models = Array.isArray(parsed) ? parsed : [];
+                  }
+                } catch {
+                  models = [];
+                }
+
+                let falls: any[] = [];
+                try {
+                  if (Array.isArray(node.fallbacks)) {
+                    falls = node.fallbacks;
+                  } else if (typeof node.fallbacks === "string") {
+                    const parsed = JSON.parse(node.fallbacks);
+                    falls = Array.isArray(parsed) ? parsed : [];
+                  }
+                } catch {
+                  falls = [];
+                }
+
+                const isKeyRevealed = showNodeKey[node.id] || false;
+
+                return (
+                  <div
+                    key={node.id}
+                    className="bg-[#05070b] border border-slate-800 hover:border-purple-500/40 rounded-[3px] p-3.5 sm:p-4 space-y-3 transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-white text-xs">{node.name}</span>
+                        <code className="text-[10px] text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded-[2px] font-mono">
+                          {node.id}
+                        </code>
+                        <span className={`px-1.5 py-0.2 rounded-[2px] text-[9px] font-bold uppercase tracking-wider ${
+                          node.status === "ACTIVE"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                            : "bg-slate-800 text-slate-400"
+                        }`}>
+                          {node.status}
+                        </span>
+
+                        {node.is_official_bridge ? (
+                          <span className="px-1.5 py-0.2 rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
+                            <Sparkles className="w-2.5 h-2.5 text-purple-400" />
+                            <span>Official Bridge</span>
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.2 rounded-[2px] bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-bold uppercase tracking-wider">
+                            Community Node
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        {/* Admin Official Bridge Interactive Toggle */}
+                        {isAdminUser ? (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleOfficialBridge(node)}
+                            className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-[2px] transition flex items-center gap-1 border ${
+                              node.is_official_bridge
+                                ? "bg-purple-600/30 border-purple-400 text-purple-200 hover:bg-purple-600/50"
+                                : "bg-[#0a0e17] border-slate-700 text-slate-400 hover:border-purple-400 hover:text-white"
+                            }`}
+                            title="Admin privilege: designate this node as the official protocol bridge model"
+                          >
+                            <Sparkles className="w-3 h-3 text-purple-400" />
+                            <span>Official Bridge: {node.is_official_bridge ? "ON" : "OFF"}</span>
+                          </button>
+                        ) : (
+                          <span
+                            className="text-[9.5px] text-slate-400 font-mono flex items-center gap-1 bg-slate-900 px-2 py-0.5 rounded-[2px] border border-slate-800"
+                            title="Official Bridge designation requires admin credentials (me@simonhavlik.com)"
+                          >
+                            <Lock className="w-2.5 h-2.5 text-slate-400" />
+                            <span>Bridge: {node.is_official_bridge ? "Official" : "Standard"}</span>
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditNode(node)}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-[2px] text-[10px] font-bold uppercase tracking-wider transition"
+                        >
+                          Configure
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      {/* Connection Details */}
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                          Inference Connection
+                        </div>
+                        <div className="bg-[#0a0e17] border border-slate-800 rounded-[2px] p-2 space-y-1 text-[11px] font-mono">
+                          <div className="flex items-center justify-between text-slate-400">
+                            <span>Base URL:</span>
+                            <span className="text-white truncate max-w-[280px]">
+                              {node.base_url || "Local Engine (http://212.227.211.88:11645/v1)"}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-400">
+                            <span>API Key:</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-purple-300">
+                                {node.api_key
+                                  ? (isKeyRevealed ? node.api_key : "••••••••••••••••")
+                                  : "(None required / Bare-metal direct)"}
+                              </span>
+                              {node.api_key && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setShowNodeKey((prev) => ({
+                                      ...prev,
+                                      [node.id]: !prev[node.id],
+                                    }))
+                                  }
+                                  className="text-slate-400 hover:text-white transition"
+                                >
+                                  {isKeyRevealed ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-400">
+                            <span>Payout Wallet:</span>
+                            <span className="text-slate-300 truncate max-w-[280px]">
+                              {node.payout_address || "Default Treasury"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Routing Fallbacks */}
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                          Routing Fallbacks ({falls.length})
+                        </div>
+                        <div className="bg-[#0a0e17] border border-slate-800 rounded-[2px] p-2 space-y-1 text-[10.5px] font-mono">
+                          {falls.length === 0 ? (
+                            <div className="text-slate-400 italic">No secondary failover endpoints configured.</div>
+                          ) : (
+                            falls.map((f, i) => {
+                              const fallbackText =
+                                typeof f === "string"
+                                  ? f
+                                  : f?.base_url || f?.url || f?.name || JSON.stringify(f);
+                              return (
+                                <div key={i} className="text-blue-300 truncate flex items-center gap-1.5">
+                                  <span className="text-slate-400 text-[9px]">{i + 1}.</span>
+                                  <span className="truncate" title={fallbackText}>{fallbackText}</span>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Models Configuration & 1M Context Window */}
+                    {models.length > 0 && (
+                      <div className="pt-2 border-t border-slate-800/60">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+                          Hosted Models & 1M Context Pricing
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {models.map((m, idx) => {
+                            const modelName =
+                              typeof m === "string"
+                                ? m
+                                : m?.name || m?.model_id || m?.id || "Configured Model";
+                            const ctxWindow =
+                              typeof m === "object" && m !== null
+                                ? m.context_window || 1000000
+                                : 1000000;
+                            const promptPrice =
+                              typeof m === "object" && m !== null
+                                ? m.price_prompt_usd ?? m.prompt_rate ?? 0.05
+                                : 0.05;
+                            const complPrice =
+                              typeof m === "object" && m !== null
+                                ? m.price_completion_usd ?? m.completion_rate ?? 0.10
+                                : 0.10;
+                            const cachedPrice =
+                              typeof m === "object" && m !== null
+                                ? m.price_cached_prompt_usd ?? m.cached_prompt_rate
+                                : undefined;
+                            const specialDiscount =
+                              typeof m === "object" && m !== null
+                                ? m.special_hours_discount || m.special_hours_description
+                                : undefined;
+
+                            return (
+                              <div
+                                key={idx}
+                                className="bg-[#0a0e17] border border-slate-800 rounded-[2px] p-2 text-[11px] font-mono space-y-1"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-white font-bold truncate max-w-[200px]" title={modelName}>
+                                    {modelName}
+                                  </span>
+                                  <span className="text-emerald-400 text-[10px] font-semibold flex items-center gap-1 shrink-0">
+                                    <Sparkles className="w-2.5 h-2.5" />
+                                    {ctxWindow >= 1000000 ? "1M Context" : `${ctxWindow / 1024}k`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                                  <span>Prompt / Compl:</span>
+                                  <span className="text-slate-200">
+                                    ${promptPrice} / ${complPrice} per 1M
+                                  </span>
+                                </div>
+                                {cachedPrice !== undefined && cachedPrice !== null && (
+                                  <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                                    <span>Prompt Cache Hit:</span>
+                                    <span className="text-emerald-400 font-semibold">
+                                      ${cachedPrice} / 1M
+                                    </span>
+                                  </div>
+                                )}
+                                {specialDiscount && (
+                                  <div className="text-[9.5px] text-purple-300 font-sans border-t border-slate-800/80 pt-1">
+                                    {specialDiscount}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* SECTION 4: INTEGRATION CODE SNIPPETS */}
       <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-4 sm:p-5 space-y-3 shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
@@ -1682,122 +2412,222 @@ main();`,
         </div>
       )}
 
-      {/* MODAL 1: DEPOSIT USDC ON ARBITRUM */}
+      {/* MODAL 1: DEPOSIT USDC ON ARBITRUM (1-CLICK METAMASK & ANTI-SNATCHING PROOF) */}
       {showDepositModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-blue-400" />
+                <Wallet className="w-4 h-4 text-emerald-400" />
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Deposit USDC on Arbitrum
+                  Deposit USDC on Arbitrum One
                 </h3>
               </div>
               <button
-                onClick={() => setShowDepositModal(false)}
+                onClick={() => {
+                  setShowDepositModal(false);
+                  setDepositStatus(null);
+                }}
                 className="text-slate-400 hover:text-white text-xs uppercase"
               >
                 ✕ Close
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              {/* Settlement Network & Token Badge */}
-              <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
-                  <span>Settlement Rail</span>
-                  <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[9px]">
-                    MAINNET ONLY · NO TESTNET
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="font-bold text-white text-xs">Arbitrum One Mainnet</div>
-                  <div className="font-mono text-[10px] text-slate-400">Chain ID: 42161 · Gas: &lt;$0.01</div>
-                </div>
-                <div className="text-[11px] text-slate-300 font-sans border-t border-slate-800/80 pt-2 space-y-1">
-                  <div>Accepted Asset: <strong className="text-white">USDC</strong> (6 Decimals · Arbitrum One)</div>
-                  <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between">
-                    <span>Native: <code className="text-blue-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</code></span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard("0xaf88d065e77c8cC2239327C5EDb3A432268e5831", setCopiedContract)}
-                      className="text-blue-400 hover:text-blue-300 uppercase text-[9px] font-bold"
-                    >
-                      {copiedContract ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {/* Dual Tabs: 1-Click MetaMask vs Manual Tx Hash */}
+            <div className="flex border-b border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setDepositTab("1click");
+                  setDepositStatus(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  depositTab === "1click"
+                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>1-Click MetaMask (Instant)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDepositTab("manual");
+                  setDepositStatus(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  depositTab === "manual"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Manual Tx Hash</span>
+              </button>
+            </div>
 
-              {/* Official Verxl Treasury Address */}
-              <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
-                  <span>Verxl Treasury Settlement Address (Arbitrum One)</span>
-                  <span className="text-emerald-400 font-bold">Min $0.10 USDC</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-white truncate select-all">{TREASURY_WALLET}</span>
+            <div className="space-y-3 text-xs">
+              {/* TAB 1: 1-CLICK METAMASK */}
+              {depositTab === "1click" && (
+                <div className="space-y-3.5">
+                  <div className="bg-[#05070b] border border-emerald-500/30 rounded-[2px] p-3 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
+                      <span>Anti-Snatching Settlement Rail</span>
+                      <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[9px]">
+                        PROTECTED
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                      Transfers native USDC directly on <span className="text-blue-300 font-semibold">Arbitrum One</span> and signs a zero-gas cryptographic proof so <span className="text-emerald-300 font-semibold">no front-running bot can snatch your deposit</span>.
+                    </p>
+                  </div>
+
+                  {/* Amount Presets */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                      Select Preset Amount (USDC):
+                    </label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[1, 5, 10, 25].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => {
+                            setDepositAmountPreset(amt);
+                            setCustomDepositAmount("");
+                          }}
+                          className={`py-1.5 rounded-[2px] font-mono text-xs font-bold transition border ${
+                            depositAmountPreset === amt && !customDepositAmount
+                              ? "bg-emerald-600/30 border-emerald-400 text-emerald-300 shadow-sm"
+                              : "bg-[#05070b] border-slate-800 text-slate-300 hover:border-slate-600"
+                          }`}
+                        >
+                          ${amt}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pt-1">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0.1"
+                        placeholder="Or enter custom amount in USD (min $0.10)..."
+                        value={customDepositAmount}
+                        onChange={(e) => setCustomDepositAmount(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-800 rounded-[2px] p-2 text-xs text-white outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 1-Click Action Button */}
                   <button
-                    onClick={() => copyToClipboard(TREASURY_WALLET, setCopiedTreasury)}
-                    className="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-[2px] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shrink-0"
+                    type="button"
+                    onClick={handle1ClickWeb3Deposit}
+                    disabled={isDepositingWeb3}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold tracking-wider uppercase text-xs rounded-[2px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
                   >
-                    {copiedTreasury ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedTreasury ? "Copied" : "Copy"}</span>
+                    {isDepositingWeb3 ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Wallet className="w-3.5 h-3.5" />
+                    )}
+                    <span>
+                      {isDepositingWeb3
+                        ? "Confirming in MetaMask..."
+                        : `Deposit $${(customDepositAmount ? parseFloat(customDepositAmount) || 0 : depositAmountPreset).toFixed(2)} USDC via MetaMask`}
+                    </span>
                   </button>
                 </div>
-              </div>
+              )}
 
-              {/* Quick Preset Buttons */}
-              <div>
-                <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
-                  Preset Amounts (USDC)
-                </label>
-                <div className="flex gap-2">
-                  {[0.5, 1.0, 5.0, 10.0, 25.0].map((amt) => (
+              {/* TAB 2: MANUAL TX HASH */}
+              {depositTab === "manual" && (
+                <div className="space-y-3">
+                  {/* Settlement Network & Token Badge */}
+                  <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
+                      <span>Settlement Rail</span>
+                      <span className="px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[9px]">
+                        MAINNET ONLY
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-white text-xs">Arbitrum One Mainnet</div>
+                      <div className="font-mono text-[10px] text-slate-400">Chain ID: 42161 · Gas: &lt;$0.01</div>
+                    </div>
+                    <div className="text-[11px] text-slate-300 font-sans border-t border-slate-800/80 pt-2 space-y-1">
+                      <div>Accepted Asset: <strong className="text-white">USDC</strong> (6 Decimals · Arbitrum One)</div>
+                      <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between">
+                        <span>Native: <code className="text-blue-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</code></span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard("0xaf88d065e77c8cC2239327C5EDb3A432268e5831", setCopiedContract)}
+                          className="text-blue-400 hover:text-blue-300 uppercase text-[9px] font-bold"
+                        >
+                          {copiedContract ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Official Verxl Treasury Address */}
+                  <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider">
+                      <span>Verxl Treasury Settlement Address (Arbitrum One)</span>
+                      <span className="text-emerald-400 font-bold">Min $0.10 USDC</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-white truncate select-all">{TREASURY_WALLET}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(TREASURY_WALLET, setCopiedTreasury)}
+                        className="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-[2px] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shrink-0"
+                      >
+                        {copiedTreasury ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedTreasury ? "Copied" : "Copy"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Transaction Hash Input for Verification */}
+                  <form onSubmit={handleVerifyDeposit} className="space-y-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                        Arbitrum Transaction Hash (TxHash)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="0x3a8f9c1e... (Arbitrum One 66-character tx hash)"
+                        value={depositTxHash}
+                        onChange={(e) => setDepositTxHash(e.target.value)}
+                        className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Send at least $0.10 USDC to the treasury address, then paste the tx hash. You may be prompted to sign a zero-gas ownership proof to prevent front-running.
+                      </p>
+                    </div>
+
                     <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setDepositAmount(amt)}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[2px] border ${
-                        depositAmount === amt
-                          ? "bg-blue-600 border-blue-400 text-white"
-                          : "bg-[#05070b] border-slate-800 text-slate-300 hover:border-slate-600"
-                      }`}
+                      type="submit"
+                      disabled={verifyingDeposit || !depositTxHash}
+                      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
                     >
-                      ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}
+                      {verifyingDeposit ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      <span>{verifyingDeposit ? "Verifying On-Chain..." : "Verify & Credit Deposit"}</span>
                     </button>
-                  ))}
+                  </form>
                 </div>
-              </div>
+              )}
 
-              {/* Transaction Hash Input for Verification */}
-              <form onSubmit={handleVerifyDeposit} className="space-y-3 pt-1">
-                <div>
-                  <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
-                    Arbitrum Transaction Hash (TxHash)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="0x3a8f9c1e... (Arbitrum One 66-character tx hash)"
-                    value={depositTxHash}
-                    onChange={(e) => setDepositTxHash(e.target.value)}
-                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Send at least $0.10 USDC on Arbitrum One (Chain ID 42161) to the treasury address, then paste the confirmed tx hash here.
-                  </p>
+              {/* Status Message */}
+              {depositStatus && (
+                <div className="text-[10.5px] text-amber-300 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-[2px] leading-relaxed">
+                  {depositStatus}
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={verifyingDeposit || !depositTxHash}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
-                >
-                  {verifyingDeposit ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                  <span>{verifyingDeposit ? "Verifying On-Chain..." : "Verify & Credit Deposit"}</span>
-                </button>
-              </form>
+              )}
             </div>
           </div>
         </div>
@@ -1915,6 +2745,228 @@ main();`,
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CONFIGURE / REGISTER PROVIDER NODE */}
+      {showNodeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-purple-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Server className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  {nodeForm.id ? "Configure Provider Node" : "Register New Provider Node"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNodeModal(false)}
+                className="text-slate-400 hover:text-white text-xs uppercase"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNode} className="space-y-3.5 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                    Node ID / Slug
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. bulbasaur-prague-01"
+                    value={nodeForm.id}
+                    onChange={(e) => setNodeForm({ ...nodeForm, id: e.target.value })}
+                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Prague Bare-Metal Cluster 01 (Bulbasaur)"
+                    value={nodeForm.name}
+                    onChange={(e) => setNodeForm({ ...nodeForm, name: e.target.value })}
+                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                    Inference Base URL (OpenAI Wire Compatible)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://node1.verxl.com/v1 or http://212.227.211.88:11645/v1"
+                    value={nodeForm.base_url}
+                    onChange={(e) => setNodeForm({ ...nodeForm, base_url: e.target.value })}
+                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                    Provider Upstream API Key (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="sk-... (Leave empty for direct unauthenticated bare-metal engine)"
+                    value={nodeForm.api_key}
+                    onChange={(e) => setNodeForm({ ...nodeForm, api_key: e.target.value })}
+                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                    USDC Settlement Payout Address
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="0x... (Arbitrum One address for 50 bps fee disbursements)"
+                    value={nodeForm.payout_address}
+                    onChange={(e) => setNodeForm({ ...nodeForm, payout_address: e.target.value })}
+                    className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              {/* ADMIN OFFICIAL BRIDGE TOGGLE */}
+              <div className={`p-3 rounded-[2px] border ${
+                isAdminUser 
+                  ? "bg-purple-950/20 border-purple-500/40" 
+                  : "bg-slate-900/40 border-slate-800 opacity-75"
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-white">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Official Protocol Bridge Designation</span>
+                    </div>
+                    <p className="text-[10.5px] text-slate-400 leading-relaxed">
+                      {isAdminUser 
+                        ? "Designates this node as an official protocol bridge with verified priority routing across Chat & Playground."
+                        : "Admin Exclusive: Only protocol administrators (me@simonhavlik.com) can mark a provider node as an Official Bridge."}
+                    </p>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                    <input
+                      type="checkbox"
+                      disabled={!isAdminUser}
+                      checked={nodeForm.is_official_bridge}
+                      onChange={(e) => setNodeForm({ ...nodeForm, is_official_bridge: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 disabled:opacity-40"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Models JSON Configuration */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider">
+                    Models Configuration JSON (1M Context & Rates)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNodeForm({
+                        ...nodeForm,
+                        models_config_str: JSON.stringify([
+                          {
+                            id: "qwen3.5-4b-uncensored-32k",
+                            name: "Bulbasaur Qwen 3.5 4B Uncensored (1M)",
+                            context_window: 1000000,
+                            price_prompt_usd: 0.05,
+                            price_completion_usd: 0.10,
+                            price_cached_prompt_usd: 0.010,
+                            special_hours_discount: "24/7 Dedicated Bare-Metal Flat ($0.025 / $0.05)"
+                          },
+                          {
+                            id: "deepseek-v4.1-flash",
+                            name: "DeepSeek V4.1 Flash (1M)",
+                            context_window: 1000000,
+                            price_prompt_usd: 0.30,
+                            price_completion_usd: 1.20,
+                            price_cached_prompt_usd: 0.006,
+                            special_hours_discount: "50% Off-Peak ($0.15 / $0.60, Cache $0.003) outside 01:00-04:00 & 06:00-10:00 UTC"
+                          },
+                          {
+                            id: "deepseek-v4-pro",
+                            name: "DeepSeek V4 Pro (1M)",
+                            context_window: 1000000,
+                            price_prompt_usd: 1.32,
+                            price_completion_usd: 3.96,
+                            price_cached_prompt_usd: 0.044,
+                            special_hours_discount: "50% Off-Peak ($0.66 / $1.98, Cache $0.022) outside 01:00-04:00 & 06:00-10:00 UTC"
+                          },
+                          {
+                            id: "mimo-v2.6-flash",
+                            name: "Xiaomi MiMo v2.6 Flash (1M)",
+                            context_window: 1000000,
+                            price_prompt_usd: 0.14,
+                            price_completion_usd: 0.28,
+                            price_cached_prompt_usd: 0.0028,
+                            special_hours_discount: "Official Overseas Flat ($0.14 Prompt / $0.28 Output, $0.0028 Cache Hit)"
+                          },
+                          {
+                            id: "mimo-v2.6-pro",
+                            name: "Xiaomi MiMo v2.6 Pro (1M)",
+                            context_window: 1000000,
+                            price_prompt_usd: 0.435,
+                            price_completion_usd: 0.87,
+                            price_cached_prompt_usd: 0.0036,
+                            special_hours_discount: "Flagship 1T Trillion Parameter Logic Engine ($0.435 Prompt / $0.87 Output)"
+                          }
+                        ], null, 2),
+                      });
+                    }}
+                    className="text-[10px] text-purple-400 hover:text-purple-300 uppercase font-bold"
+                  >
+                    Load 1M Presets
+                  </button>
+                </div>
+                <textarea
+                  rows={6}
+                  value={nodeForm.models_config_str}
+                  onChange={(e) => setNodeForm({ ...nodeForm, models_config_str: e.target.value })}
+                  placeholder='[{"id": "...", "context_window": 1000000, "price_prompt_usd": 0.05, ...}]'
+                  className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] p-2 text-xs font-mono text-purple-200 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Routing Fallbacks */}
+              <div>
+                <label className="block text-[10.5px] text-slate-400 uppercase tracking-wider mb-1">
+                  Failover Fallback Endpoints (One per line)
+                </label>
+                <textarea
+                  rows={2}
+                  value={nodeForm.fallbacks_str}
+                  onChange={(e) => setNodeForm({ ...nodeForm, fallbacks_str: e.target.value })}
+                  placeholder="http://212.227.211.88:11645/v1&#10;https://opencode.net/api/v1"
+                  className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] p-2 text-xs font-mono text-blue-200 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingNode || !nodeForm.name}
+                className="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-[2px] transition flex items-center justify-center gap-2"
+              >
+                {savingNode ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                <span>{savingNode ? "Saving Node Configuration..." : "Save Provider Node"}</span>
+              </button>
+            </form>
           </div>
         </div>
       )}

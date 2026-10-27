@@ -373,12 +373,13 @@ export const Registry: React.FC<RegistryProps> = ({
                   {/* Model */}
                   <td className="py-3 px-4">
                     <div className="inline-flex flex-col gap-0.5">
-                      <span className="px-1.5 py-0.5 rounded-[2px] bg-[#05070b] border border-slate-800 text-[10.5px] text-blue-300">
+                      <span className="px-1.5 py-0.5 rounded-[2px] bg-[#05070b] border border-slate-800 text-[10.5px] text-blue-300 font-medium">
                         {p.modelIdentifier}
                       </span>
                       {p.contextWindow && (
-                        <span className="text-[9.5px] text-slate-400">
-                          {p.contextWindow >= 1024 ? `${p.contextWindow / 1024}k` : p.contextWindow} context window
+                        <span className="text-[9.5px] text-emerald-400 font-semibold flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          {p.contextWindow >= 1000000 ? "1,000,000 (1M) context" : p.contextWindow >= 1024 ? `${p.contextWindow / 1024}k context` : `${p.contextWindow} tokens`}
                         </span>
                       )}
                     </div>
@@ -401,6 +402,16 @@ export const Registry: React.FC<RegistryProps> = ({
                     <div className="text-[10px] text-slate-400">
                       ${p.priceCompletionUsd.toFixed(2)} compl
                     </div>
+                    {p.priceCachedPromptUsd !== undefined && (
+                      <div className="text-[9.5px] text-emerald-400 font-semibold">
+                        ${p.priceCachedPromptUsd.toFixed(3)} cached
+                      </div>
+                    )}
+                    {p.specialHoursDiscount && (
+                      <div className="text-[8.5px] text-purple-300 font-sans mt-0.5">
+                        {p.specialHoursDiscount}
+                      </div>
+                    )}
                   </td>
 
                   {/* Staked Collateral */}

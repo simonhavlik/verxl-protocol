@@ -101,6 +101,7 @@ export function normalizeSqlForPostgres(sql: string): string {
     "dao_stats",
     "votes",
     "sync_logs",
+    "chat_conversations",
   ];
 
   for (const table of knownTables) {

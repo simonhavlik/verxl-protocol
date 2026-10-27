@@ -25,6 +25,9 @@ import {
   Mail,
   KeyRound,
   ShieldCheck,
+  Search,
+  Wallet,
+  Clock,
 } from "lucide-react";
 
 marked.setOptions({
@@ -70,36 +73,115 @@ interface ChatSession {
   updatedAt: number;
 }
 
-const AVAILABLE_MODELS = [
+export interface ModelConfig {
+  id: string;
+  name: string;
+  tag: string;
+  category: "all" | "1m" | "reasoning" | "bare-metal" | "official-bridge";
+  promptRate: number;
+  cachedPromptRate: number;
+  completionRate: number;
+  specialHoursPromptRate: number;
+  specialHoursCompletionRate: number;
+  specialHoursDesc: string;
+  context: string;
+  contextTokens: number;
+  speed: string;
+  provider: string;
+  isOfficialBridge: boolean;
+  description: string;
+}
+
+export const AVAILABLE_MODELS: ModelConfig[] = [
   {
     id: "qwen3.5-4b-uncensored-32k",
-    name: "Bulbasaur Qwen 3.5 4B Uncensored (32k)",
-    tag: "High-Throughput Resident Node",
+    name: "Bulbasaur Qwen 3.5 4B Uncensored (1M)",
+    tag: "Bare-Metal Resident Node",
+    category: "bare-metal",
     promptRate: 0.05,
-    completionRate: 0.1,
-    context: "32,768 tokens",
+    cachedPromptRate: 0.010,
+    completionRate: 0.10,
+    specialHoursPromptRate: 0.025,
+    specialHoursCompletionRate: 0.05,
+    specialHoursDesc: "24/7 Dedicated Bare-Metal Flat Host ($0.025 Prompt / $0.05 Completion)",
+    context: "1,000,000 tokens (1M)",
+    contextTokens: 1000000,
     speed: "~52 TPS",
+    provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
+    isOfficialBridge: true,
     description: "Resident Bare-Metal cluster in Prague. Zero reload latency, uncensored institutional precision.",
   },
   {
     id: "deepseek-v4.1-flash",
-    name: "DeepSeek V4.1 Flash (128k)",
+    name: "DeepSeek V4.1 Flash (1M)",
     tag: "Deep Reasoning & Quantitative Code",
-    promptRate: 0.14,
-    completionRate: 0.28,
-    context: "131,072 tokens",
+    category: "reasoning",
+    promptRate: 0.30,
+    cachedPromptRate: 0.006,
+    completionRate: 1.20,
+    specialHoursPromptRate: 0.15,
+    specialHoursCompletionRate: 0.60,
+    specialHoursDesc: "50% Off-Peak Discount ($0.15 Input / $0.60 Output, $0.003 Cache Hit) outside 01:00-04:00 & 06:00-10:00 UTC",
+    context: "1,000,000 tokens (1M)",
+    contextTokens: 1000000,
     speed: "~45 TPS",
-    description: "Multi-head latent reasoning engine with explicit thought traces and theorem proving.",
+    provider: "DeepSeek Official Bridge (Tokyo / Hangzhou)",
+    isOfficialBridge: true,
+    description: "Official DeepSeek V4.1 Flash multi-head latent reasoning engine with 1M resident context.",
+  },
+  {
+    id: "deepseek-v4-pro",
+    name: "DeepSeek V4 Pro (1M)",
+    tag: "Trillion-Parameter Flagship Reasoning",
+    category: "reasoning",
+    promptRate: 1.32,
+    cachedPromptRate: 0.044,
+    completionRate: 3.96,
+    specialHoursPromptRate: 0.66,
+    specialHoursCompletionRate: 1.98,
+    specialHoursDesc: "50% Off-Peak Discount ($0.66 Input / $1.98 Output, $0.022 Cache Hit) outside 01:00-04:00 & 06:00-10:00 UTC",
+    context: "1,000,000 tokens (1M)",
+    contextTokens: 1000000,
+    speed: "~30 TPS",
+    provider: "DeepSeek Official Bridge (Tokyo / Hangzhou)",
+    isOfficialBridge: true,
+    description: "DeepSeek's flagship trillion-parameter reasoning model with 1M context and formal mathematical deduction.",
   },
   {
     id: "mimo-v2.6-flash",
-    name: "Xiaomi MiMo v2.6 Flash (128k)",
+    name: "Xiaomi MiMo v2.6 Flash (1M)",
     tag: "High-Concurrency Systems Engine",
-    promptRate: 0.1,
-    completionRate: 0.2,
-    context: "131,072 tokens",
+    category: "official-bridge",
+    promptRate: 0.14,
+    cachedPromptRate: 0.0028,
+    completionRate: 0.28,
+    specialHoursPromptRate: 0.14,
+    specialHoursCompletionRate: 0.28,
+    specialHoursDesc: "Official Overseas Flat Rate ($0.14 Prompt / $0.28 Output, $0.0028 Cache Hit)",
+    context: "1,000,000 tokens (1M)",
+    contextTokens: 1000000,
     speed: "~60 TPS",
-    description: "Ultra-fast distributed inference optimized for high-concurrency smart contract engineering.",
+    provider: "Xiaomi Official Bridge (Frankfurt)",
+    isOfficialBridge: true,
+    description: "Official Xiaomi MiMo v2.6 Flash with 1M resident context, sub-85ms TTFT, and 99% prompt cache discount.",
+  },
+  {
+    id: "mimo-v2.6-pro",
+    name: "Xiaomi MiMo v2.6 Pro (1M)",
+    tag: "Omnimodal Flagship Logic Engine",
+    category: "official-bridge",
+    promptRate: 0.435,
+    cachedPromptRate: 0.0036,
+    completionRate: 0.87,
+    specialHoursPromptRate: 0.435,
+    specialHoursCompletionRate: 0.87,
+    specialHoursDesc: "Flagship 1.02T Trillion Parameter Logic Engine ($0.435 Prompt / $0.87 Output, $0.0036 Cache Hit)",
+    context: "1,000,000 tokens (1M)",
+    contextTokens: 1000000,
+    speed: "~40 TPS",
+    provider: "Xiaomi Official Bridge (Frankfurt)",
+    isOfficialBridge: true,
+    description: "Xiaomi's 1.02T parameter omnimodal flagship logic model with 1M context for complex architecture and code.",
   },
 ];
 
@@ -148,16 +230,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     refreshSession,
     loginWithApiKey,
     loginWithToken,
+    loginWithWallet,
     customApiKey,
     setCustomApiKey,
   } = useAuth();
 
   const balanceUsd = user ? Number(user.balance_usd) : 0.0;
-  const userEmail = user ? user.email : null;
 
   // Auth Modal State
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authTab, setAuthTab] = useState<"key" | "email">("key");
+  const [authTab, setAuthTab] = useState<"key" | "email" | "wallet">("key");
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [otpInput, setOtpInput] = useState("");
@@ -166,31 +248,130 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
 
-  // Session State
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+  // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
+  const createBlankSession = (): ChatSession => ({
+    id: `chat_${Date.now()}`,
+    title: "New Chat",
+    model: "qwen3.5-4b-uncensored-32k",
+    systemPrompt: DEFAULT_SYSTEM_PROMPT,
+    messages: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const [sessions, setSessions] = useState<ChatSession[]>([createBlankSession()]);
+  const [activeSessionId, setActiveSessionId] = useState<string>(sessions[0].id);
+  const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+
+  // Model Selector Search, Category Filter & Recently Used
+  const [modelSearch, setModelSearch] = useState("");
+  const [modelCategory, setModelCategory] = useState<"all" | "1m" | "reasoning" | "bare-metal" | "official-bridge">("all");
+  const [recentModelIds, setRecentModelIds] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("vrxl_chat_sessions_v2");
+        const stored = localStorage.getItem("vrxl_recent_model_ids");
         if (stored) return JSON.parse(stored);
       } catch {}
     }
-    const initialSession: ChatSession = {
-      id: `chat_${Date.now()}`,
-      title: "New Chat",
-      model: "qwen3.5-4b-uncensored-32k",
-      systemPrompt: DEFAULT_SYSTEM_PROMPT,
-      messages: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    return ["qwen3.5-4b-uncensored-32k", "deepseek-v4.1-flash"];
+  });
+
+  const selectModel = (modelId: string) => {
+    const updated = sessions.map((s) => (s.id === activeSession.id ? { ...s, model: modelId, updatedAt: Date.now() } : s));
+    setSessions(updated);
+    const target = updated.find((s) => s.id === activeSession.id);
+    if (target) syncSessionToDb(target);
+    setShowModelDropdown(false);
+    setRecentModelIds((prev) => {
+      const up = [modelId, ...prev.filter((id) => id !== modelId)].slice(0, 3);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("vrxl_recent_model_ids", JSON.stringify(up));
+        } catch {}
+      }
+      return up;
+    });
+  };
+
+  const filteredModels = AVAILABLE_MODELS.filter((m) => {
+    const matchesCategory =
+      modelCategory === "all" ||
+      (modelCategory === "1m" && m.contextTokens >= 1000000) ||
+      (modelCategory === "reasoning" && m.category === "reasoning") ||
+      (modelCategory === "bare-metal" && m.category === "bare-metal") ||
+      (modelCategory === "official-bridge" && m.isOfficialBridge);
+
+    const matchesSearch =
+      !modelSearch.trim() ||
+      m.name.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      m.provider.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      m.tag.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      m.description.toLowerCase().includes(modelSearch.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
+
+  // Fetch PostgreSQL-backed conversations when authenticated user changes
+  useEffect(() => {
+    if (!authToken || !user) {
+      // With logout, conversations disappear from device and memory!
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("vrxl_chat_sessions_v2");
+        } catch {}
+      }
+      const blank = createBlankSession();
+      setSessions([blank]);
+      setActiveSessionId(blank.id);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchDbConversations = async () => {
+      try {
+        const res = await fetch("/api/chat/conversations", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          if (isMounted && data.conversations && data.conversations.length > 0) {
+            setSessions(data.conversations);
+            setActiveSessionId(data.conversations[0].id);
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching PostgreSQL conversations:", err);
+      }
     };
-    return [initialSession];
-  });
 
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
-    return sessions[0]?.id || `chat_${Date.now()}`;
-  });
+    fetchDbConversations();
+    return () => {
+      isMounted = false;
+    };
+  }, [authToken, user?.id]);
 
-  const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  // Sync conversation to PostgreSQL
+  const syncSessionToDb = async (sess: ChatSession) => {
+    if (!authToken || !user) return;
+    try {
+      await fetch("/api/chat/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          id: sess.id,
+          title: sess.title,
+          model: sess.model,
+          systemPrompt: sess.systemPrompt,
+          messages: sess.messages,
+        }),
+      });
+    } catch (err) {
+      console.warn("Failed to sync conversation to PostgreSQL:", err);
+    }
+  };
 
   const handleAuthModalLoginWithApiKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -290,7 +471,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [copiedTreasury, setCopiedTreasury] = useState(false);
 
-  // Deposit verification
+  // Deposit verification & 1-Click Web3 state
+  const [depositTab, setDepositTab] = useState<"1click" | "manual">("1click");
+  const [depositAmountPreset, setDepositAmountPreset] = useState<number>(5);
+  const [customDepositAmount, setCustomDepositAmount] = useState<string>("");
+  const [isDepositingWeb3, setIsDepositingWeb3] = useState<boolean>(false);
   const [depositTxHash, setDepositTxHash] = useState("");
   const [verifyingDeposit, setVerifyingDeposit] = useState(false);
   const [depositStatus, setDepositStatus] = useState<string | null>(null);
@@ -300,13 +485,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Save sessions to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("vrxl_chat_sessions_v2", JSON.stringify(sessions));
-    } catch {}
-  }, [sessions]);
 
   // Refresh user profile & balance
   useEffect(() => {
@@ -337,36 +515,31 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   // Create New Chat Session
   const createNewSession = () => {
-    const newSession: ChatSession = {
-      id: `chat_${Date.now()}`,
-      title: "New Chat",
-      model: activeSession?.model || "qwen3.5-4b-uncensored-32k",
-      systemPrompt: activeSession?.systemPrompt || DEFAULT_SYSTEM_PROMPT,
-      messages: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+    const newSession = createBlankSession();
+    newSession.model = activeSession?.model || "qwen3.5-4b-uncensored-32k";
+    newSession.systemPrompt = activeSession?.systemPrompt || DEFAULT_SYSTEM_PROMPT;
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInputPrompt("");
     if (window.innerWidth < 768) setSidebarOpen(false);
+    syncSessionToDb(newSession);
   };
 
   // Delete Chat Session
-  const deleteSession = (id: string, e: React.MouseEvent) => {
+  const deleteSession = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (authToken && user) {
+      try {
+        await fetch(`/api/chat/conversations?id=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      } catch {}
+    }
     setSessions((prev) => {
       const filtered = prev.filter((s) => s.id !== id);
       if (filtered.length === 0) {
-        const blank: ChatSession = {
-          id: `chat_${Date.now()}`,
-          title: "New Chat",
-          model: "qwen3.5-4b-uncensored-32k",
-          systemPrompt: DEFAULT_SYSTEM_PROMPT,
-          messages: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
+        const blank = createBlankSession();
         setActiveSessionId(blank.id);
         return [blank];
       }
@@ -383,18 +556,155 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       setEditingTitleId(null);
       return;
     }
-    setSessions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, title: editTitleText.trim(), updatedAt: Date.now() } : s))
-    );
+    const updated = sessions.map((s) => (s.id === id ? { ...s, title: editTitleText.trim(), updatedAt: Date.now() } : s));
+    setSessions(updated);
+    const target = updated.find((s) => s.id === id);
+    if (target) syncSessionToDb(target);
     setEditingTitleId(null);
   };
 
-  // Verify Arbitrum USDC Deposit
+  // 1-Click In-App MetaMask Deposit with Cryptographic Ownership Proof (Anti-Snatching)
+  const handle1ClickWeb3Deposit = async () => {
+    const amountUsd = customDepositAmount ? parseFloat(customDepositAmount) : depositAmountPreset;
+    if (!amountUsd || amountUsd < 0.1) {
+      setDepositStatus("Minimum deposit is $0.10 USD.");
+      return;
+    }
+    if (typeof window === "undefined" || !(window as any).ethereum) {
+      setDepositStatus("MetaMask or Web3 wallet not detected. Switch to Manual tab or install MetaMask.");
+      return;
+    }
+
+    setIsDepositingWeb3(true);
+    setDepositStatus("Connecting MetaMask...");
+    try {
+      const eth = (window as any).ethereum;
+      const [account] = await eth.request({ method: "eth_requestAccounts" });
+
+      // Verify network is Arbitrum One (Chain ID 42161 = 0xa4b1)
+      const chainId = await eth.request({ method: "eth_chainId" });
+      if (chainId !== "0xa4b1" && chainId !== "42161") {
+        setDepositStatus("Switching to Arbitrum One network in MetaMask...");
+        try {
+          await eth.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0xa4b1" }],
+          });
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
+            await eth.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: "0xa4b1",
+                chainName: "Arbitrum One",
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+                blockExplorerUrls: ["https://arbiscan.io"],
+              }],
+            });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      setDepositStatus(`Confirming $${amountUsd.toFixed(2)} USDC transfer in MetaMask...`);
+      // Native Arbitrum USDC contract: 0xaf88d065e77c8cc2239327c5edb3a432268e5831 (6 decimals)
+      const usdcContract = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
+      const treasuryPadded = TREASURY_WALLET.slice(2).padStart(64, "0").toLowerCase();
+      const rawUnits = Math.round(amountUsd * 1e6);
+      const amountPadded = rawUnits.toString(16).padStart(64, "0");
+      const transferCalldata = `0xa9059cbb${treasuryPadded}${amountPadded}`;
+
+      const txHash = await eth.request({
+        method: "eth_sendTransaction",
+        params: [{
+          from: account,
+          to: usdcContract,
+          data: transferCalldata,
+        }],
+      });
+
+      setDepositStatus(`Transaction sent (${txHash.slice(0, 10)}...)! Signing zero-gas anti-snatching ownership proof...`);
+      let signature = "";
+      try {
+        signature = await eth.request({
+          method: "personal_sign",
+          params: [`Verxl Deposit Verification: ${txHash.toLowerCase()}`, account],
+        });
+      } catch (sigErr) {
+        console.warn("Signature skipped/cancelled:", sigErr);
+      }
+
+      setDepositStatus("Waiting for Arbitrum block confirmation & settlement...");
+      // Poll verify endpoint
+      let settled = false;
+      for (let attempt = 1; attempt <= 12; attempt++) {
+        try {
+          const res = await fetch("/api/deposit/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken || ""}`,
+            },
+            body: JSON.stringify({
+              tx_hash: txHash,
+              signature: signature || undefined,
+              wallet_address: account,
+            }),
+          });
+          const data = (await res.json()) as any;
+          if (res.ok && data.success) {
+            const added = Number(data.amount_usd ?? data.deposit?.amount_usd ?? amountUsd);
+            setDepositStatus(`🎉 Deposit confirmed on Arbitrum One! +$${added.toFixed(2)} USD added.`);
+            if (data.token) {
+              await loginWithToken(data.token);
+            } else {
+              await refreshSession();
+            }
+            if (data.new_api_key) {
+              setCustomApiKey(data.new_api_key);
+            }
+            settled = true;
+            setTimeout(() => setShowDepositModal(false), 2000);
+            break;
+          }
+        } catch {}
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+
+      if (!settled) {
+        setDepositStatus(`Broadcasted: ${txHash.slice(0, 14)}... Blockchain receipt is settling. Your balance will update shortly.`);
+      }
+    } catch (err: any) {
+      setDepositStatus(err.message || "Transaction was rejected or failed.");
+    } finally {
+      setIsDepositingWeb3(false);
+    }
+  };
+
+  // Verify Arbitrum USDC Deposit (Manual Hash with Cryptographic Signature Check)
   const handleVerifyDeposit = async () => {
     if (!depositTxHash.trim()) return;
     setVerifyingDeposit(true);
     setDepositStatus(null);
     try {
+      let signature = "";
+      // If MetaMask is installed, request signature on hash to prove ownership against front-runners
+      if (typeof window !== "undefined" && (window as any).ethereum) {
+        try {
+          const eth = (window as any).ethereum;
+          const [account] = await eth.request({ method: "eth_accounts" });
+          if (account) {
+            setDepositStatus("Prompting wallet signature to verify ownership...");
+            signature = await eth.request({
+              method: "personal_sign",
+              params: [`Verxl Deposit Verification: ${depositTxHash.trim().toLowerCase()}`, account],
+            });
+          }
+        } catch {}
+      }
+
       const res = await fetch("/api/deposit/verify", {
         method: "POST",
         headers: {
@@ -403,6 +713,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         },
         body: JSON.stringify({
           tx_hash: depositTxHash.trim(),
+          signature: signature || undefined,
         }),
       });
 
@@ -422,8 +733,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       } else {
         setDepositStatus(`Verification note: ${data.error || "Transaction pending confirmation on Arbitrum."}`);
       }
-    } catch (err) {
-      setDepositStatus("Network error verifying transaction.");
+    } catch (err: any) {
+      setDepositStatus("Network error verifying transaction: " + err.message);
     } finally {
       setVerifyingDeposit(false);
     }
@@ -464,18 +775,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       newTitle = textToSend.slice(0, 32) + (textToSend.length > 32 ? "..." : "");
     }
 
+    const updatedUserSession: ChatSession = {
+      ...activeSession,
+      title: newTitle,
+      messages: updatedMessages,
+      updatedAt: Date.now(),
+    };
+
     setSessions((prev) =>
-      prev.map((s) =>
-        s.id === activeSession.id
-          ? {
-              ...s,
-              title: newTitle,
-              messages: updatedMessages,
-              updatedAt: Date.now(),
-            }
-          : s
-      )
+      prev.map((s) => (s.id === activeSession.id ? updatedUserSession : s))
     );
+    syncSessionToDb(updatedUserSession);
 
     setInputPrompt("");
     setIsStreaming(true);
@@ -596,17 +906,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         },
       };
 
+      const updatedWithAssistant: ChatSession = {
+        ...activeSession,
+        title: newTitle,
+        messages: [...updatedMessages, assistantMessage],
+        updatedAt: Date.now(),
+      };
+
       setSessions((prev) =>
-        prev.map((s) =>
-          s.id === activeSession.id
-            ? {
-                ...s,
-                messages: [...s.messages, assistantMessage],
-                updatedAt: Date.now(),
-              }
-            : s
-        )
+        prev.map((s) => (s.id === activeSession.id ? updatedWithAssistant : s))
       );
+      syncSessionToDb(updatedWithAssistant);
 
       // Refresh balance from backend
       setTimeout(() => refreshSession(), 1000);
@@ -867,41 +1177,136 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
 
-              {/* Model Dropdown Menu */}
+              {/* Model Dropdown Menu with Search, Filter & Last Used */}
               {showModelDropdown && (
-                <div className="absolute left-0 mt-1.5 w-72 sm:w-80 rounded-[3px] bg-[#0a0e17] border border-blue-500/40 shadow-2xl p-1.5 z-50 space-y-1 font-mono text-xs">
-                  <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-800">
-                    Verified Edge Models (50 bps protocol fee)
+                <div className="absolute left-0 mt-1.5 w-80 sm:w-96 rounded-[4px] bg-[#080c14] border border-blue-500/40 shadow-2xl p-2.5 z-50 space-y-2 font-mono text-xs max-h-[85vh] overflow-y-auto">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Search models, 1M context, providers..."
+                      value={modelSearch}
+                      onChange={(e) => setModelSearch(e.target.value)}
+                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] pl-7 pr-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                      autoFocus
+                    />
                   </div>
-                  {AVAILABLE_MODELS.map((m) => (
-                    <div
-                      key={m.id}
-                      onClick={() => {
-                        setSessions((prev) =>
-                          prev.map((s) => (s.id === activeSession.id ? { ...s, model: m.id } : s))
-                        );
-                        setShowModelDropdown(false);
-                      }}
-                      className={`p-2 rounded-[2px] cursor-pointer transition ${
-                        activeSession?.model === m.id
-                          ? "bg-blue-600/20 border border-blue-500 text-white"
-                          : "hover:bg-slate-900 text-slate-300"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between font-bold text-[11.5px]">
-                        <span>{m.name}</span>
-                        <span className="text-[10px] text-emerald-400 font-semibold">{m.speed}</span>
+
+                  {/* Filter Pills */}
+                  <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                    {[
+                      { id: "all", label: "All Models" },
+                      { id: "1m", label: "1M Context" },
+                      { id: "bare-metal", label: "Bare-Metal" },
+                      { id: "reasoning", label: "Reasoning" },
+                      { id: "official-bridge", label: "Official Bridge" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setModelCategory(tab.id as any)}
+                        className={`px-2 py-0.5 rounded-[2px] border transition ${
+                          modelCategory === tab.id
+                            ? "bg-blue-600/30 border-blue-500 text-blue-200 font-bold"
+                            : "bg-[#0c1220] border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Recently Used Strip */}
+                  {recentModelIds.length > 0 && !modelSearch.trim() && (
+                    <div className="pt-1 border-t border-slate-800/80">
+                      <div className="text-[9.5px] uppercase tracking-wider text-slate-500 font-bold mb-1 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-blue-400" />
+                        <span>Recently Used:</span>
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{m.description}</div>
-                      <div className="flex items-center gap-2 text-[9.5px] text-slate-400 mt-1 font-mono">
-                        <span>Context: {m.context}</span>
-                        <span>•</span>
-                        <span>Prompt: ${m.promptRate}/1M</span>
-                        <span>•</span>
-                        <span>Output: ${m.completionRate}/1M</span>
+                      <div className="flex flex-wrap gap-1">
+                        {recentModelIds.map((rid) => {
+                          const m = AVAILABLE_MODELS.find((mod) => mod.id === rid);
+                          if (!m) return null;
+                          return (
+                            <button
+                              key={rid}
+                              onClick={() => selectModel(m.id)}
+                              className="px-2 py-1 rounded-[2px] bg-[#0c1220] border border-slate-800 hover:border-blue-500/50 text-[10.5px] text-slate-300 flex items-center gap-1 transition"
+                            >
+                              <span className="truncate max-w-[120px]">{m.name}</span>
+                              <span className="text-[8.5px] text-blue-400 font-bold">1M</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Models List */}
+                  <div className="space-y-1.5 pt-1 border-t border-slate-800/80">
+                    <div className="px-1 text-[9.5px] uppercase tracking-wider text-slate-400 font-bold flex items-center justify-between">
+                      <span>Available Models ({filteredModels.length})</span>
+                      <span className="text-emerald-400 text-[9px]">50 BPS PROTOCOL FEE</span>
+                    </div>
+
+                    {filteredModels.map((m) => (
+                      <div
+                        key={m.id}
+                        onClick={() => selectModel(m.id)}
+                        className={`p-2.5 rounded-[3px] cursor-pointer transition border ${
+                          activeSession?.model === m.id
+                            ? "bg-blue-600/20 border-blue-500 text-white shadow-md shadow-blue-500/10"
+                            : "bg-[#060a12] border-slate-800/90 hover:border-slate-700 text-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 font-bold text-xs">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="truncate">{m.name}</span>
+                            {m.isOfficialBridge && (
+                              <span className="px-1 py-0.2 rounded-[2px] bg-blue-500/20 border border-blue-500/40 text-[8.5px] text-blue-300 shrink-0 font-mono">
+                                Official Bridge
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-emerald-400 font-semibold shrink-0">{m.speed}</span>
+                        </div>
+
+                        <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">{m.description}</div>
+
+                        {/* Specs & Fee Breakdown */}
+                        <div className="mt-2 pt-1.5 border-t border-slate-800/80 space-y-1 text-[9.5px] font-mono">
+                          <div className="flex items-center justify-between text-slate-400">
+                            <span className="text-blue-300 font-semibold">Context: {m.context}</span>
+                            <span className="text-slate-300">Prompt: ${m.promptRate} • Out: ${m.completionRate}/1M</span>
+                          </div>
+
+                          {/* Cached Prompt / Output Fee */}
+                          <div className="flex items-center justify-between text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-[2px] border border-emerald-500/20">
+                            <span>💾 Cached Prompt Fee:</span>
+                            <span className="font-bold">${m.cachedPromptRate}/1M (90% off)</span>
+                          </div>
+
+                          {/* Special Hours Fee */}
+                          <div className="flex items-center justify-between text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded-[2px] border border-amber-500/20">
+                            <span className="truncate mr-1">🌙 Special Hours:</span>
+                            <span className="font-bold shrink-0">${m.specialHoursPromptRate} / ${m.specialHoursCompletionRate}</span>
+                          </div>
+                        </div>
+
+                        {/* Provider Node Label */}
+                        <div className="text-[9px] text-slate-500 mt-1 flex items-center justify-between">
+                          <span>Node: {m.provider}</span>
+                          <span className="text-slate-400">Non-Custodial</span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {filteredModels.length === 0 && (
+                      <div className="text-center py-4 text-xs text-slate-500">
+                        No models matching "{modelSearch}".
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1248,13 +1653,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       </main>
 
       {/* ============================================================== */}
-      {/* 3. DEPOSIT MODAL                                               */}
+      {/* 3. DEPOSIT MODAL WITH 1-CLICK WEB3 & ANTI-SNATCHING SECURITY   */}
       {/* ============================================================== */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
           <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
-              onClick={() => setShowDepositModal(false)}
+              onClick={() => {
+                setShowDepositModal(false);
+                setDepositStatus(null);
+              }}
               className="absolute top-3 right-3 text-slate-400 hover:text-white p-1"
             >
               <X className="w-4 h-4" />
@@ -1262,72 +1670,169 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
             <div className="flex items-center gap-2 text-white">
               <Coins className="w-5 h-5 text-emerald-400" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">
-                Deposit Arbitrum USDC / Add Balance
-              </h3>
-            </div>
-
-            <p className="text-slate-300 text-[11px] leading-relaxed">
-              Verxl Protocol operates on a non-custodial prepaid clearing balance. Output tokens are verified on-chain and settled at 50 bps protocol fee.
-            </p>
-
-            <div className="text-[10px] px-2 py-1 bg-slate-900 border border-slate-800 rounded-[2px] flex items-center justify-between text-slate-400">
-              <span>Account Status:</span>
-              <span className="font-bold text-slate-200">
-                {authToken ? (userEmail || "Authenticated Session") : "Guest (Auto-created on deposit)"}
-              </span>
-            </div>
-
-            {/* Arbitrum USDC Treasury Address */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-wider text-slate-400">
-                Verxl Treasury Deposit Address (Arbitrum One USDC):
-              </label>
-              <div className="flex items-center justify-between bg-[#05070b] border border-slate-800 p-2 rounded-[3px]">
-                <span className="font-mono text-[11px] text-blue-300 truncate max-w-[280px]">
-                  {TREASURY_WALLET}
-                </span>
-                <button
-                  onClick={copyTreasury}
-                  className="p-1 text-slate-400 hover:text-white transition"
-                  title="Copy address"
-                >
-                  {copiedTreasury ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  Deposit Arbitrum USDC / Add Balance
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Prepaid clearing with 50 bps protocol fee on Arbitrum One
+                </p>
               </div>
             </div>
 
-            {/* Verification Form */}
-            <div className="space-y-2 pt-1 border-t border-slate-800/80">
-              <label className="text-[10px] uppercase tracking-wider text-slate-400">
-                Verify Arbitrum Transaction Hash:
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="0x..."
-                  value={depositTxHash}
-                  onChange={(e) => setDepositTxHash(e.target.value)}
-                  className="flex-1 bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
-                />
-                <button
-                  onClick={handleVerifyDeposit}
-                  disabled={verifyingDeposit || !depositTxHash.trim()}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white rounded-[3px] font-bold tracking-wider text-[11px] transition"
-                >
-                  {verifyingDeposit ? "Verifying..." : "Verify"}
-                </button>
-              </div>
-              {depositStatus && (
-                <div className="text-[10.5px] text-amber-300 bg-amber-500/10 border border-amber-500/30 p-2 rounded-[2px]">
-                  {depositStatus}
+            {/* Deposit Tabs: 1-Click vs Manual */}
+            <div className="flex border-b border-slate-800">
+              <button
+                onClick={() => {
+                  setDepositTab("1click");
+                  setDepositStatus(null);
+                }}
+                className={`flex-1 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  depositTab === "1click"
+                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>1-Click MetaMask (Instant)</span>
+              </button>
+              <button
+                onClick={() => {
+                  setDepositTab("manual");
+                  setDepositStatus(null);
+                }}
+                className={`flex-1 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  depositTab === "manual"
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Manual Tx Hash</span>
+              </button>
+            </div>
+
+            {/* Tab 1: 1-Click MetaMask Deposit */}
+            {depositTab === "1click" && (
+              <div className="space-y-3">
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Fastest & most secure: transfers USDC directly on <span className="text-blue-300 font-semibold">Arbitrum One</span> and signs a zero-gas cryptographic proof so <span className="text-emerald-300 font-semibold">no front-running bot can steal your deposit</span>.
+                </p>
+
+                {/* Amount Presets */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                    Select USDC Amount:
+                  </label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[1, 5, 10, 25].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => {
+                          setDepositAmountPreset(amt);
+                          setCustomDepositAmount("");
+                        }}
+                        className={`py-1.5 rounded-[3px] font-mono text-xs font-bold transition border ${
+                          depositAmountPreset === amt && !customDepositAmount
+                            ? "bg-emerald-600/30 border-emerald-400 text-emerald-300 shadow-sm"
+                            : "bg-[#05070b] border-slate-800 text-slate-300 hover:border-slate-600"
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pt-1">
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0.1"
+                      placeholder="Or enter custom amount in USD..."
+                      value={customDepositAmount}
+                      onChange={(e) => setCustomDepositAmount(e.target.value)}
+                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* 1-Click Button */}
+                <button
+                  type="button"
+                  onClick={handle1ClickWeb3Deposit}
+                  disabled={isDepositingWeb3}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>
+                    {isDepositingWeb3
+                      ? "Processing Deposit..."
+                      : `Deposit $${(customDepositAmount ? parseFloat(customDepositAmount) || 0 : depositAmountPreset).toFixed(2)} USDC via MetaMask`}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Tab 2: Manual Tx Hash */}
+            {depositTab === "manual" && (
+              <div className="space-y-3">
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Sent from an external wallet or exchange? Enter the transaction hash. A zero-gas signature from your sending wallet will be requested to guarantee ownership.
+                </p>
+
+                {/* Treasury Address */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400">
+                    Verxl Treasury Deposit Address (Arbitrum One USDC):
+                  </label>
+                  <div className="flex items-center justify-between bg-[#05070b] border border-slate-800 p-2 rounded-[3px]">
+                    <span className="font-mono text-[10.5px] text-blue-300 truncate max-w-[270px]">
+                      {TREASURY_WALLET}
+                    </span>
+                    <button
+                      onClick={copyTreasury}
+                      className="p-1 text-slate-400 hover:text-white transition"
+                      title="Copy address"
+                    >
+                      {copiedTreasury ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400">
+                    Arbitrum Transaction Hash:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="0x..."
+                      value={depositTxHash}
+                      onChange={(e) => setDepositTxHash(e.target.value)}
+                      className="flex-1 bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                    />
+                    <button
+                      onClick={handleVerifyDeposit}
+                      disabled={verifyingDeposit || !depositTxHash.trim()}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white rounded-[3px] font-bold tracking-wider text-[11px] transition"
+                    >
+                      {verifyingDeposit ? "Verifying..." : "Verify"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Status Message */}
+            {depositStatus && (
+              <div className="text-[10.5px] text-amber-300 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-[2px] leading-relaxed">
+                {depositStatus}
+              </div>
+            )}
 
             {/* Already have an account prompt */}
             <div className="pt-2 border-t border-slate-800/80 text-center">
@@ -1462,8 +1967,23 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Tabs: API Key vs Email */}
+            {/* Tabs: MetaMask vs API Key vs Email */}
             <div className="flex border-b border-slate-800">
+              <button
+                onClick={() => {
+                  setAuthTab("wallet");
+                  setAuthError(null);
+                  setAuthSuccess(null);
+                }}
+                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
+                  authTab === "wallet"
+                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>MetaMask</span>
+              </button>
               <button
                 onClick={() => {
                   setAuthTab("key");
@@ -1477,7 +1997,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }`}
               >
                 <KeyRound className="w-3.5 h-3.5" />
-                <span>API Key (Sovereign)</span>
+                <span>API Key</span>
               </button>
               <button
                 onClick={() => {
@@ -1492,7 +2012,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }`}
               >
                 <Mail className="w-3.5 h-3.5" />
-                <span>Email Magic Code</span>
+                <span>Email</span>
               </button>
             </div>
 
@@ -1505,6 +2025,47 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {authSuccess && (
               <div className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 p-2.5 rounded-[2px]">
                 {authSuccess}
+              </div>
+            )}
+
+            {/* Tab: MetaMask Web3 Login */}
+            {authTab === "wallet" && (
+              <div className="space-y-3 pt-1">
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Connect your Web3 MetaMask wallet. Teammates and verified Arbitrum depositors will immediately have their balance and PostgreSQL chat sessions restored.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (typeof window !== "undefined" && (window as any).ethereum) {
+                      try {
+                        setAuthError(null);
+                        setAuthSuccess("Connecting MetaMask...");
+                        const eth = (window as any).ethereum;
+                        const [account] = await eth.request({ method: "eth_requestAccounts" });
+                        if (account) {
+                          const res = await loginWithWallet(account);
+                          if (res.success) {
+                            setAuthSuccess(`Welcome! Connected wallet ${account.slice(0, 6)}...${account.slice(-4)}.`);
+                            setTimeout(() => setShowAuthModal(false), 1200);
+                          } else {
+                            setAuthError(res.error || "Wallet authentication failed.");
+                            setAuthSuccess(null);
+                          }
+                        }
+                      } catch (err: any) {
+                        setAuthError(err.message || "MetaMask connection was cancelled.");
+                        setAuthSuccess(null);
+                      }
+                    } else {
+                      setAuthError("MetaMask extension not detected in this browser.");
+                    }
+                  }}
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>Connect & Sign In via MetaMask</span>
+                </button>
               </div>
             )}
 

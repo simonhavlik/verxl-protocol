@@ -312,19 +312,34 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
   }
 
-  // 3. Model & Pricing Definition
+  // 3. Dynamic Real-time Official Model Pricing (UTC Off-Peak aware)
+  const nowUtc = new Date();
+  const utcDay = nowUtc.getUTCDay(); // 0 = Sunday, 6 = Saturday
+  const utcHour = nowUtc.getUTCHours();
+  const isWeekend = utcDay === 0 || utcDay === 6;
+  // DeepSeek Official Peak: Mon-Fri 01:00-04:00 and 06:00-10:00 UTC (all other times 50% off)
+  const isDeepSeekPeak = !isWeekend && ((utcHour >= 1 && utcHour < 4) || (utcHour >= 6 && utcHour < 10));
+
   let providerId = "bulbasaur-prague-01";
   let promptRatePerM = 0.05;
-  let completionRatePerM = 0.1;
+  let completionRatePerM = 0.10;
 
-  if (requestedModel.includes("mimo")) {
+  if (requestedModel.includes("mimo-v2.6-pro") || requestedModel.includes("mimo-2.6-pro")) {
     providerId = "xiao-mimo-bridge-01";
-    promptRatePerM = 0.1;
-    completionRatePerM = 0.2;
-  } else if (requestedModel.includes("deepseek")) {
-    providerId = "deepseek-v4-bridge-01";
+    promptRatePerM = 0.435;
+    completionRatePerM = 0.87;
+  } else if (requestedModel.includes("mimo")) {
+    providerId = "xiao-mimo-bridge-01";
     promptRatePerM = 0.14;
     completionRatePerM = 0.28;
+  } else if (requestedModel.includes("deepseek-v4-pro") || requestedModel.includes("deepseek-pro")) {
+    providerId = "deepseek-v4-bridge-01";
+    promptRatePerM = isDeepSeekPeak ? 1.32 : 0.66;
+    completionRatePerM = isDeepSeekPeak ? 3.96 : 1.98;
+  } else if (requestedModel.includes("deepseek")) {
+    providerId = "deepseek-v4-bridge-01";
+    promptRatePerM = isDeepSeekPeak ? 0.30 : 0.15;
+    completionRatePerM = isDeepSeekPeak ? 1.20 : 0.60;
   }
 
   // Institutional Protocol Clearing Headers

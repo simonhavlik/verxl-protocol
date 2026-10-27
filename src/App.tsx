@@ -88,7 +88,20 @@ export default function App() {
           method: "eth_requestAccounts",
         });
         if (accounts && accounts.length > 0) {
-          setWalletAddress(accounts[0]);
+          const account = accounts[0];
+          setWalletAddress(account);
+          try {
+            const res = await fetch("/api/auth/wallet-login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ wallet_address: account }),
+            });
+            const data = (await res.json()) as any;
+            if (data.success && data.token) {
+              localStorage.setItem("vrxl_auth_token", data.token);
+              window.dispatchEvent(new Event("storage"));
+            }
+          } catch {}
           return;
         }
       } catch (err) {

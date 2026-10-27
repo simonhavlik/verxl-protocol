@@ -28,6 +28,7 @@ interface AuthContextType {
   loading: boolean;
   loginWithToken: (newToken: string) => Promise<void>;
   loginWithApiKey: (apiKey: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithWallet: (walletAddress: string, signature?: string) => Promise<{ success: boolean; user?: any; error?: string }>;
   logout: () => void;
   refreshSession: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
@@ -131,6 +132,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithWallet = async (walletAddress: string, signature?: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/auth/wallet-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet_address: walletAddress, signature }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.success && data.token) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vrxl_auth_token", data.token);
+        }
+        setToken(data.token);
+        if (data.apiKey) {
+          setCustomApiKey(data.apiKey);
+        }
+        setUser(data.user);
+        await fetchSessionData(data.token);
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, error: data.error || "Wallet authentication failed" };
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || "Network error during wallet login" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("vrxl_auth_token");
@@ -157,6 +188,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         loginWithToken,
         loginWithApiKey,
+        loginWithWallet,
         logout,
         refreshSession,
         setUser,
