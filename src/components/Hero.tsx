@@ -693,7 +693,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
           </span>
           <span className="tape-item">
-            <b>COLLATERAL POOL</b> 142,000 $VRXL
+            <b>COLLATERAL POOL</b> 130,000 $VRXL
           </span>
           <span className="tape-item is-up">
             <b>CANARY ORACLE</b> 99.8% FIDELITY
@@ -722,7 +722,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
           </span>
           <span className="tape-item">
-            <b>COLLATERAL POOL</b> 142,000 $VRXL
+            <b>COLLATERAL POOL</b> 130,000 $VRXL
           </span>
           <span className="tape-item is-up">
             <b>CANARY ORACLE</b> 99.8% FIDELITY
@@ -806,7 +806,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   </tr>
                   <tr>
                     <th>Total Collateral Bonded</th>
-                    <td className="text-right text-blue-400 font-semibold">142,000 $VRXL</td>
+                    <td className="text-right text-blue-400 font-semibold">130,000 $VRXL</td>
                   </tr>
                   <tr>
                     <th>Supply Slashed & Burned</th>
@@ -914,7 +914,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate("registry")}
                   className="text-[9.5px] text-blue-400 hover:text-white flex items-center gap-1 transition"
                 >
-                  <span>View All 7 Nodes</span>
+                  <span>View Registry & Register Node</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
