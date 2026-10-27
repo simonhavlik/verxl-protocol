@@ -232,12 +232,19 @@ export const Chat: React.FC = () => {
     }
   }, [inputPrompt]);
 
-  // Auto-scroll messages during streaming
+  // Auto-scroll strictly the internal messages scroll area during streaming (prevents outer window/page jumping)
   useEffect(() => {
-    if (messagesEndRef.current && isStreaming) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (scrollContainerRef.current && isStreaming) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [streamingContent, streamingReasoning, isStreaming]);
+
+  // Scroll internal messages area to bottom on session switch or new user message
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [activeSessionId, activeSession?.messages.length]);
 
   // Create New Chat Session
   const createNewSession = () => {
@@ -823,7 +830,7 @@ export const Chat: React.FC = () => {
         {/* Messages Scroll Area */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 select-text scroll-smooth"
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 select-text"
         >
           {/* Empty Conversation Welcome Screen */}
           {activeSession.messages.length === 0 && !isStreaming ? (
