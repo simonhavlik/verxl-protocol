@@ -11,49 +11,23 @@ interface TabPalette {
   ambient: string;
 }
 
+const MINT_PALETTE: TabPalette = {
+  orb1: "rgba(184, 246, 221, 0.10)", // mint
+  orb2: "rgba(214, 244, 234, 0.06)", // ice
+  orb3: "rgba(120, 140, 150, 0.08)", // steel
+  ambient: "rgba(184, 246, 221, 0.02)",
+};
+
 const TAB_PALETTES: Record<string, TabPalette> = {
-  playground: {
-    orb1: "rgba(59, 130, 246, 0.28)",   // Electric Cobalt
-    orb2: "rgba(6, 182, 212, 0.22)",    // Cyan
-    orb3: "rgba(99, 102, 241, 0.20)",   // Indigo
-    ambient: "rgba(59, 130, 246, 0.04)",
-  },
-  registry: {
-    orb1: "rgba(14, 165, 233, 0.26)",   // Sky Blue
-    orb2: "rgba(16, 185, 129, 0.20)",   // Emerald Compute
-    orb3: "rgba(37, 99, 235, 0.22)",    // Deep Blue
-    ambient: "rgba(14, 165, 233, 0.04)",
-  },
-  oracle: {
-    orb1: "rgba(244, 63, 94, 0.22)",    // Crimson Slashing
-    orb2: "rgba(168, 85, 247, 0.22)",   // Purple Nash
-    orb3: "rgba(245, 158, 11, 0.18)",   // Amber Alert
-    ambient: "rgba(244, 63, 94, 0.04)",
-  },
-  whitepaper: {
-    orb1: "rgba(71, 85, 105, 0.30)",    // Slate Institutional
-    orb2: "rgba(29, 78, 216, 0.22)",    // Academic Navy
-    orb3: "rgba(6, 182, 212, 0.16)",    // Ice Cyan
-    ambient: "rgba(59, 130, 246, 0.03)",
-  },
-  governance: {
-    orb1: "rgba(16, 185, 129, 0.24)",   // Aragon Emerald
-    orb2: "rgba(217, 119, 6, 0.20)",    // Treasury Amber
-    orb3: "rgba(79, 70, 229, 0.18)",    // Sovereign Indigo
-    ambient: "rgba(16, 185, 129, 0.04)",
-  },
-  vision: {
-    orb1: "rgba(59, 130, 246, 0.28)",   // Electric Blue
-    orb2: "rgba(139, 92, 246, 0.22)",   // Vision Purple
-    orb3: "rgba(6, 182, 212, 0.20)",    // Horizon Cyan
-    ambient: "rgba(99, 102, 241, 0.04)",
-  },
-  console: {
-    orb1: "rgba(59, 130, 246, 0.26)",   // Electric Blue
-    orb2: "rgba(16, 185, 129, 0.20)",   // Settlement Emerald
-    orb3: "rgba(147, 51, 234, 0.20)",   // Arbitrum Purple
-    ambient: "rgba(59, 130, 246, 0.03)",
-  },
+  playground: MINT_PALETTE,
+  chat: MINT_PALETTE,
+  api: MINT_PALETTE,
+  registry: MINT_PALETTE,
+  oracle: MINT_PALETTE,
+  whitepaper: MINT_PALETTE,
+  governance: MINT_PALETTE,
+  vision: MINT_PALETTE,
+  console: MINT_PALETTE,
 };
 
 export const ShmackBackground: React.FC<ShmackBackgroundProps> = ({ activeTab }) => {
