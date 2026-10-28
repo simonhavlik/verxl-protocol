@@ -40,6 +40,8 @@ import {
   Server,
   Lock,
   Globe,
+  Paperclip,
+  FileText,
   Pencil,
 } from "lucide-react";
 
@@ -277,6 +279,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [cryptoError, setCryptoError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [attachments, setAttachments] = useState<{ name: string; text: string; kind: string }[]>([]);
+  const [isParsing, setIsParsing] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchToolEnabled, setSearchToolEnabled] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_search_tool") === "1";
@@ -1055,13 +1062,57 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     };
   };
 
+  const handleFiles = async (files: File[]) => {
+    if (!files.length) return;
+    setIsParsing(true);
+    setAttachmentError(null);
+    for (const file of files) {
+      try {
+        if (file.size > 10 * 1024 * 1024) throw new Error(`${file.name} is over 10 MB`);
+        let text = "";
+        if (file.type.startsWith("image/")) {
+          const { createWorker } = await import("tesseract.js");
+          const worker = await createWorker("eng");
+          const { data } = await worker.recognize(file);
+          text = data.text;
+          await worker.terminate();
+        } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+          const pdfjs = await import("pdfjs-dist");
+          // @ts-ignore Vite asset URL import
+          const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+          pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+          const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+          for (let i = 1; i <= Math.min(doc.numPages, 25); i++) {
+            const page = await doc.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map((x: any) => x.str).join(" ") + "\n";
+          }
+        } else if (file.name.toLowerCase().endsWith(".docx")) {
+          const mammoth = await import("mammoth");
+          const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+          text = result.value;
+        } else {
+          text = await file.text();
+        }
+        text = text.replace(/\s+/g, " ").trim().slice(0, 40000);
+        if (!text) throw new Error(`${file.name}: no extractable text (scanned PDFs need OCR)`);
+        setAttachments((prev) => [...prev, { name: file.name, text, kind: file.type }]);
+      } catch (err: any) {
+        setAttachmentError(err?.message || `Could not parse ${file.name}`);
+      }
+    }
+    setIsParsing(false);
+  };
+
   const handleSendMessage = async (
     promptOverride?: string,
     options?: { skipUserAppend?: boolean; session?: ChatSession }
   ) => {
     const targetSession = options?.session || activeSession;
-    const textToSend = (promptOverride || inputPrompt).trim();
-    if (!textToSend || isStreaming) return;
+    const promptText = (promptOverride || inputPrompt).trim();
+    if (!promptText || isStreaming || isParsing) return;
+    const attachmentText = attachments.map((a) => `[File: ${a.name}]\n${a.text}`).join("\n\n");
+    const textToSend = attachmentText ? `${promptText}\n\nAttachments:\n${attachmentText}` : promptText;
 
     // Chat uses the signed-in session only. API keys are for external endpoints.
     const authorizationHeader = authToken ? `Bearer ${authToken}` : "";
@@ -1089,7 +1140,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       : [...targetSession.messages, userMessage as ChatMessage];
     let newTitle = targetSession.title;
     if (targetSession.messages.length === 0) {
-      newTitle = textToSend.slice(0, 32) + (textToSend.length > 32 ? "..." : "");
+      newTitle = promptText.slice(0, 32) + (promptText.length > 32 ? "..." : "");
     }
 
     const currentModel = targetSession.model || "qwen3.5-4b-uncensored-32k";
@@ -1116,6 +1167,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     syncSessionToDb(updatedUserSession);
 
     setInputPrompt("");
+    setAttachments([]);
     setStreamingSessionId(targetSession.id);
     setIsStreaming(true);
     setStreamingContent("");
@@ -1561,7 +1613,26 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="h-[calc(100vh-105px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative">
+    <div
+      className="h-[calc(100vh-105px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragActive(true);
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget === e.target) setDragActive(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragActive(false);
+        void handleFiles(Array.from(e.dataTransfer.files));
+      }}
+    >
+      {dragActive && (
+        <div className="absolute inset-0 z-50 bg-blue-500/10 border-2 border-dashed border-blue-400 flex items-center justify-center pointer-events-none">
+          <div className="text-sm font-mono text-blue-300">Drop files to attach</div>
+        </div>
+      )}
       {/* ============================================================== */}
       {/* 1. LEFT SIDEBAR: CONVERSATION HISTORY & ACCOUNT STATUS         */}
       {/* ============================================================== */}
@@ -2399,6 +2470,26 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             )}
 
+            {(attachments.length > 0 || isParsing || attachmentError) && (
+              <div className="flex flex-wrap items-center gap-1.5 px-1 text-[9px] font-mono">
+                {attachments.map((a, i) => (
+                  <span key={`${a.name}_${i}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-slate-700 bg-[#05070b] text-slate-300">
+                    <FileText className="w-3 h-3 text-blue-400" />
+                    {a.name}
+                    <button
+                      onClick={() => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-slate-500 hover:text-rose-400"
+                      title="Remove attachment"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {isParsing && <span className="text-amber-400">Parsing file...</span>}
+                {attachmentError && <span className="text-rose-400">{attachmentError}</span>}
+              </div>
+            )}
+
             {/* Input Form */}
             <div className="relative flex items-end gap-2 bg-[#05070b] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
               <textarea
@@ -2416,6 +2507,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 disabled={isStreaming}
                 className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none resize-none font-mono py-1 px-1.5 leading-relaxed max-h-44"
               />
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  void handleFiles(Array.from(e.target.files || []));
+                  e.target.value = "";
+                }}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 rounded-[3px] border border-slate-800 bg-[#05070b] text-slate-400 hover:text-white transition shrink-0"
+                title="Attach files"
+                disabled={isParsing}
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
 
               <button
                 onClick={() => setSearchEnabled((v) => !v)}
