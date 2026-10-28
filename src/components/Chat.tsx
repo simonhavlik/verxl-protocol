@@ -85,6 +85,30 @@ interface ChatSession {
   updatedAt: number;
 }
 
+const CHAT_STORAGE_KEY = "vrxl_chat_sessions_v2";
+
+const readLocalChatSessions = (): ChatSession[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((s: any) => s && typeof s.id === "string" && Array.isArray(s.messages))
+      .map((s: any) => ({
+        id: s.id,
+        title: typeof s.title === "string" ? s.title : "New Chat",
+        model: typeof s.model === "string" ? s.model : "qwen3.5-4b-uncensored-32k",
+        messages: s.messages,
+        createdAt: Number(s.createdAt) || Date.now(),
+        updatedAt: Number(s.updatedAt) || Date.now(),
+      }));
+  } catch {
+    return [];
+  }
+};
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -223,6 +247,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [chatKey, setChatKey] = useState<CryptoKey | null>(null);
   const [cryptoStatus, setCryptoStatus] = useState<"locked" | "unlocking" | "ready" | "unavailable">("locked");
   const [cryptoError, setCryptoError] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
   const createBlankSession = (): ChatSession => ({
@@ -234,9 +259,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     updatedAt: Date.now(),
   });
 
-  const [sessions, setSessions] = useState<ChatSession[]>([createBlankSession()]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    const local = readLocalChatSessions();
+    return local.length > 0 ? local : [createBlankSession()];
+  });
   const [activeSessionId, setActiveSessionId] = useState<string>(sessions[0].id);
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  const sessionsRef = useRef(sessions);
+  sessionsRef.current = sessions;
 
   // Model Selector Search, Category Filter & Recently Used
   const [modelSearch, setModelSearch] = useState("");
@@ -320,13 +350,74 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }
 
       if (decrypted.length > 0) {
-        setSessions(decrypted);
-        setActiveSessionId(decrypted[0].id);
+        const local = sessionsRef.current;
+        const byId = new Map(local.map((s) => [s.id, s]));
+        for (const server of decrypted) {
+          const cur = byId.get(server.id);
+          if (!cur) {
+            byId.set(server.id, server);
+            continue;
+          }
+          if (cur.messages.length > 0 && server.messages.length === 0) continue;
+          if (server.updatedAt >= cur.updatedAt) byId.set(server.id, server);
+        }
+        const merged = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
+        setSessions(merged);
+        setActiveSessionId((prev) => (merged.some((s) => s.id === prev) ? prev : merged[0].id));
       }
     } catch (err) {
       console.warn("Failed to load encrypted conversations:", err);
     }
   };
+
+  useEffect(() => {
+    if (!authToken || !user) return;
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(sessions));
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions, authToken, user?.id]);
+
+  const syncSessionToDb = async (sess: ChatSession, keyOverride?: CryptoKey) => {
+    const key = keyOverride || chatKey;
+    if (!authToken || !user || !key) return;
+    const wallet = String((user as any)?.wallet_address || "");
+    if (!wallet) return;
+    try {
+      const ciphertext = await encryptChatPayload(
+        { title: sess.title, model: sess.model, messages: sess.messages },
+        key
+      );
+      const res = await fetch("/api/chat/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ id: sess.id, ciphertext, keyId: wallet.toLowerCase() }),
+      });
+      if (!res.ok) {
+        setSyncError(`Cloud save failed (HTTP ${res.status}). Messages stay on this device.`);
+      } else {
+        setSyncError(null);
+      }
+    } catch (err) {
+      setSyncError("Cloud save failed. Messages stay on this device.");
+      console.warn("Failed to sync encrypted conversation:", err);
+    }
+  };
+
+  const syncLocalSessions = async (key: CryptoKey) => {
+    const localBefore = sessionsRef.current;
+    await loadEncryptedConversations(key);
+    for (const sess of localBefore) {
+      if (sess.messages.length > 0 || sess.title !== "New Chat") {
+        await syncSessionToDb(sess, key);
+      }
+    }
+  };
+
+
 
   const unlockChatSync = async () => {
     const wallet = String((user as any)?.wallet_address || "");
@@ -347,7 +438,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       const key = await deriveChatKey(wallet, user.id);
       setChatKey(key);
       setCryptoStatus("ready");
-      await loadEncryptedConversations(key);
+      await syncLocalSessions(key);
     } catch (err: any) {
       setChatKey(null);
       setCryptoStatus("locked");
@@ -356,14 +447,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   useEffect(() => {
-    if (!authToken || !user) {
+    if (!authToken) {
       clearChatKeyCache();
       setChatKey(null);
       setCryptoStatus("locked");
       setCryptoError(null);
       if (typeof window !== "undefined") {
         try {
-          localStorage.removeItem("vrxl_chat_sessions_v2");
+          localStorage.removeItem(CHAT_STORAGE_KEY);
         } catch {}
       }
       const blank = createBlankSession();
@@ -371,6 +462,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       setActiveSessionId(blank.id);
       return;
     }
+    if (!user) return;
 
     const wallet = String((user as any)?.wallet_address || "");
     if (!wallet) {
@@ -391,7 +483,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       setChatKey(cached);
       setCryptoStatus("ready");
       setCryptoError(null);
-      void loadEncryptedConversations(cached);
+      void syncLocalSessions(cached);
     } else {
       // Login authenticates the account; the chat key is a separate wallet
       // signature. Request it immediately instead of presenting a dead lock.
@@ -399,28 +491,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken, user?.id, (user as any)?.wallet_address]);
-
-  const syncSessionToDb = async (sess: ChatSession) => {
-    if (!authToken || !user || !chatKey) return;
-    const wallet = String((user as any)?.wallet_address || "");
-    if (!wallet) return;
-    try {
-      const ciphertext = await encryptChatPayload(
-        { title: sess.title, model: sess.model, messages: sess.messages },
-        chatKey
-      );
-      await fetch("/api/chat/conversations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ id: sess.id, ciphertext, keyId: wallet.toLowerCase() }),
-      });
-    } catch (err) {
-      console.warn("Failed to sync encrypted conversation:", err);
-    }
-  };
 
   const handleAuthModalLoginWithApiKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1191,8 +1261,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               )}
               {cryptoStatus === "locked" && !cryptoError && (
                 <div className="text-[8px] text-slate-500 mt-1 leading-snug">
-                  Login authorizes the account. The chat key comes from a separate wallet signature.
+                  Login authorizes the account. Messages stay on this device until a wallet signature
+                  enables encrypted sync.
                 </div>
+              )}
+              {syncError && (
+                <div className="text-[8.5px] text-rose-300 mt-1 leading-snug">{syncError}</div>
               )}
             </div>
           )}
