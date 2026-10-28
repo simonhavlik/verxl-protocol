@@ -106,6 +106,11 @@ interface ChatSession {
   model: string;
   think?: ThinkLevel;
   searchBudget?: number;
+  temperature?: number;
+  searchTool?: boolean;
+  searchProvider?: string;
+  searchBaseUrl?: string;
+  searchKey?: string;
   compaction?: { summary: string; throughId: string; at: number };
   messages: ChatMessage[];
   createdAt: number;
@@ -276,6 +281,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_search_tool") === "1";
   });
+  const [temperature, setTemperature] = useState(0.3);
   const [searchProvider, setSearchProvider] = useState(() => {
     if (typeof window === "undefined") return "firecrawl";
     return localStorage.getItem("vrxl_search_provider") || "firecrawl";
@@ -408,6 +414,19 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     : currentModelConfig.contextTokens - 4096 - compactSafety;
   const sessionsRef = useRef(sessions);
   sessionsRef.current = sessions;
+
+  useEffect(() => {
+    setTemperature(activeSession.temperature ?? 0.3);
+    setSearchToolEnabled(
+      activeSession.searchTool ?? localStorage.getItem("vrxl_search_tool") === "1"
+    );
+    setSearchProvider(
+      activeSession.searchProvider ?? localStorage.getItem("vrxl_search_provider") ?? "firecrawl"
+    );
+    setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
+    setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSessionId]);
 
   // Model Selector Search, Category Filter & Recently Used
   const [modelSearch, setModelSearch] = useState("");
@@ -1248,7 +1267,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           model: currentModel,
           messages: apiMessages,
           stream: true,
-          temperature: 0.3,
+          temperature: targetSession.temperature ?? 0.3,
           max_tokens: maxOutputTokens,
           reasoning_effort: thinkLevel === "off" ? "none" : thinkLevel,
         }),
@@ -1422,6 +1441,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       abortControllerRef.current.abort();
     }
     setIsStreaming(false);
+  };
+
+  const saveChatSettings = (patch: Partial<ChatSession>) => {
+    const updated = { ...activeSession, ...patch, updatedAt: Date.now() };
+    setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+    syncSessionToDb(updated);
   };
 
   // Copy message text
@@ -2834,6 +2859,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       const next = !searchToolEnabled;
                       setSearchToolEnabled(next);
                       localStorage.setItem("vrxl_search_tool", next ? "1" : "0");
+                      saveChatSettings({ searchTool: next });
                     }}
                     aria-pressed={searchToolEnabled}
                     className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
@@ -2846,6 +2872,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   </button>
                 </div>
               )}
+              <div className="space-y-1 pt-2 border-t border-slate-800">
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Temperature</span>
+                  <span className="font-mono text-blue-400">{temperature.toFixed(2)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={temperature}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setTemperature(v);
+                    saveChatSettings({ temperature: v });
+                  }}
+                  className="w-full accent-blue-500 bg-slate-800 h-1 cursor-pointer"
+                />
+              </div>
               <div className="space-y-1.5 pt-2 border-t border-slate-800">
                 <div className="text-[10px] uppercase tracking-wider text-slate-400">Search provider</div>
                 <select
@@ -2853,6 +2898,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   onChange={(e) => {
                     setSearchProvider(e.target.value);
                     localStorage.setItem("vrxl_search_provider", e.target.value);
+                    saveChatSettings({ searchProvider: e.target.value });
                   }}
                   className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                 >
@@ -2869,6 +2915,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     onChange={(e) => {
                       setSearchKey(e.target.value);
                       localStorage.setItem("vrxl_search_key", e.target.value);
+                      saveChatSettings({ searchKey: e.target.value });
                     }}
                     className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                   />
@@ -2881,6 +2928,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     onChange={(e) => {
                       setSearchBaseUrl(e.target.value);
                       localStorage.setItem("vrxl_search_base", e.target.value);
+                      saveChatSettings({ searchBaseUrl: e.target.value });
                     }}
                     className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                   />
