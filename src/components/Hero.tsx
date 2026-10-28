@@ -12,17 +12,23 @@ import {
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 import { Playground } from "./Playground";
+import { MarketRail } from "./MarketRail";
 
 interface HeroProps {
   onNavigate: (tab: string) => void;
 }
+
+const HARDWARE_SHORT: Record<string, string> = {
+  "bulbasaur-prague-1": "Vulkan GPU",
+  "xiaomi-bridge-1": "Mi tensor cluster",
+  "deepseek-bridge-1": "MoE engine",
+};
 
 export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Walkthrough demo states
-  const [activeTabIdx, setActiveTabIdx] = useState(0);
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -33,7 +39,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   // Live token stream animation state in Stage 3
   const [streamedText, setStreamedText] = useState("");
   const fullSampleText =
-    "Inference stream routed via Cloudflare Edge to Prague Tier-3 Cluster (8x NVIDIA H100 SXM5). Token fidelity verified against FP16 ground truth with 99.8% precision SLA. Protocol fee settled: 50 bps.";
+    "Stream open. Cloudflare Edge routed the request to the Prague bare-metal Vulkan host. Qwen 3.5 4B, 32k resident context, FP16 linear decode at 52.4 TPS. Seed-42 canary matched at 99.8% fidelity. 50 bps clearing fee booked to the Aragon vault.";
 
   const handleTryPlayground = () => {
     const el = document.getElementById("live-playground");
@@ -46,24 +52,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
   const stages = [
     {
-      k: "Step 01 · Ingest",
+      tab: "01 Ingest",
       t: "Client Payload Ingest",
-      desc: "OpenAI SDK drop-in request received via /v1/chat/completions",
+      desc: "OpenAI SDK request accepted on /v1/chat/completions",
     },
     {
-      k: "Step 02 · Route",
+      tab: "02 Route",
       t: "Cloudflare Edge Dispatch",
-      desc: "Stateless P50 latency routing to optimal independent GPU host",
+      desc: "Stateless dispatch to the lowest-latency verified host",
     },
     {
-      k: "Step 03 · Stream",
+      tab: "03 Stream",
       t: "Hardware Stream Execution",
-      desc: "FP16 weight streaming directly to client with 48ms TTFT",
+      desc: "FP16 decode streamed to the client at 38ms TTFT",
     },
     {
-      k: "Step 04 · Clear",
+      tab: "04 Clear",
       t: "Canary Oracle & Clearing",
-      desc: "Seed-42 token distance verified & 50 bps fee deposited to Aragon vault",
+      desc: "Seed-42 distance checked, 50 bps fee booked to the vault",
     },
   ];
 
@@ -380,9 +386,10 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
             {/* Subtitle */}
             <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-normal max-w-xl">
-              Eliminate centralized SaaS rent extraction. While commercial aggregators mark up raw compute by{" "}
-              <strong className="text-rose-400 font-mono">840–1,040 bps</strong>, Verxl routes inference
-              statelessly to independent GPU clusters with verifiable cryptographic SLAs on Ethereum Sepolia testnet.
+              Commercial aggregators extract{" "}
+              <strong className="text-rose-400 font-mono">840 to 1,040 bps</strong> per inference dollar. Verxl
+              clears at 50 bps, verifies every endpoint with seed-42 probes and pays hosts 99.5% in USDC on
+              Arbitrum.
             </p>
 
             {/* Primary Action Buttons */}
@@ -400,7 +407,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </span>
 
                 <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
-                <span>Try Free Playground Demo</span>
+                <span>Run Live Inference</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
@@ -421,52 +428,36 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 <span>Developer API</span>
               </button>
 
-              <button
-                onClick={() => onNavigate("whitepaper")}
-                className="hero-btn hero-btn--ghost !py-2.5 !px-3.5 hidden sm:inline-flex"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Whitepaper</span>
-              </button>
             </div>
 
             {/* Institutional Stat Metrics Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-0 pt-2.5 border-t border-slate-800/80 font-mono">
-              <div className="pr-2">
-                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
-                  50 <span className="text-[10px] text-blue-400 font-normal">bps</span>
+              {[
+                { value: "50", unit: "bps", label: "Protocol take", tone: "text-blue-400" },
+                { value: "38", unit: "ms", label: "P50 TTFT", tone: "text-blue-400" },
+                { value: "99.8", unit: "%", label: "Oracle fidelity", tone: "text-emerald-400" },
+                { value: "3", unit: "models", label: "2 bridges + 1 host", tone: "text-blue-400" },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className={
+                    [
+                      "pr-2",
+                      "pl-2 border-l border-slate-800",
+                      "pr-2 pt-2 border-t border-slate-800 sm:border-l sm:border-t-0 sm:pt-0",
+                      "pl-2 pt-2 border-t border-l border-slate-800 sm:border-t-0 sm:pt-0",
+                    ][i]
+                  }
+                >
+                  <div className="text-base sm:text-xl font-bold text-white tracking-tight">
+                    {stat.value}{" "}
+                    <span className={`text-[10px] font-normal ${stat.tone}`}>{stat.unit}</span>
+                  </div>
+                  <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  Protocol Take
-                </div>
-              </div>
-
-              <div className="pl-2 sm:px-2 border-l border-slate-800">
-                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
-                  48 <span className="text-[10px] text-blue-400 font-normal">ms</span>
-                </div>
-                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  P50 Latency
-                </div>
-              </div>
-
-              <div className="pr-2 sm:px-2 sm:border-l border-slate-800 border-t sm:border-t-0 pt-2 sm:pt-0">
-                <div className="text-base sm:text-xl font-bold text-white tracking-tight">
-                  142<span className="text-[10px] text-slate-400 font-normal">k</span>
-                </div>
-                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  $VRXL Bonded
-                </div>
-              </div>
-
-              <div className="pl-2 sm:pl-2 border-l border-slate-800 border-t sm:border-t-0 pt-2 sm:pt-0">
-                <div className="text-base sm:text-xl font-bold text-emerald-400 tracking-tight">
-                  100%
-                </div>
-                <div className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">
-                  Aragon OSx (Sepolia)
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -495,43 +486,25 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Product Navigation Tabs */}
-              <div className="demo-tabs" role="tablist">
-                {["Inference Router", "Compute Fleet", "Quality Oracle", "DAO Clearing"].map(
-                  (label, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setActiveTabIdx(idx);
-                        setActiveStepIdx(idx);
-                        setStepProgress(0);
-                      }}
-                      className={`d-tab ${activeTabIdx === idx ? "is-active" : ""}`}
-                    >
-                      {label}
-                    </button>
-                  )
-                )}
-              </div>
-
-              {/* 4-Step Progress Bar */}
-              <div className="demo-steps">
-                {stages.map((st, i) => (
+              {/* Stage rail: single selector, progress fills the active stage */}
+              <div className="demo-tabs" role="tablist" aria-label="Inference clearing walkthrough">
+                {stages.map((stage, idx) => (
                   <button
-                    key={i}
+                    key={stage.tab}
+                    role="tab"
+                    aria-selected={activeStepIdx === idx}
                     onClick={() => {
-                      setActiveStepIdx(i);
-                      setActiveTabIdx(i);
+                      setActiveStepIdx(idx);
                       setStepProgress(0);
                     }}
-                    className={`step-item ${activeStepIdx === i ? "is-active" : ""}`}
+                    className={`d-tab ${activeStepIdx === idx ? "is-active" : ""}`}
                   >
-                    <span className="n">0{i + 1}</span>
-                    <span className="t">{st.t.split(" ")[0]}</span>
-                    {activeStepIdx === i && (
-                      <div
-                        className="fill-bar"
-                        style={{ width: `${stepProgress}%` }}
+                    {stage.tab}
+                    {activeStepIdx === idx && (
+                      <span
+                        className="d-tab__fill"
+                        style={{ width: `${Math.min(100, stepProgress)}%` }}
+                        aria-hidden="true"
                       />
                     )}
                   </button>
@@ -539,7 +512,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               </div>
 
               {/* Stage Body Displays */}
-              <div className="p-4 sm:p-5 min-h-[280px] flex flex-col justify-between font-mono text-xs">
+              <div className="p-4 sm:p-5 min-h-[252px] flex flex-col justify-between font-mono text-xs">
                 {/* Stage 01: Ingest */}
                 {activeStepIdx === 0 && (
                   <div className="space-y-3">
@@ -577,8 +550,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                         <span className="text-rose-400 line-through">$0.01273 USD</span>
                       </div>
                       <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800/60 font-semibold">
-                        <span className="text-slate-300">Cost Savings to Consumer:</span>
-                        <span className="text-blue-400">-94.7% Compressed</span>
+                        <span className="text-slate-300">Cost compression:</span>
+                        <span className="text-blue-400">-94.7%</span>
                       </div>
                     </div>
                   </div>
@@ -603,11 +576,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                             Prague Bare-Metal Cluster 01 [SELECTED]
                           </div>
                           <div className="text-slate-400 text-[10px]">
-                            Bulbasaur Vulkan Host • Bare-Metal · Zero-Logging
+                            Bulbasaur Vulkan Host · Bare-Metal · Zero-Logging
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-emerald-400 font-bold">18ms TTFT</div>
+                          <div className="text-emerald-400 font-bold">38ms TTFT</div>
                           <div className="text-[10px] text-slate-400">52.4 TPS</div>
                         </div>
                       </div>
@@ -616,11 +589,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                         <div>
                           <div className="text-slate-300">DeepSeek Official Bridge</div>
                           <div className="text-slate-400 text-[10px]">
-                            Hangzhou & Tokyo Edge • Bridge · Upstream Logged
+                            Hangzhou & Tokyo Edge · Bridge · Upstream Logged
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-slate-300 font-bold">28ms TTFT</div>
+                          <div className="text-slate-300 font-bold">92ms TTFT</div>
                           <div className="text-[10px] text-slate-400">135 TPS</div>
                         </div>
                       </div>
@@ -629,11 +602,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                         <div>
                           <div className="text-slate-300">Xiaomi MiMo Official Bridge</div>
                           <div className="text-slate-400 text-[10px]">
-                            Frankfurt Cloud Edge • Bridge · Upstream Logged
+                            Frankfurt Cloud Edge · Bridge · Upstream Logged
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-slate-300 font-bold">22ms TTFT</div>
+                          <div className="text-slate-300 font-bold">85ms TTFT</div>
                           <div className="text-[10px] text-slate-400">110 TPS</div>
                         </div>
                       </div>
@@ -650,7 +623,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-[10px] text-emerald-400 font-bold">84.5 TPS</span>
+                        <span className="text-[10px] text-emerald-400 font-bold">52.4 TPS</span>
                       </div>
                     </div>
 
@@ -660,7 +633,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     </div>
 
                     <div className="flex justify-between items-center text-[10px] text-slate-400 pt-1">
-                      <span>TTFT: <strong className="text-white">46ms</strong></span>
+                      <span>TTFT: <strong className="text-white">38ms</strong></span>
                       <span>Output: <strong className="text-white">FP16 Linear</strong></span>
                       <span>Buffer: <strong className="text-emerald-400">Zero Custody</strong></span>
                     </div>
@@ -730,99 +703,36 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Live Financial/Protocol Ticker Tape along the bottom */}
-      <div className="hero-tape">
-        <div className="tape-track">
-          <span className="tape-item is-blue">
-            <b>BULBASAUR-QWEN-3.5</b> 52.4 TPS (BARE-METAL)
-          </span>
-          <span className="tape-item is-up">
-            <b>DEEPSEEK-V4.1-FLASH</b> 135 TPS (OFFICIAL BRIDGE)
-          </span>
-          <span className="tape-item is-blue">
-            <b>MIMO-V2.6-FLASH</b> 110 TPS (OFFICIAL BRIDGE)
-          </span>
-          <span className="tape-item">
-            <b>PRAGUE-01 HOST</b> Dedicated Bare-Metal Vulkan
-          </span>
-          <span className="tape-item is-up">
-            <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
-          </span>
-          <span className="tape-item is-blue">
-            <b>PROTOCOL CLEARING</b> 50 BPS (-94.7%)
-          </span>
-          <span className="tape-item is-up">
-            <b>CANARY ORACLE</b> 99.8% FIDELITY (seed=42)
-          </span>
-          <span className="tape-item">
-            <b>DATA POLICY</b> Volatile RAM · Zero Prompt Storage
-          </span>
-          <span className="tape-item is-blue">
-            <b>ETHEREUM SEPOLIA</b> VIP-1 ACTIVE
-          </span>
-
-          {/* Repeat for seamless infinite marquee loop */}
-          <span className="tape-item is-blue">
-            <b>BULBASAUR-QWEN-3.5</b> 52.4 TPS (BARE-METAL)
-          </span>
-          <span className="tape-item is-up">
-            <b>DEEPSEEK-V4.1-FLASH</b> 135 TPS (OFFICIAL BRIDGE)
-          </span>
-          <span className="tape-item is-blue">
-            <b>MIMO-V2.6-FLASH</b> 110 TPS (OFFICIAL BRIDGE)
-          </span>
-          <span className="tape-item">
-            <b>PRAGUE-01 HOST</b> Dedicated Bare-Metal Vulkan
-          </span>
-          <span className="tape-item is-up">
-            <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
-          </span>
-          <span className="tape-item is-blue">
-            <b>PROTOCOL CLEARING</b> 50 BPS (-94.7%)
-          </span>
-          <span className="tape-item is-up">
-            <b>CANARY ORACLE</b> 99.8% FIDELITY (seed=42)
-          </span>
-          <span className="tape-item">
-            <b>DATA POLICY</b> Volatile RAM · Zero Prompt Storage
-          </span>
-          <span className="tape-item is-blue">
-            <b>ETHEREUM SEPOLIA</b> VIP-1 ACTIVE
-          </span>
-        </div>
-      </div>
-
       {/* =========================================================================
-          Live Interactive Terminal Playground (Embedded on Homepage)
-          Try inference immediately with zero sign-up required
+          Live Inference Console (embedded, dense variant of the Playground)
+          Every control is wired to the real /v1/chat/completions endpoint.
          ========================================================================= */}
       <section id="live-playground" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full scroll-mt-14">
-        <div className="border border-blue-500/30 bg-[#080c14]/90 backdrop-blur-md rounded-[4px] p-4 sm:p-6 shadow-2xl shadow-blue-950/50 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/20 pb-3 font-mono">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <h2 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>Interactive Inference Playground</span>
-                <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9.5px] font-normal">
-                  Live Prague Node
-                </span>
+        <div className="border border-blue-500/30 bg-[#080c14]/90 backdrop-blur-md rounded-[4px] shadow-2xl shadow-blue-950/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-blue-500/20 font-mono">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 bg-emerald-400 animate-pulse" />
+              <h2 className="text-[11px] sm:text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">
+                Live inference clearing
               </h2>
-            </div>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="text-[10.5px] text-slate-400 hidden md:inline">
-                Test prompts in real time with 50 bps protocol clearing
+              <span className="hidden sm:inline px-1.5 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[9px] uppercase tracking-wider">
+                Multi-node
               </span>
+            </div>
+            <div className="flex items-center gap-3 text-[9.5px] text-slate-400">
+              <span className="hidden md:inline">OpenAI SDK drop-in · 3 models · 50 bps clearing</span>
               <button
                 onClick={() => onNavigate("playground")}
-                className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold text-[11px] uppercase tracking-wider transition"
+                className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold uppercase tracking-wider transition shrink-0"
               >
-                <span>Full Terminal View</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Full playground</span>
+                <ArrowRight className="w-3 h-3" />
               </button>
             </div>
           </div>
-
-          <Playground onNavigate={onNavigate} />
+          <div className="p-3 sm:p-4">
+            <Playground variant="compact" onNavigate={onNavigate} />
+          </div>
         </div>
       </section>
 
@@ -836,7 +746,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
             <h2 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
-              Verxl Protocol Clearinghouse · Live Telemetry & Ledger
+              Verxl Protocol Clearinghouse · Live Clearing Telemetry
             </h2>
             <span className="hidden sm:inline px-1.5 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[9px] text-blue-400">
               SEPOLIA PILOT
@@ -854,7 +764,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               0xf0e5...111a
             </a>
             <span className="text-slate-700">|</span>
-            <span className="text-emerald-400 font-semibold">100% Agency</span>
+            <span className="text-emerald-400 font-semibold">Non-custodial</span>
           </div>
         </div>
 
@@ -875,52 +785,52 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <table className="dense-table">
                 <tbody>
                   <tr>
-                    <th>Protocol Agency Fee</th>
+                    <th>Protocol switch fee</th>
                     <td className="text-right text-emerald-400 font-bold">50 bps (0.50%)</td>
                   </tr>
                   <tr>
-                    <th>Centralized SaaS Rent</th>
-                    <td className="text-right text-rose-400 line-through">840 – 1,040 bps</td>
+                    <th>Incumbent fee drag</th>
+                    <td className="text-right text-rose-400 line-through">840 to 1,040 bps</td>
                   </tr>
                   <tr>
-                    <th>Median TTFT Latency</th>
-                    <td className="text-right text-white">46 ms</td>
+                    <th>Median TTFT</th>
+                    <td className="text-right text-white">38 ms</td>
                   </tr>
                   <tr>
-                    <th>Live Token Throughput</th>
-                    <td className="text-right text-white">84.5 TPS</td>
+                    <th>Sustained throughput</th>
+                    <td className="text-right text-white">52.4 TPS</td>
                   </tr>
                   <tr>
-                    <th>Bonding Minimum</th>
-                    <td className="text-right text-slate-300">1,000 $VRXL</td>
+                    <th>Model catalogue</th>
+                    <td className="text-right text-slate-300">3 fixed endpoints</td>
                   </tr>
                   <tr>
-                    <th>Total Collateral Bonded</th>
-                    <td className="text-right text-blue-400 font-semibold">130,000 $VRXL</td>
+                    <th>Settlement asset</th>
+                    <td className="text-right text-slate-300">USDC on Arbitrum</td>
                   </tr>
                   <tr>
-                    <th>Supply Slashed & Burned</th>
-                    <td className="text-right text-rose-400 font-semibold">14,500 $VRXL</td>
+                    <th>Host payout</th>
+                    <td className="text-right text-blue-400 font-semibold">99.5% of compute</td>
                   </tr>
                   <tr>
-                    <th>Canary Audit Vector</th>
-                    <td className="text-right text-slate-300">seed=42 · temp=0.0</td>
-                  </tr>
-                  <tr>
-                    <th>Audit Cadence</th>
+                    <th>Oracle cadence</th>
                     <td className="text-right text-slate-300">30 min deterministic</td>
                   </tr>
                   <tr>
-                    <th>Aragon Quorum / Majority</th>
+                    <th>Canary vector</th>
+                    <td className="text-right text-slate-300">seed=42 · temp=0.0</td>
+                  </tr>
+                  <tr>
+                    <th>Fidelity floor</th>
+                    <td className="text-right text-white">95.0%</td>
+                  </tr>
+                  <tr>
+                    <th>Aragon quorum / majority</th>
                     <td className="text-right text-emerald-400">20.0% / 50.0%</td>
                   </tr>
                   <tr>
-                    <th>Genesis Token Cap</th>
-                    <td className="text-right text-slate-300">1,000,000 $VRXL</td>
-                  </tr>
-                  <tr>
-                    <th>Custodial Risk</th>
-                    <td className="text-right text-emerald-400 font-bold">Zero (Agency Float)</td>
+                    <th>Custodial float</th>
+                    <td className="text-right text-emerald-400 font-bold">Zero</td>
                   </tr>
                 </tbody>
               </table>
@@ -955,6 +865,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   <span>500M</span>
                   <span>1,000M</span>
                   <span>2,000M</span>
+                </div>
+                <div className="text-[8px] text-slate-500 mt-1 font-mono">
+                  Blended compute $0.68 per 1M · incumbent 950 bps · Verxl 50 bps
                 </div>
               </div>
 
@@ -991,9 +904,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Right Column (lg:col-span-7): Compute Fleet Holdings & Canary Oracle Log */}
+          {/* Right Column (lg:col-span-7): Fleet, oracle ladder, routing policy */}
           <div className="lg:col-span-7 space-y-3.5">
-            {/* Compute Fleet Holdings Table (Holdings style from Portfolio Optimizer) */}
+            {/* Active compute fleet */}
             <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -1004,7 +917,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate("registry")}
                   className="text-[9.5px] text-blue-400 hover:text-white flex items-center gap-1 transition"
                 >
-                  <span>View Registry & Register Node</span>
+                  <span>Registry & node onboarding</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -1013,45 +926,54 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 <table className="dense-table">
                   <thead>
                     <tr>
-                      <th className="text-left">Cluster Node</th>
-                      <th className="text-left">Hardware</th>
-                      <th className="text-left">Data Policy</th>
-                      <th className="text-right">1M P/C</th>
+                      <th className="text-left">Cluster / model</th>
+                      <th className="text-left">Data policy</th>
+                      <th className="text-right">TTFT</th>
+                      <th className="text-right">$/1M P · C</th>
                       <th className="text-right">Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {INITIAL_PROVIDERS.slice(0, 5).map((p) => {
+                    {INITIAL_PROVIDERS.map((p) => {
+                      const bridge = p.providerType === "OFFICIAL_BRIDGE";
                       return (
                         <tr key={p.id}>
                           <td>
-                            <div className="font-semibold text-white truncate max-w-[140px]">
+                            <div className="font-semibold text-white whitespace-nowrap">
                               {p.name.split(" ")[0]} {p.name.split(" ")[1]}
                             </div>
-                            <div className="text-[9px] text-slate-400">{p.location}</div>
-                          </td>
-                          <td className="text-slate-300 text-[10px] whitespace-nowrap">
-                            {p.hardware}
+                            <div className="text-[8.5px] text-slate-400 truncate max-w-[210px]">
+                              {p.modelIdentifier} · {HARDWARE_SHORT[p.id] ?? p.hardware}
+                            </div>
                           </td>
                           <td>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/20 text-blue-300 font-mono">
-                              {p.providerType === "OFFICIAL_BRIDGE" ? "Bridge" : "Bare-Metal"}
+                            <span
+                              className={`text-[8.5px] px-1.5 py-0.5 border whitespace-nowrap ${
+                                bridge
+                                  ? "border-amber-500/25 bg-amber-500/10 text-amber-300"
+                                  : "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                              }`}
+                            >
+                              {bridge ? "Upstream" : "Zero-log"}
                             </span>
                           </td>
-                          <td className="text-right text-[10px] text-slate-300 tabular">
-                            ${p.pricePromptUsd} / ${p.priceCompletionUsd}
+                          <td className="text-right text-slate-200 text-[10px] tabular whitespace-nowrap">
+                            {p.ttftMs} ms
+                          </td>
+                          <td className="text-right text-slate-300 text-[10px] tabular whitespace-nowrap">
+                            {p.pricePromptUsd.toFixed(2)} / {p.priceCompletionUsd.toFixed(2)}
                           </td>
                           <td className="text-right whitespace-nowrap">
                             <span
-                              className={`px-1.5 py-0.2 rounded-[2px] text-[8.5px] font-bold ${
+                              className={`px-1.5 py-0.2 text-[8.5px] font-bold border ${
                                 p.status === "ACTIVE"
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                   : p.status === "PROBATION"
-                                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                  : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                  : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                               }`}
                             >
-                              {p.status} ({p.latencyMs}ms)
+                              {p.status} · {p.uptimePercent.toFixed(2)}%
                             </span>
                           </td>
                         </tr>
@@ -1060,20 +982,25 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   </tbody>
                 </table>
               </div>
+
+              <div className="mt-2 pt-1.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-[8.5px] text-slate-400">
+                <span>50 bps protocol fee · 99.5% host payout · USDC on Arbitrum</span>
+                <span className="text-emerald-400">All listed nodes above the 95% fidelity floor</span>
+              </div>
             </div>
 
-            {/* Autonomous Quality Oracle Canary Log */}
+            {/* Canary probe log */}
             <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Deterministic Canary Probes (Seed=42 Nash Enforcement)
+                  Deterministic Canary Probes · seed=42
                 </span>
                 <button
                   onClick={() => onNavigate("oracle")}
                   className="text-[9.5px] text-blue-400 hover:text-white flex items-center gap-1 transition"
                 >
-                  <span>Oracle Dashboard</span>
+                  <span>Oracle dashboard</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -1083,8 +1010,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   <thead>
                     <tr>
                       <th className="text-left">Probe ID</th>
-                      <th className="text-left">Target Cluster</th>
+                      <th className="text-left">Target cluster</th>
                       <th className="text-left">Timestamp</th>
+                      <th className="text-right">TTFT</th>
                       <th className="text-right">Fidelity</th>
                       <th className="text-right">Verdict</th>
                     </tr>
@@ -1093,10 +1021,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     {INITIAL_AUDIT_LOGS.map((log) => (
                       <tr key={log.id}>
                         <td className="text-blue-400 font-mono text-[10px]">{log.id}</td>
-                        <td className="text-white text-[10px] truncate max-w-[130px]">
+                        <td className="text-white text-[10px] truncate max-w-[128px]">
                           {log.providerName.split(" ")[0]} {log.providerName.split(" ")[1]}
                         </td>
                         <td className="text-slate-400 text-[9.5px]">{log.timestamp}</td>
+                        <td className="text-right text-slate-300 text-[10px] tabular">{log.ttftMs} ms</td>
                         <td className="text-right font-bold tabular text-[10px]">
                           <span
                             className={
@@ -1112,10 +1041,10 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                         </td>
                         <td className="text-right">
                           <span
-                            className={`px-1.5 py-0.2 rounded-[2px] text-[8.5px] font-bold ${
+                            className={`px-1.5 py-0.2 text-[8.5px] font-bold border ${
                               log.passed
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                             }`}
                           >
                             {log.passed ? "PASSED" : "FAILED / SLASH"}
@@ -1127,9 +1056,70 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </table>
               </div>
             </div>
+
+            {/* Routing objective and verification ladder */}
+            <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5 mb-2">
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-blue-400" />
+                  Routing objective & oracle ladder
+                </span>
+                <span className="text-[9px] text-slate-500">evaluated per request</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                <div>
+                  <div className="text-[8.5px] text-slate-500 uppercase tracking-wider mb-1">
+                    Selection · weighted cost-latency
+                  </div>
+                  <div className="text-[9.5px] text-slate-200 leading-snug">
+                    min J(i) = 0.70 · TTFT<sub>i</sub> / TTFT<sub>max</sub> + 0.30 · P<sub>i</sub> / P<sub>max</sub>
+                  </div>
+                  <div className="mt-1.5 space-y-1">
+                    <div className="flex items-center gap-2 text-[8.5px] text-slate-400">
+                      <span className="w-11">Latency</span>
+                      <span className="flex-1 h-1 bg-slate-800">
+                        <span className="block h-1 bg-blue-500" style={{ width: "70%" }} />
+                      </span>
+                      <span className="text-blue-300 tabular">0.70</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[8.5px] text-slate-400">
+                      <span className="w-11">Price</span>
+                      <span className="flex-1 h-1 bg-slate-800">
+                        <span className="block h-1 bg-cyan-400" style={{ width: "30%" }} />
+                      </span>
+                      <span className="text-cyan-300 tabular">0.30</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[8.5px] text-slate-500 uppercase tracking-wider mb-1">
+                    Verification · fidelity ladder
+                  </div>
+                  <div className="space-y-1 text-[9px]">
+                    <div className="flex items-center justify-between border-b border-slate-800/60 pb-0.5">
+                      <span className="text-slate-300">Fidelity at or above 95.0%</span>
+                      <span className="text-emerald-400 font-semibold">PASS</span>
+                    </div>
+                    <div className="flex items-center justify-between border-b border-slate-800/60 pb-0.5">
+                      <span className="text-slate-300">First miss · traffic cut 50%</span>
+                      <span className="text-amber-400 font-semibold">PROBATION</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-300">Second miss · 10% slash</span>
+                      <span className="text-rose-400 font-semibold">SLASH</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Live settlement rail: real spot quotes and Arbitrum chain telemetry */}
+      <MarketRail />
     </div>
   );
 };

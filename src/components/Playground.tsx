@@ -41,9 +41,62 @@ const renderMarkdown = (content: string): string => {
 
 interface PlaygroundProps {
   onNavigate?: (tab: string) => void;
+  variant?: "full" | "compact";
 }
 
-export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
+interface CatalogEntry {
+  id: string;
+  short: string;
+  tag: string;
+  route: string;
+  detail: string;
+  prompt: number;
+  completion: number;
+  cached: number;
+  context: string;
+  free: boolean;
+}
+
+const MODEL_CATALOG: CatalogEntry[] = [
+  {
+    id: "qwen3.5-4b-uncensored-32k",
+    short: "Qwen 3.5 4B",
+    tag: "BARE-METAL HOST",
+    route: "Prague bare-metal",
+    detail: "32k resident context · Bulbasaur Vulkan host",
+    prompt: 0.05,
+    completion: 0.1,
+    cached: 0.01,
+    context: "32k",
+    free: true,
+  },
+  {
+    id: "deepseek-v4.1-flash",
+    short: "DeepSeek V4.1",
+    tag: "OFFICIAL BRIDGE",
+    route: "Tokyo / Hangzhou edge",
+    detail: "1M context · upstream-logged bridge",
+    prompt: 0.3,
+    completion: 1.2,
+    cached: 0.006,
+    context: "1M",
+    free: false,
+  },
+  {
+    id: "mimo-v2.6-flash",
+    short: "MiMo 2.6",
+    tag: "OFFICIAL BRIDGE",
+    route: "Frankfurt edge",
+    detail: "1M context · upstream-logged bridge",
+    prompt: 0.14,
+    completion: 0.28,
+    cached: 0.0028,
+    context: "1M",
+    free: false,
+  },
+];
+
+export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "full" }) => {
   const { user, token, customApiKey, keys } = useAuth();
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
@@ -53,7 +106,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
     "Calculate the net protocol fee savings for an AI fintech startup processing 500 million tokens monthly through Verxl (50 bps fee) versus centralized aggregators (950 bps fee)."
   );
   const [temperature, setTemperature] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(512);
+  const [maxTokens, setMaxTokens] = useState(2048);
   const [isStreaming, setIsStreaming] = useState(false);
   const [reasoningOutput, setReasoningOutput] = useState("");
   const [output, setOutput] = useState("");
@@ -61,14 +114,16 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
   const [copied, setCopied] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [hasRun, setHasRun] = useState(false);
+  const [runMode, setRunMode] = useState<"live" | "reference" | "notice">("reference");
 
   // Telemetry metrics
   const [metrics, setMetrics] = useState({
     ttft: 38,
     totalLatency: 520,
     tps: 52.4,
-    promptTokens: 42,
-    completionTokens: 184,
+    promptTokens: 0,
+    completionTokens: 0,
     protocolFeeUsd: 0.00005,
     traditionalSaaSUsd: 0.00095,
     provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 32k)",
@@ -114,8 +169,11 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
     }
 
     setIsStreaming(true);
+    setHasRun(true);
+    setRunMode("reference");
     setOutput("");
     setReasoningOutput("");
+    setMetrics((prev) => ({ ...prev, ttft: 0, completionTokens: 0, totalLatency: 0 }));
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -145,6 +203,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
           temperature,
           max_tokens: maxTokens,
           stream: true,
+          ...(model.includes("qwen") ? { reasoning_effort: "none" } : {}),
         }),
         signal: controller.signal,
       });
@@ -153,10 +212,12 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
         const errJson = (await response.json().catch(() => ({}))) as any;
         const errMsg = errJson?.error?.message;
         if (response.status === 429) {
+          setRunMode("notice");
           setOutput(`> [!WARNING]\n> **Rate Limit Reached (Free Demo Tier):**\n> ${errMsg || "Free demo rate limit of 40 requests per 10 minutes exceeded for your IP. Connect your wallet or deposit USDC at Verxl Console to remove limits."}`);
           setIsStreaming(false);
           return;
         } else if (response.status === 402) {
+          setRunMode("notice");
           setOutput(`> [!IMPORTANT]\n> **Paid Model Tier Required:**\n> ${errMsg || "This model requires an active account balance. Deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat."}`);
           setIsStreaming(false);
           return;
@@ -176,6 +237,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
             !msgContent.includes("Upstream bare-metal Ollama daemon is currently cycling") &&
             !msgContent.includes("[Verxl Protocol Clearing Switch]")
           ) {
+            setRunMode("live");
             const words = msgContent.split(" ");
             let streamed = "";
             for (let i = 0; i < words.length; i++) {
@@ -234,6 +296,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
                 const reasoning = delta?.reasoning || delta?.reasoning_content || "";
 
                 if (reasoning) {
+                  if (!fullReasoning) setRunMode("live");
                   if (!firstTokenReceived) {
                     firstTokenReceived = true;
                     const ttftMs = Math.round(performance.now() - startTime);
@@ -245,6 +308,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
                 }
 
                 if (content) {
+                  if (!fullText) setRunMode("live");
                   if (!firstTokenReceived) {
                     firstTokenReceived = true;
                     const ttftMs = Math.round(performance.now() - startTime);
@@ -254,10 +318,26 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
                   tokenCount++;
                   setOutput(fullText);
                 }
+
+                if (parsed.usage) {
+                  const promptTokens = Number(parsed.usage.prompt_tokens);
+                  const completionTokens = Number(parsed.usage.completion_tokens);
+                  setMetrics((prev) => ({
+                    ...prev,
+                    promptTokens: Number.isFinite(promptTokens) ? promptTokens : prev.promptTokens,
+                    completionTokens: Number.isFinite(completionTokens) ? completionTokens : prev.completionTokens,
+                  }));
+                }
               } catch (e) {
                 // partial json chunk
               }
             }
+          }
+
+          if (tokenCount > 0) {
+            setMetrics((prev) =>
+              prev.completionTokens === tokenCount ? prev : { ...prev, completionTokens: tokenCount }
+            );
           }
         }
 
@@ -284,6 +364,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
     }
 
     // High fidelity streaming fallback matched to prompt
+    setRunMode("reference");
     let targetReasoning = "";
     let targetText = "";
     const promptLower = userPrompt.toLowerCase();
@@ -529,6 +610,280 @@ async function main() {
 main();`,
   };
 
+  if (variant === "compact") {
+    const activeModel = MODEL_CATALOG.find((entry) => entry.id === model) ?? MODEL_CATALOG[0];
+    const promptTokens =
+      metrics.promptTokens > 0
+        ? metrics.promptTokens
+        : Math.ceil((systemPrompt.length + userPrompt.length) / 4);
+    const computeUsd =
+      (promptTokens * activeModel.prompt + metrics.completionTokens * activeModel.completion) / 1_000_000;
+    const feeUsd = computeUsd * 0.005;
+    const netUsd = computeUsd - feeUsd;
+    const billable = hasRun && runMode !== "notice";
+    const money = (value: number) => (billable ? `$${value.toFixed(8)}` : "n/a");
+    const modeLabel =
+      runMode === "live" ? "LIVE NODE" : runMode === "notice" ? "TIER NOTICE" : "REFERENCE TRACE";
+    const modeTone =
+      runMode === "live"
+        ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+        : runMode === "notice"
+        ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+        : "text-slate-400 border-slate-700 bg-slate-800/40";
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 font-mono">
+        {/* Control column */}
+        <div className="lg:col-span-5 flex flex-col gap-2.5 min-w-0">
+          <div className="grid grid-cols-3 gap-1.5">
+            {MODEL_CATALOG.map((entry) => {
+              const active = entry.id === activeModel.id;
+              return (
+                <button
+                  key={entry.id}
+                  onClick={() => setModel(entry.id)}
+                  className={`text-left px-2 py-1.5 border transition ${
+                    active
+                      ? "border-blue-500/60 bg-blue-500/10"
+                      : "border-slate-800 bg-[#05070b] hover:border-slate-600"
+                  }`}
+                >
+                  <span
+                    className={`block text-[10px] font-bold uppercase tracking-wider truncate ${
+                      active ? "text-white" : "text-slate-300"
+                    }`}
+                  >
+                    {entry.short}
+                  </span>
+                  <span className="block text-[7.5px] text-slate-500 mt-0.5 truncate">{entry.tag}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between gap-2 text-[9px] text-slate-400">
+            <span className="truncate">{activeModel.detail}</span>
+            <span className={activeModel.free ? "text-emerald-400 shrink-0" : "text-amber-400 shrink-0"}>
+              {activeModel.free ? "FREE DEMO" : "LOGIN TO RUN"}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1">
+            {samplePrompts.map((sample) => (
+              <button
+                key={sample.title}
+                onClick={() => setUserPrompt(sample.prompt)}
+                className="text-[9px] px-1.5 py-0.5 border border-slate-800 bg-[#05070b] text-slate-400 hover:text-blue-300 hover:border-blue-500/40 transition"
+              >
+                {sample.title}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={userPrompt}
+            onChange={(e) => setUserPrompt(e.target.value)}
+            rows={4}
+            spellCheck={false}
+            placeholder="Enter a prompt payload"
+            className="flex-1 min-h-[84px] max-h-[126px] w-full bg-[#05070b] border border-slate-800 px-2.5 py-2 text-[11px] text-slate-100 leading-relaxed focus:outline-none focus:border-blue-500 transition resize-none"
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="flex justify-between text-[9px] text-slate-400">
+                <span>Temperature</span>
+                <span className="text-blue-400">{temperature.toFixed(2)}</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={temperature}
+                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                className="w-full accent-blue-500 bg-slate-800 h-1 cursor-pointer mt-1"
+              />
+            </label>
+            <label className="block">
+              <span className="flex justify-between text-[9px] text-slate-400">
+                <span>Max tokens</span>
+                <span className="text-blue-400">{maxTokens}</span>
+              </span>
+              <input
+                type="range"
+                min="64"
+                max="4096"
+                step="64"
+                value={maxTokens}
+                onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                className="w-full accent-blue-500 bg-slate-800 h-1 cursor-pointer mt-1"
+              />
+            </label>
+          </div>
+
+          {isStreaming ? (
+            <button onClick={handleStop} className="hero-btn w-full justify-center !py-2 !bg-rose-600 !text-white !border-rose-400/50">
+              <Square className="w-3.5 h-3.5 fill-current" />
+              <span>Halt stream</span>
+            </button>
+          ) : (
+            <button onClick={handleRunInference} className="hero-btn hero-btn--primary w-full justify-center !py-2">
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Execute on {activeModel.short}</span>
+            </button>
+          )}
+
+          <div className="border border-slate-800 bg-[#05070b] px-2.5 py-1.5">
+            <div className="flex items-center justify-between gap-2 text-[7.5px] uppercase tracking-widest text-slate-500 border-b border-slate-800/70 pb-1 mb-1">
+              <span className="truncate">Rate card · {activeModel.short}</span>
+              <span className="shrink-0 whitespace-nowrap">$ / 1M</span>
+            </div>
+            <div className="space-y-0.5 text-[9px]">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Prompt</span>
+                <span className="text-slate-200 tabular">${activeModel.prompt.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Completion</span>
+                <span className="text-slate-200 tabular">${activeModel.completion.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Cached prompt</span>
+                <span className="text-slate-200 tabular">${activeModel.cached.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Context window</span>
+                <span className="text-slate-200">{activeModel.context} tokens</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stream and receipt column */}
+        <div className="lg:col-span-7 flex flex-col gap-2 min-w-0">
+          <div className="border border-blue-500/20 bg-[#0a0e17] flex flex-col overflow-hidden">
+            <div className="px-2.5 py-1.5 bg-[#05070b] border-b border-slate-800 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className={`w-1.5 h-1.5 ${isStreaming ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
+                <span className="text-[9px] uppercase tracking-wider text-slate-300 truncate">
+                  {isStreaming ? "Streaming" : "Terminal"} · {activeModel.short}
+                </span>
+                {hasRun && (
+                  <span className={`text-[7.5px] px-1 py-0.5 border tracking-widest ${modeTone}`}>{modeLabel}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {(output || reasoningOutput) && (
+                  <button
+                    onClick={copyOutput}
+                    className="flex items-center gap-1 px-1.5 py-0.5 text-[8.5px] border border-slate-800 bg-[#080c14] text-slate-300 hover:border-blue-500/50 transition"
+                  >
+                    {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
+                  </button>
+                )}
+                <span className="text-[8px] text-slate-500 hidden sm:inline">SSE · stream: true</span>
+              </div>
+            </div>
+
+            <div
+              ref={outputContainerRef}
+              className="h-[196px] overflow-y-auto px-2.5 py-2 font-mono text-[10.5px] leading-relaxed text-slate-200 select-text bg-[#05070b]/60"
+            >
+              {reasoningOutput && (
+                <div className="mb-2 border border-slate-800/80 bg-slate-900/30 px-2 py-1">
+                  <div className="flex items-center justify-between text-[7.5px] uppercase tracking-widest text-slate-500 mb-0.5">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1 h-1 bg-blue-400 animate-pulse" />
+                      Reasoning stream
+                    </span>
+                    <span>{reasoningOutput.length} chars</span>
+                  </div>
+                  <div className="text-[9px] text-slate-500 leading-snug whitespace-pre-wrap">
+                    {reasoningOutput}
+                  </div>
+                </div>
+              )}
+
+              {output ? (
+                <div>
+                  <div
+                    className="terminal-markdown select-text"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(output) }}
+                  />
+                  {isStreaming && (
+                    <span className="inline-block w-1.5 h-3 bg-blue-400 ml-0.5 mt-1 animate-pulse align-middle" />
+                  )}
+                </div>
+              ) : isStreaming ? (
+                reasoningOutput ? null : (
+                  <div className="flex items-center gap-2 text-blue-400 py-1">
+                    <span className="w-1.5 h-1.5 bg-blue-400 animate-pulse" />
+                    <span>Dispatching to {activeModel.route}</span>
+                  </div>
+                )
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center gap-1.5 text-center px-4">
+                  <Terminal className="w-4 h-4 text-blue-400/40" />
+                  <p className="text-[10px] text-slate-400 max-w-[300px] leading-relaxed">
+                    Run a prompt to stream from the Prague node. Each run reports time to first token, throughput and a clearing receipt.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-2.5 py-1.5 bg-[#05070b] border-t border-slate-800 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[9px] text-slate-400">
+              <span>
+                TTFT <strong className="text-white">{billable ? metrics.ttft || "···" : "38"}</strong> ms
+              </span>
+              <span>
+                TPS <strong className="text-white">{billable ? (metrics.totalLatency ? metrics.tps : "···") : "52.4"}</strong>
+              </span>
+              <span>
+                TOKENS <strong className="text-white">{hasRun ? metrics.completionTokens : "0"}</strong>
+              </span>
+              <span className="hidden sm:inline">
+                ROUTE <strong className="text-slate-200">{activeModel.route}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div className="border border-blue-500/20 bg-[#0a0e17]">
+            <div className="flex items-center justify-between px-2.5 py-1 border-b border-slate-800 text-[8.5px] uppercase tracking-widest text-slate-400">
+              <span>Execution receipt</span>
+              <span className={hasRun ? "text-slate-300" : "text-slate-500"}>
+                {hasRun ? "50 bps on compute" : "awaiting run"}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate-800/60">
+              {[
+                { label: "Compute", value: money(computeUsd), tone: "text-slate-100" },
+                { label: "Protocol fee", value: money(feeUsd), tone: "text-emerald-400" },
+                { label: "Provider net", value: money(netUsd), tone: "text-blue-300" },
+                {
+                  label: "Round trip",
+                  value: billable ? (metrics.totalLatency ? `${metrics.totalLatency} ms` : "···") : "n/a",
+                  tone: "text-slate-100",
+                },
+              ].map((cell) => (
+                <div key={cell.label} className="bg-[#0a0e17] px-2.5 py-1.5">
+                  <div className="text-[7.5px] uppercase tracking-widest text-slate-500">{cell.label}</div>
+                  <div className={`text-[11px] font-semibold tabular ${cell.tone}`}>{cell.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[8.5px] leading-relaxed text-slate-500">
+            Prompt tokens bill at ${activeModel.prompt.toFixed(2)} per 1M, completions at ${activeModel.completion.toFixed(2)} per 1M.
+            Host keeps 99.5% in USDC on Arbitrum. Bare-metal prompts stay in volatile memory, bridge prompts are upstream-logged.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3.5">
       {/* Section Header */}
@@ -710,7 +1065,7 @@ main();`,
               <textarea
                 value={systemPrompt}
                 onChange={(e) => setSystemPrompt(e.target.value)}
-                rows={2}
+                rows={3}
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono transition resize-none"
               />
             </div>
@@ -741,7 +1096,7 @@ main();`,
                 <input
                   type="range"
                   min="64"
-                  max="2048"
+                  max="4096"
                   step="64"
                   value={maxTokens}
                   onChange={(e) => setMaxTokens(parseInt(e.target.value))}

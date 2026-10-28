@@ -54,6 +54,7 @@ interface MessageMetrics {
   ttftMs?: number;
   tps?: number;
   provider?: string;
+  rejected?: boolean;
 }
 
 interface ChatMessage {
@@ -780,6 +781,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
     const currentModel = activeSession.model || "qwen3.5-4b-uncensored-32k";
     const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
+    let apiKeyRejected = false;
 
     try {
       const response = await fetch("/v1/chat/completions", {
@@ -800,10 +802,23 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
       if (!response.ok) {
         const errorData = (await response.json().catch(() => ({}))) as any;
+        const serverMessage = errorData?.error?.message || "";
+        const errorCode = errorData?.error?.code || "";
         if (response.status === 402) {
           setShowDepositModal(true);
         }
-        throw new Error(errorData?.error?.message || `HTTP ${response.status}: Failed to generate response.`);
+        if (
+          response.status === 401 &&
+          (errorCode === "invalid_api_key" ||
+            errorCode === "api_key_deactivated" ||
+            /api key/i.test(serverMessage))
+        ) {
+          apiKeyRejected = true;
+          throw new Error(
+            "**API key revoked.** The key this chat was using is no longer active. Generate a new key in the API console, then open Chat settings with the gear icon at the top right of this window and paste it into the custom key field."
+          );
+        }
+        throw new Error(serverMessage || `HTTP ${response.status}: Failed to generate response.`);
       }
 
       if (response.body) {
@@ -850,16 +865,18 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        accumulatedContent += `\n\n> [!WARNING]\n> **Inference Notice:** ${err.message || "Upstream bare-metal node cycling. Please retry."}`;
+        accumulatedContent += apiKeyRejected
+          ? `\n\n${err.message}`
+          : `\n\n> [!WARNING]\n> **Inference Notice:** ${err.message || "Upstream bare-metal node cycling. Please retry."}`;
       }
     } finally {
       const totalLatency = Math.round(performance.now() - startTime);
       const estPromptTokens = Math.max(16, Math.ceil(JSON.stringify(apiMessages).length / 4));
-      const estCompletionTokens = Math.max(4, tokenCount);
+      const estCompletionTokens = apiKeyRejected ? 0 : Math.max(4, tokenCount);
       const computeCost =
         (estPromptTokens / 1e6) * selectedModelConfig.promptRate +
         (estCompletionTokens / 1e6) * selectedModelConfig.completionRate;
-      const totalCost = computeCost * 1.005; // 50 bps protocol fee
+      const totalCost = apiKeyRejected ? 0 : computeCost * 1.005; // 50 bps protocol fee
 
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
@@ -874,6 +891,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           ttftMs: firstTokenTime || 45,
           tps: Math.round((estCompletionTokens / (totalLatency / 1000)) * 10) / 10 || 52.4,
           provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
+          rejected: apiKeyRejected || undefined,
         },
       };
 
@@ -1444,7 +1462,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     </span>
                     <span>•</span>
                     <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                    {msg.role === "assistant" && msg.metrics?.costUsd && (
+                    {msg.role === "assistant" && msg.metrics && Number(msg.metrics.costUsd || 0) > 0 && (
                       <>
                         <span>•</span>
                         <span className="text-emerald-400 font-semibold font-mono">
@@ -1499,7 +1517,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     />
 
                     {/* Assistant Telemetry Footer */}
-                    {msg.role === "assistant" && msg.metrics && (
+                    {msg.role === "assistant" && msg.metrics && !msg.metrics.rejected && (
                       <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 select-none">
                         <div className="flex items-center gap-2">
                           <span className="text-emerald-400 font-semibold">

@@ -333,54 +333,331 @@ td, th, .tabular, .font-mono {
   background: rgba(59, 130, 246, 0.14);
 }
 
-/* Live Ticker Tape */
-.hero-tape {
+/* =============================================================
+   Live Settlement Rail
+   Real Binance spot quotes + Arbitrum One gas. No mock motion.
+   ============================================================= */
+
+.market-rail {
   position: relative;
   z-index: 3;
   width: 100%;
-  overflow: hidden;
-  border-top: 1px solid var(--line-soft);
-  background: rgba(5, 7, 11, 0.7);
-  backdrop-filter: blur(8px);
-}
-
-.tape-track {
-  display: flex;
-  gap: 36px;
-  width: max-content;
-  padding: 8px 0;
-  animation: tapeScroll 48s linear infinite;
-}
-.hero-tape:hover .tape-track {
-  animation-play-state: paused;
-}
-
-@keyframes tapeScroll {
-  to { transform: translateX(-50%); }
-}
-
-.tape-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(9, 14, 24, 0.94) 0%, rgba(5, 7, 11, 0.98) 100%);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  color: rgba(241, 245, 249, 0.65);
-  white-space: nowrap;
+  overflow: hidden;
 }
-.tape-item b {
+.market-rail::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.55), transparent);
+  opacity: 0.7;
+}
+
+.market-rail__head {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 7px 16px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.market-rail__id,
+.market-rail__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.market-rail__title {
   color: #ffffff;
   font-weight: 600;
+  letter-spacing: 0.12em;
 }
-.tape-item.is-up {
-  color: var(--up);
+.market-rail__sub {
+  color: #8b9bb1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.tape-item.is-down {
-  color: var(--down);
+.market-rail__div {
+  color: rgba(96, 165, 250, 0.35);
 }
-.tape-item.is-blue {
-  color: var(--blue-2);
+.market-rail__source {
+  padding: 1px 6px;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.06);
+  color: #93c5fd;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.market-rail__cost {
+  color: #8b9bb1;
+  white-space: nowrap;
+}
+.market-rail__cost strong {
+  font-weight: 600;
+}
+.market-rail__age {
+  color: #94a3b8;
+  white-space: nowrap;
+  min-width: 62px;
+  text-align: right;
+}
+.market-live {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: #64748b;
+}
+.market-live.is-live {
+  background: var(--up);
+  animation: marketPulse 2.4s ease-out infinite;
+}
+@keyframes marketPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+.market-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.08);
+  color: #93c5fd;
+  font-size: 8.5px;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+.market-status.is-live {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.08);
+  color: #34d399;
+}
+.market-status.is-stale {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+  color: #fbbf24;
+}
+.market-status.is-offline {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+}
+
+.market-scroll {
+  position: relative;
+  overflow: hidden;
+}
+.market-scroll::before,
+.market-scroll::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 72px;
+  z-index: 2;
+  pointer-events: none;
+}
+.market-scroll::before {
+  left: 0;
+  background: linear-gradient(90deg, #05070b 0%, rgba(5, 7, 11, 0.85) 42%, transparent 100%);
+}
+.market-scroll::after {
+  right: 0;
+  background: linear-gradient(270deg, #05070b 0%, rgba(5, 7, 11, 0.85) 42%, transparent 100%);
+}
+.market-track {
+  display: flex;
+  width: max-content;
+  animation: marketScroll 92s linear infinite;
+  will-change: transform;
+}
+.market-rail:hover .market-track {
+  animation-play-state: paused;
+}
+@keyframes marketScroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.market-group {
+  display: flex;
+  flex: none;
+}
+.market-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3px;
+  width: 268px;
+  padding: 8px 14px 8px 16px;
+  border-right: 1px solid rgba(59, 130, 246, 0.1);
+}
+.market-cell__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+  color: #7d8ba0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.market-pair {
+  color: #cbd5e1;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.market-pair__slash {
+  color: #3b82f6;
+  margin: 0 1px;
+}
+.market-delta {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.market-cell__mid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.market-price {
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  animation: marketTick 700ms ease-out;
+}
+@keyframes marketTick {
+  from { color: #93c5fd; text-shadow: 0 0 14px rgba(96, 165, 250, 0.55); }
+  to { color: #ffffff; text-shadow: none; }
+}
+.market-price small {
+  font-size: 9px;
+  font-weight: 400;
+  color: #8290a4;
+}
+.market-spark {
+  display: block;
+  flex: none;
+  opacity: 0.92;
+}
+.market-spark-empty {
+  display: block;
+  width: 62px;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.2);
+}
+.market-cell__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  white-space: nowrap;
+}
+.market-range {
+  color: #94a3b8;
+}
+.market-range strong {
+  font-weight: 600;
+}
+.market-cell--chain {
+  width: 252px;
+  background: rgba(59, 130, 246, 0.03);
+}
+.market-chain-tag {
+  color: #60a5fa;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+.market-chain-sub {
+  color: #8290a4;
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.is-up { color: var(--up); }
+.is-down { color: var(--down); }
+.is-blue { color: #60a5fa; }
+
+.market-skeleton-line {
+  display: block;
+  height: 8px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.07), rgba(148, 163, 184, 0.18), rgba(148, 163, 184, 0.07));
+  background-size: 200% 100%;
+  animation: marketShimmer 1.6s linear infinite;
+}
+@keyframes marketShimmer {
+  from { background-position: 160% 0; }
+  to { background-position: -60% 0; }
+}
+
+.market-rail__legend {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 5px 16px 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid rgba(59, 130, 246, 0.06);
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  color: #5b6a80;
+}
+.market-rail__ok {
+  color: #34d399;
+}
+
+@media (max-width: 640px) {
+  .market-rail__sub,
+  .market-rail__source,
+  .market-rail__cost {
+    display: none;
+  }
+  .market-rail__head {
+    padding: 6px 12px 5px;
+  }
+  .market-cell {
+    width: 232px;
+    padding: 7px 12px;
+  }
+  .market-price {
+    font-size: 14px;
+  }
+  .market-rail__legend {
+    padding: 5px 12px 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-track {
+    animation: none;
+  }
+  .market-price,
+  .market-live.is-live,
+  .market-skeleton-line {
+    animation: none;
+  }
 }
 
 /* =============================================================
@@ -483,6 +760,8 @@ td, th, .tabular, .font-mono {
   display: none;
 }
 .d-tab {
+  position: relative;
+  overflow: hidden;
   flex: 1;
   min-width: max-content;
   white-space: nowrap;
@@ -507,6 +786,15 @@ td, th, .tabular, .font-mono {
   color: #ffffff;
   border-bottom-color: var(--blue-2);
   background: rgba(59, 130, 246, 0.08);
+}
+.d-tab__fill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #93c5fd;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.85);
+  transition: width 0.1s linear;
 }
 
 .demo-steps {
