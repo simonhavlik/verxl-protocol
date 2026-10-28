@@ -117,34 +117,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const normalizedKeyId = keyId.toLowerCase();
   try {
-    const existing = await db
-      .prepare("SELECT id, user_id FROM chat_conversations WHERE id = ?")
-      .bind(id)
-      .first<{ id: string; user_id: string }>();
+    // Atomic upsert: concurrent syncs for the same id cannot race into a duplicate key.
+    const saved = await db
+      .prepare(
+        `INSERT INTO chat_conversations (id, user_id, ciphertext, key_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT (id) DO UPDATE SET
+           ciphertext = EXCLUDED.ciphertext,
+           key_id = EXCLUDED.key_id,
+           updated_at = CURRENT_TIMESTAMP
+         WHERE chat_conversations.user_id = EXCLUDED.user_id
+         RETURNING id`
+      )
+      .bind(id, user.id, ciphertext, normalizedKeyId)
+      .first<{ id: string }>();
 
-    if (existing) {
-      if (existing.user_id !== user.id) {
-        return new Response(JSON.stringify({ error: "Not authorized for this conversation" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-        });
-      }
-      await db
-        .prepare(
-          `UPDATE chat_conversations
-           SET ciphertext = ?, key_id = ?, updated_at = CURRENT_TIMESTAMP
-           WHERE id = ? AND user_id = ?`
-        )
-        .bind(ciphertext, normalizedKeyId, id, user.id)
-        .run();
-    } else {
-      await db
-        .prepare(
-          `INSERT INTO chat_conversations (id, user_id, ciphertext, key_id, created_at, updated_at)
-           VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
-        )
-        .bind(id, user.id, ciphertext, normalizedKeyId)
-        .run();
+    if (!saved) {
+      return new Response(JSON.stringify({ error: "Not authorized for this conversation" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   } catch (err: any) {
     console.error("chat conversation save failed", err);
