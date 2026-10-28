@@ -4,6 +4,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Server,
+  Lock,
+  ExternalLink,
   Activity,
   Sliders,
   MessageSquare,
@@ -1113,6 +1115,128 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Client-side encrypted chat storage: mechanism, stored fields, access boundary */}
+      <section
+        id="chat-privacy"
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full scroll-mt-14 font-mono"
+      >
+        <div className="border border-emerald-500/25 bg-[#080c14]/90 rounded-[3px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-emerald-500/20">
+            <div className="flex items-center gap-2 min-w-0">
+              <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <h2 className="text-[11px] sm:text-xs font-bold text-white uppercase tracking-wider">
+                Chat privacy boundary
+              </h2>
+              <span className="px-1.5 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-[8.5px] uppercase tracking-wider">
+                Client-side encryption
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-[9px] text-slate-400">
+              <span className="hidden md:inline">Postgres never receives message text</span>
+              <a
+                href="https://github.com/simonhavlik/verxl-protocol/blob/main/src/lib/chatCrypto.ts"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1"
+              >
+                crypto source <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+              <a
+                href="https://github.com/simonhavlik/verxl-protocol/blob/main/functions/api/chat/conversations.ts"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1"
+              >
+                API source <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-emerald-500/10">
+            <div className="lg:col-span-7 p-3 sm:p-4 space-y-2.5">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { k: "Browser", v: "plaintext in memory", d: "wallet signature to HKDF-SHA256" },
+                  { k: "AES-256-GCM", v: "sealed envelope", d: "96-bit IV, fresh per save" },
+                  { k: "Postgres", v: "ciphertext only", d: "no title, no messages, no prompt" },
+                ].map((step, i) => (
+                  <div key={step.k} className="relative bg-[#05070b] border border-slate-800 px-2.5 py-2">
+                    <div className="text-[8px] text-slate-500 uppercase tracking-wider">
+                      0{i + 1} · {step.k}
+                    </div>
+                    <div className="text-[10.5px] text-white font-semibold mt-0.5">{step.v}</div>
+                    <div className="text-[8.5px] text-slate-500 leading-snug mt-0.5">{step.d}</div>
+                    {i < 2 && (
+                      <ArrowRight className="hidden sm:block absolute -right-[9px] top-1/2 -translate-y-1/2 w-3 h-3 text-emerald-500/60" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[8.5px] text-slate-500">
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-1 h-1 bg-emerald-400" />
+                  Non-extractable CryptoKey stays in browser memory
+                </span>
+                <span className="text-slate-700">·</span>
+                <span>Wallet private key never leaves MetaMask</span>
+                <span className="text-slate-700">·</span>
+                <span>Another wallet cannot decrypt these envelopes</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-2 border-t border-slate-800/80">
+                <div>
+                  <div className="text-[8px] uppercase tracking-wider text-slate-500 mb-0.5">
+                    Operator can still see
+                  </div>
+                  <div className="text-[9px] text-slate-400 leading-relaxed">
+                    account id · wallet address · timestamps · envelope size · usage records
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[8px] uppercase tracking-wider text-emerald-500/80 mb-0.5">
+                    Operator cannot see
+                  </div>
+                  <div className="text-[9px] text-emerald-200/80 leading-relaxed">
+                    message text · titles · system prompt · key material
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 p-3 sm:p-4">
+              <table className="dense-table">
+                <tbody>
+                  <tr>
+                    <th>Key derivation</th>
+                    <td className="text-right text-slate-300">personal_sign → HKDF-SHA256</td>
+                  </tr>
+                  <tr>
+                    <th>Cipher</th>
+                    <td className="text-right text-slate-300">AES-256-GCM · 96-bit IV</td>
+                  </tr>
+                  <tr>
+                    <th>Stored</th>
+                    <td className="text-right text-slate-300">ciphertext · wallet key id · timestamps</td>
+                  </tr>
+                  <tr>
+                    <th>Not stored</th>
+                    <td className="text-right text-emerald-300">message text · titles · system prompt</td>
+                  </tr>
+                  <tr>
+                    <th>Admin visibility</th>
+                    <td className="text-right text-slate-300">usage records, keys, deposits</td>
+                  </tr>
+                  <tr>
+                    <th>Deletion</th>
+                    <td className="text-right text-slate-300">per conversation or all</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
