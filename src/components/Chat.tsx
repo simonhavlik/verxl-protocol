@@ -789,6 +789,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [inputPrompt, setInputPrompt] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
+  const [finishedSessionIds, setFinishedSessionIds] = useState<Set<string>>(new Set());
   const activeStreaming = isStreaming && streamingSessionId === activeSessionId;
   const [streamingContent, setStreamingContent] = useState("");
   const [streamingReasoning, setStreamingReasoning] = useState("");
@@ -883,6 +884,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   // Delete Chat Session
   const deleteSession = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setFinishedSessionIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     if (authToken && user) {
       try {
         await fetch(`/api/chat/conversations?id=${encodeURIComponent(id)}`, {
@@ -1219,6 +1225,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     options?: { skipUserAppend?: boolean; session?: ChatSession }
   ) => {
     const targetSession = options?.session || activeSession;
+    setFinishedSessionIds((prev) => {
+      if (!prev.has(targetSession.id)) return prev;
+      const next = new Set(prev);
+      next.delete(targetSession.id);
+      return next;
+    });
     const promptText = (promptOverride || inputPrompt).trim();
     if (!promptText || isStreaming || isParsing) return;
     const attachmentText = attachments.map((a) => `[File: ${a.name}]\n${a.text}`).join("\n\n");
@@ -1635,6 +1647,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
       setIsStreaming(false);
       setStreamingSessionId(null);
+      setFinishedSessionIds((prev) => new Set(prev).add(targetSession.id));
       setStreamingContent("");
       setStreamingReasoning("");
     }
@@ -1846,6 +1859,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   ) : (
                     <span className="truncate text-[11.5px] font-medium">{session.title}</span>
                   )}
+                  {isStreaming && streamingSessionId === session.id ? (
+                    <span
+                      className="w-2 h-2 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0"
+                      title="Working"
+                    />
+                  ) : finishedSessionIds.has(session.id) ? (
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                  ) : null}
                 </div>
 
                 {/* Session Action Menu */}
