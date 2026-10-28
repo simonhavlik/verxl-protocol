@@ -843,13 +843,28 @@ export const Console: React.FC = () => {
       } catch {
         parsedModels = [
           {
-            id: nodeForm.name.toLowerCase().includes("deepseek") ? "deepseek-v4.1-flash" : "qwen-3.5-4b-uncensored-32k",
+            id: nodeForm.name.toLowerCase().includes("deepseek")
+              ? "deepseek-v4.1-flash"
+              : nodeForm.name.toLowerCase().includes("mimo")
+              ? "mimo-v2.6-flash"
+              : "qwen3.5-4b-uncensored-32k",
             name: nodeForm.name,
             context_window: 1000000,
-            price_prompt_usd: 0.05,
-            price_completion_usd: 0.10,
-            price_cached_prompt_usd: 0.010,
-            special_hours_discount: "Flat bare-metal $0.025 / $0.05",
+            price_prompt_usd: nodeForm.name.toLowerCase().includes("deepseek")
+              ? 0.30
+              : nodeForm.name.toLowerCase().includes("mimo")
+              ? 0.14
+              : 0.05,
+            price_completion_usd: nodeForm.name.toLowerCase().includes("deepseek")
+              ? 1.20
+              : nodeForm.name.toLowerCase().includes("mimo")
+              ? 0.28
+              : 0.10,
+            price_cached_prompt_usd: nodeForm.name.toLowerCase().includes("deepseek")
+              ? 0.006
+              : nodeForm.name.toLowerCase().includes("mimo")
+              ? 0.0028
+              : 0.010,
           },
         ];
       }
@@ -1579,7 +1594,9 @@ main();`,
                   >
                     <Wallet className="w-3.5 h-3.5 text-blue-400" />
                     <span>
-                      {user.wallet_address.slice(0, 6)}...{user.wallet_address.slice(-4)}
+                      {typeof user.wallet_address === "string" && user.wallet_address.length >= 10
+                        ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`
+                        : user.wallet_address}
                     </span>
                   </div>
                 ) : (
@@ -2833,7 +2850,7 @@ main();`,
                     <div>Protocol Fee (50 bps): <span className="text-purple-400">-${Number(payoutReceipt.protocol_fee_usd || 0).toFixed(4)} USD</span></div>
                     <div>Net Settlement: <span className="text-emerald-400 font-bold">${Number(payoutReceipt.net_payout_usd || 0).toFixed(2)} USD</span></div>
                     <div>Destination: <span className="text-slate-400">{payoutReceipt.payout_address}</span></div>
-                    <div>Arbitrum Ref: <span className="text-blue-400">{payoutReceipt.arbitrum_tx_ref.slice(0, 18)}...</span></div>
+                    <div>Arbitrum Ref: <span className="text-blue-400">{typeof payoutReceipt.arbitrum_tx_ref === "string" ? `${payoutReceipt.arbitrum_tx_ref.slice(0, 18)}...` : "Settled"}</span></div>
                   </div>
                   <button
                     onClick={() => setPayoutReceipt(null)}
@@ -3033,7 +3050,6 @@ main();`,
                             price_prompt_usd: 0.05,
                             price_completion_usd: 0.10,
                             price_cached_prompt_usd: 0.010,
-                            special_hours_discount: "24/7 Dedicated Bare-Metal Flat ($0.025 / $0.05)"
                           },
                           {
                             id: "deepseek-v4.1-flash",
@@ -3045,31 +3061,12 @@ main();`,
                             special_hours_discount: "50% Off-Peak ($0.15 / $0.60, Cache $0.003) outside 01:00-04:00 & 06:00-10:00 UTC"
                           },
                           {
-                            id: "deepseek-v4-pro",
-                            name: "DeepSeek V4 Pro (1M)",
-                            context_window: 1000000,
-                            price_prompt_usd: 1.32,
-                            price_completion_usd: 3.96,
-                            price_cached_prompt_usd: 0.044,
-                            special_hours_discount: "50% Off-Peak ($0.66 / $1.98, Cache $0.022) outside 01:00-04:00 & 06:00-10:00 UTC"
-                          },
-                          {
                             id: "mimo-v2.6-flash",
                             name: "Xiaomi MiMo v2.6 Flash (1M)",
                             context_window: 1000000,
                             price_prompt_usd: 0.14,
                             price_completion_usd: 0.28,
                             price_cached_prompt_usd: 0.0028,
-                            special_hours_discount: "Official Overseas Flat ($0.14 Prompt / $0.28 Output, $0.0028 Cache Hit)"
-                          },
-                          {
-                            id: "mimo-v2.6-pro",
-                            name: "Xiaomi MiMo v2.6 Pro (1M)",
-                            context_window: 1000000,
-                            price_prompt_usd: 0.435,
-                            price_completion_usd: 0.87,
-                            price_cached_prompt_usd: 0.0036,
-                            special_hours_discount: "Flagship 1T Trillion Parameter Logic Engine ($0.435 Prompt / $0.87 Output)"
                           }
                         ], null, 2),
                       });
@@ -3138,7 +3135,9 @@ main();`,
             <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
               Your account is already authenticated via your MetaMask wallet (
               <span className="font-mono text-blue-300">
-                {user.wallet_address ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` : "Web3"}
+                {typeof user?.wallet_address === "string" && user.wallet_address.length >= 10
+                  ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`
+                  : user?.wallet_address || "Web3"}
               </span>
               ). Adding an email is completely voluntary and enables email OTP login, password recovery, and hardware TOTP 2FA backups.
             </p>
@@ -3308,7 +3307,9 @@ main();`,
                 <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
                   You are authenticated with your Web3 wallet (
                   <span className="font-mono text-emerald-300">
-                    {user.wallet_address ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` : "MetaMask"}
+                    {typeof user?.wallet_address === "string" && user.wallet_address.length >= 10
+                      ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`
+                      : user?.wallet_address || "MetaMask"}
                   </span>
                   ). Linking an email is an optional addition to configure secondary password login and RFC 6238 TOTP 2FA.
                 </p>

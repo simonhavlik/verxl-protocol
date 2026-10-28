@@ -619,9 +619,6 @@ main();`,
                 <option disabled value="mimo-v2.6-flash" className="text-slate-500 bg-[#070b14]">
                   🔒 mimo-v2.6-flash (Paid USDC Balance Required · Verxl Chat / Console)
                 </option>
-                <option disabled value="meta-llama/llama-3-70b-instruct" className="text-slate-500 bg-[#070b14]">
-                  🔒 meta-llama/llama-3-70b-instruct (Paid USDC Balance Required · Verxl Chat / Console)
-                </option>
               </select>
 
               {/* Free Tier vs Paid Models Callout */}
@@ -636,7 +633,7 @@ main();`,
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
-                  The demo terminal is restricted exclusively to <strong>Qwen 3.5 4B Uncensored</strong>. For the rest (DeepSeek V4.1, Xiao MiMo, Llama 70B), one must pay per token via <a href="/chat" className="text-blue-400 underline hover:text-blue-300 font-mono">Verxl Chat</a> or with an API key generated in <a href="/console" className="text-blue-400 underline hover:text-blue-300 font-mono">Console</a> after depositing USDC on Arbitrum.
+                  The demo terminal is restricted exclusively to <strong>Qwen 3.5 4B Uncensored</strong>. For official bridge models (DeepSeek V4.1 Flash, Xiaomi MiMo 2.6 Flash), one must pay per token via <a href="/chat" className="text-blue-400 underline hover:text-blue-300 font-mono">Verxl Chat</a> or with an API key generated in <a href="/console" className="text-blue-400 underline hover:text-blue-300 font-mono">Console</a> after depositing USDC on Arbitrum.
                 </p>
                 <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
                   <span className="flex items-center gap-1 text-slate-400">

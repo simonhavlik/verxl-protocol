@@ -41,6 +41,66 @@ interface TabErrorBoundaryState {
   error: Error | null;
 }
 
+class GlobalErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[Verxl Protocol] Top-Level Error Intercepted:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col items-center justify-center p-6 text-center font-mono">
+          <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mb-4">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+          <h1 className="text-lg sm:text-xl font-bold text-white uppercase tracking-wider mb-2">
+            Verxl Protocol Telemetry Fault
+          </h1>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mb-4 font-sans">
+            An unexpected error occurred. Your cryptographic keys, on-chain balances, and account data remain secure.
+          </p>
+          {this.state.error?.message && (
+            <div className="text-[11px] text-red-300 bg-red-950/40 border border-red-900/50 p-3 rounded font-mono max-w-lg mb-6 break-all select-all text-left">
+              {this.state.error.message}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.href = "/";
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-[2px] transition flex items-center gap-2 uppercase tracking-wider"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Return to Overview</span>
+            </button>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-[#090d16] border border-slate-700 hover:border-slate-500 text-slate-300 text-xs font-bold rounded-[2px] transition uppercase tracking-wider"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundaryState> {
   constructor(props: TabErrorBoundaryProps) {
     super(props);
@@ -199,60 +259,62 @@ export default function App() {
   };
 
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
-        {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
-        {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
+    <GlobalErrorBoundary>
+      <AuthProvider>
+        <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
+          {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
+          {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
 
-        {/* Sticky Institutional Header */}
-        <Header
-          activeTab={activeTab}
-          setActiveTab={handleTabChange}
-          walletAddress={walletAddress}
-          onConnectWallet={handleConnectWallet}
-        />
+          {/* Sticky Institutional Header */}
+          <Header
+            activeTab={activeTab}
+            setActiveTab={handleTabChange}
+            walletAddress={walletAddress}
+            onConnectWallet={handleConnectWallet}
+          />
 
-        {/* Main Content Area */}
-        {activeTab === "overview" ? (
-          <div className="flex-1 flex flex-col relative z-10">
-            <Hero onNavigate={handleTabChange} />
-          </div>
-        ) : (
-          <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
-            <TabErrorBoundary activeTab={activeTab}>
-              <Suspense fallback={<TabLoadingFallback />}>
-                {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
-                {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
-                {activeTab === "registry" && (
-                  <Registry
-                    walletAddress={walletAddress}
-                    onConnectWallet={handleConnectWallet}
-                  />
-                )}
-                {activeTab === "oracle" && <Oracle />}
-                {activeTab === "whitepaper" && <Whitepaper />}
-                {activeTab === "governance" && <Governance />}
-                {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
-                {activeTab === "console" && <Console />}
-                {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
-                  <Legal
-                    initialTab={
-                      activeTab === "privacy" ? "privacy" :
-                      activeTab === "terms" ? "terms" :
-                      activeTab === "mica" ? "mica" :
-                      activeTab === "charter" ? "charter" :
-                      getLegalSubTab()
-                    }
-                  />
-                )}
-              </Suspense>
-            </TabErrorBoundary>
-          </main>
-        )}
+          {/* Main Content Area */}
+          {activeTab === "overview" ? (
+            <div className="flex-1 flex flex-col relative z-10">
+              <Hero onNavigate={handleTabChange} />
+            </div>
+          ) : (
+            <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
+              <TabErrorBoundary activeTab={activeTab}>
+                <Suspense fallback={<TabLoadingFallback />}>
+                  {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
+                  {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
+                  {activeTab === "registry" && (
+                    <Registry
+                      walletAddress={walletAddress}
+                      onConnectWallet={handleConnectWallet}
+                    />
+                  )}
+                  {activeTab === "oracle" && <Oracle />}
+                  {activeTab === "whitepaper" && <Whitepaper />}
+                  {activeTab === "governance" && <Governance />}
+                  {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
+                  {activeTab === "console" && <Console />}
+                  {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
+                    <Legal
+                      initialTab={
+                        activeTab === "privacy" ? "privacy" :
+                        activeTab === "terms" ? "terms" :
+                        activeTab === "mica" ? "mica" :
+                        activeTab === "charter" ? "charter" :
+                        getLegalSubTab()
+                      }
+                    />
+                  )}
+                </Suspense>
+              </TabErrorBoundary>
+            </main>
+          )}
 
-        {/* Institutional Footer */}
-        <Footer onNavigate={handleTabChange} />
-      </div>
-    </AuthProvider>
+          {/* Institutional Footer */}
+          <Footer onNavigate={handleTabChange} />
+        </div>
+      </AuthProvider>
+    </GlobalErrorBoundary>
   );
 }

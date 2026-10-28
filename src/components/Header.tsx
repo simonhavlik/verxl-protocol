@@ -154,11 +154,17 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Web3 Wallet Connect Button — Strictly Square */}
-          {walletAddress || user?.wallet_address ? (
+          {(walletAddress || user?.wallet_address) ? (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-[#090d16] border border-blue-500/40 text-xs font-mono text-blue-300">
               <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
               <span>
-                {((user?.wallet_address || walletAddress) as string).slice(0, 6)}...{((user?.wallet_address || walletAddress) as string).slice(-4)}
+                {(() => {
+                  const raw = user?.wallet_address || walletAddress;
+                  if (typeof raw === "string" && raw.length >= 10) {
+                    return `${raw.slice(0, 6)}...${raw.slice(-4)}`;
+                  }
+                  return "Connected";
+                })()}
               </span>
             </div>
           ) : (

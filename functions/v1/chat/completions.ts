@@ -249,7 +249,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return new Response(
         JSON.stringify({
           error: {
-            message: `Model '${rawModel}' requires an authenticated Verxl account with paid USDC balance. The free Playground is reserved strictly for 'qwen3.5-4b-uncensored-32k'. For the rest one must pay: deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat to access DeepSeek, MiMo, and Llama.`,
+            message: `Model '${rawModel}' requires an authenticated Verxl account with paid USDC balance. The free Playground is reserved strictly for 'qwen3.5-4b-uncensored-32k'. Deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat to access DeepSeek V4.1 Flash and Xiaomi MiMo 2.6 Flash.`,
             type: "insufficient_quota",
             code: "model_payment_required",
           },
@@ -324,22 +324,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   let promptRatePerM = 0.05;
   let completionRatePerM = 0.10;
 
-  if (requestedModel.includes("mimo-v2.6-pro") || requestedModel.includes("mimo-2.6-pro")) {
-    providerId = "xiao-mimo-bridge-01";
-    promptRatePerM = 0.435;
-    completionRatePerM = 0.87;
-  } else if (requestedModel.includes("mimo")) {
+  if (requestedModel.includes("mimo")) {
     providerId = "xiao-mimo-bridge-01";
     promptRatePerM = 0.14;
     completionRatePerM = 0.28;
-  } else if (requestedModel.includes("deepseek-v4-pro") || requestedModel.includes("deepseek-pro")) {
-    providerId = "deepseek-v4-bridge-01";
-    promptRatePerM = isDeepSeekPeak ? 1.32 : 0.66;
-    completionRatePerM = isDeepSeekPeak ? 3.96 : 1.98;
   } else if (requestedModel.includes("deepseek")) {
     providerId = "deepseek-v4-bridge-01";
     promptRatePerM = isDeepSeekPeak ? 0.30 : 0.15;
     completionRatePerM = isDeepSeekPeak ? 1.20 : 0.60;
+  } else {
+    // Bulbasaur Qwen 3.5 4B Uncensored (Bare-Metal - Flat Rate, No Special Hours)
+    providerId = "bulbasaur-prague-01";
+    promptRatePerM = 0.05;
+    completionRatePerM = 0.10;
   }
 
   // Institutional Protocol Clearing Headers

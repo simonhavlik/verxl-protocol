@@ -83,9 +83,9 @@ export interface ModelConfig {
   promptRate: number;
   cachedPromptRate: number;
   completionRate: number;
-  specialHoursPromptRate: number;
-  specialHoursCompletionRate: number;
-  specialHoursDesc: string;
+  specialHoursPromptRate?: number | null;
+  specialHoursCompletionRate?: number | null;
+  specialHoursDesc?: string | null;
   context: string;
   contextTokens: number;
   speed: string;
@@ -103,14 +103,14 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     promptRate: 0.05,
     cachedPromptRate: 0.010,
     completionRate: 0.10,
-    specialHoursPromptRate: 0.025,
-    specialHoursCompletionRate: 0.05,
-    specialHoursDesc: "24/7 Dedicated Bare-Metal Flat Host ($0.025 Prompt / $0.05 Completion)",
+    specialHoursPromptRate: null,
+    specialHoursCompletionRate: null,
+    specialHoursDesc: null,
     context: "1,000,000 tokens (1M)",
     contextTokens: 1000000,
     speed: "~52 TPS",
     provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
-    isOfficialBridge: true,
+    isOfficialBridge: false,
     description: "Resident Bare-Metal cluster in Prague. Zero reload latency, uncensored institutional precision.",
   },
   {
@@ -132,24 +132,6 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     description: "Official DeepSeek V4.1 Flash multi-head latent reasoning engine with 1M resident context.",
   },
   {
-    id: "deepseek-v4-pro",
-    name: "DeepSeek V4 Pro (1M)",
-    tag: "Trillion-Parameter Flagship Reasoning",
-    category: "reasoning",
-    promptRate: 1.32,
-    cachedPromptRate: 0.044,
-    completionRate: 3.96,
-    specialHoursPromptRate: 0.66,
-    specialHoursCompletionRate: 1.98,
-    specialHoursDesc: "50% Off-Peak Discount ($0.66 Input / $1.98 Output, $0.022 Cache Hit) outside 01:00-04:00 & 06:00-10:00 UTC",
-    context: "1,000,000 tokens (1M)",
-    contextTokens: 1000000,
-    speed: "~30 TPS",
-    provider: "DeepSeek Official Bridge (Tokyo / Hangzhou)",
-    isOfficialBridge: true,
-    description: "DeepSeek's flagship trillion-parameter reasoning model with 1M context and formal mathematical deduction.",
-  },
-  {
     id: "mimo-v2.6-flash",
     name: "Xiaomi MiMo v2.6 Flash (1M)",
     tag: "High-Concurrency Systems Engine",
@@ -157,33 +139,15 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     promptRate: 0.14,
     cachedPromptRate: 0.0028,
     completionRate: 0.28,
-    specialHoursPromptRate: 0.14,
-    specialHoursCompletionRate: 0.28,
-    specialHoursDesc: "Official Overseas Flat Rate ($0.14 Prompt / $0.28 Output, $0.0028 Cache Hit)",
+    specialHoursPromptRate: null,
+    specialHoursCompletionRate: null,
+    specialHoursDesc: null,
     context: "1,000,000 tokens (1M)",
     contextTokens: 1000000,
     speed: "~60 TPS",
     provider: "Xiaomi Official Bridge (Frankfurt)",
     isOfficialBridge: true,
     description: "Official Xiaomi MiMo v2.6 Flash with 1M resident context, sub-85ms TTFT, and 99% prompt cache discount.",
-  },
-  {
-    id: "mimo-v2.6-pro",
-    name: "Xiaomi MiMo v2.6 Pro (1M)",
-    tag: "Omnimodal Flagship Logic Engine",
-    category: "official-bridge",
-    promptRate: 0.435,
-    cachedPromptRate: 0.0036,
-    completionRate: 0.87,
-    specialHoursPromptRate: 0.435,
-    specialHoursCompletionRate: 0.87,
-    specialHoursDesc: "Flagship 1.02T Trillion Parameter Logic Engine ($0.435 Prompt / $0.87 Output, $0.0036 Cache Hit)",
-    context: "1,000,000 tokens (1M)",
-    contextTokens: 1000000,
-    speed: "~40 TPS",
-    provider: "Xiaomi Official Bridge (Frankfurt)",
-    isOfficialBridge: true,
-    description: "Xiaomi's 1.02T parameter omnimodal flagship logic model with 1M context for complex architecture and code.",
   },
 ];
 
@@ -1203,13 +1167,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   {/* Filter Pills */}
                   <div className="flex flex-wrap gap-1 text-[10px] font-mono">
                     {[
-                      { id: "all", label: "All" },
-                      { id: "1m", label: "1M Context" },
+                      { id: "all", label: "All Models (3)" },
                       { id: "bulbasaur", label: "Prague Bulbasaur" },
-                      { id: "deepseek", label: "DeepSeek" },
-                      { id: "xiaomi", label: "Xiaomi MiMo" },
-                      { id: "reasoning", label: "Reasoning" },
-                      { id: "official-bridge", label: "Official Bridge" },
+                      { id: "deepseek", label: "DeepSeek Flash" },
+                      { id: "xiaomi", label: "Xiaomi MiMo Flash" },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -1304,18 +1265,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                             </span>
                           </div>
 
-                          {/* Special Hours / Off-Peak Fee */}
-                          <div className="text-amber-300 bg-amber-500/10 px-2 py-1 rounded-[2px] border border-amber-500/20 space-y-0.5">
-                            <div className="flex items-center justify-between font-bold text-[10px]">
-                              <span>🌙 Off-Peak / Special Hours:</span>
-                              <span className="text-white">${m.specialHoursPromptRate} Prompt / ${m.specialHoursCompletionRate} Output</span>
-                            </div>
-                            {m.specialHoursDesc && (
-                              <div className="text-[8.5px] text-amber-200/80 leading-snug">
-                                {m.specialHoursDesc}
+                          {/* Special Hours / Off-Peak Fee (Only for models with off-peak rates like DeepSeek) */}
+                          {m.specialHoursPromptRate ? (
+                            <div className="text-amber-300 bg-amber-500/10 px-2 py-1 rounded-[2px] border border-amber-500/20 space-y-0.5">
+                              <div className="flex items-center justify-between font-bold text-[10px]">
+                                <span>🌙 Off-Peak / Special Hours:</span>
+                                <span className="text-white">${m.specialHoursPromptRate} Prompt / ${m.specialHoursCompletionRate} Output</span>
                               </div>
-                            )}
-                          </div>
+                              {m.specialHoursDesc && (
+                                <div className="text-[8.5px] text-amber-200/80 leading-snug">
+                                  {m.specialHoursDesc}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between text-slate-400 bg-slate-800/40 px-2 py-0.5 rounded-[2px] border border-slate-700/50 text-[9.5px]">
+                              <span>⏰ 24/7 Pricing Schedule:</span>
+                              <span className="text-slate-300 font-bold">Flat Rate (Zero Peak Surcharges)</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Provider Node Label & Data Policy */}

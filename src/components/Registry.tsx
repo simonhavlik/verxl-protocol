@@ -241,7 +241,7 @@ export const Registry: React.FC<RegistryProps> = ({
           <span className="w-2 h-2 rounded-[1px] bg-emerald-400 animate-pulse shrink-0" />
           <div className="text-[11px] leading-relaxed">
             <span className="text-white font-semibold">Active Fleet Scope:</span>{" "}
-            Currently live with our self-hosted Prague bare-metal cluster (Bulbasaur) and official bridges to Xiaomi Mi MIMO 2.6 Flash/Pro & DeepSeek v4.1. Independent compute hosts can bond $VRXL and register below.
+            Currently live with our self-hosted Prague bare-metal cluster (Bulbasaur) and official bridges to Xiaomi Mi MIMO 2.6 Flash & DeepSeek V4.1 Flash. Independent compute hosts can bond $VRXL and register below.
           </div>
         </div>
         <div className="text-[10px] text-blue-400 font-mono shrink-0 flex items-center gap-2">
