@@ -926,10 +926,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const safety = Math.max(2048, (session.searchBudget || 512) + 512);
     const normalThreshold = model.contextTokens - outputReserve - safety;
     // Max splits the window: conversation gets half, search fills the rest.
-    const threshold =
-      forSearch && session.searchBudget === -1
-        ? Math.min(normalThreshold, Math.floor(model.contextTokens / 2))
-        : normalThreshold;
+    const threshold = forSearch
+      ? Math.min(normalThreshold, 8192)
+      : normalThreshold;
     const prior = session.compaction;
     const priorIdx = prior ? messages.findIndex((m) => m.id === prior.throughId) : -1;
     const recent = priorIdx >= 0 ? messages.slice(priorIdx + 1) : messages;
@@ -1053,6 +1052,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       searchBudgetTokens = (targetSession.searchBudget || 512) === -1
         ? available
         : targetSession.searchBudget || 512;
+      searchBudgetTokens = Math.min(searchBudgetTokens, 2048);
     }
 
     // Search from the browser IP, so the keyless Firecrawl limit applies per user.
