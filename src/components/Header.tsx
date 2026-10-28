@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ExternalLink, ShieldCheck, Wallet, Check, Copy } from "lucide-react";
+import { ExternalLink, Wallet, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 interface HeaderProps {
@@ -16,10 +16,9 @@ export const Header: React.FC<HeaderProps> = ({
   onConnectWallet,
 }) => {
   const { user, loginWithWallet } = useAuth();
-  const [copied, setCopied] = useState(false);
   const [connectingWallet, setConnectingWallet] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
-  const daoAddress = "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a";
 
   const handleConnectWalletClick = async () => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
@@ -28,8 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
         const eth = (window as any).ethereum;
         const accounts = await eth.request({ method: "eth_requestAccounts" });
         if (accounts && accounts.length > 0) {
-          const account = accounts[0];
-          await loginWithWallet(account);
+          await loginWithWallet(accounts[0]);
           onConnectWallet();
           return;
         }
@@ -42,132 +40,109 @@ export const Header: React.FC<HeaderProps> = ({
     onConnectWallet();
   };
 
-  // Center active mobile tab button smoothly when switched
   useEffect(() => {
     if (mobileNavRef.current) {
       const activeEl = mobileNavRef.current.querySelector('[data-active="true"]') as HTMLElement;
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      }
+      if (activeEl) activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }
   }, [activeTab]);
 
-  const copyAddress = () => {
-    navigator.clipboard.writeText(daoAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const isUserLoggedIn = Boolean(user || walletAddress);
-
-  const navItems = [
+  const coreItems = [
     { id: "overview", label: "Overview" },
     { id: "playground", label: "Playground" },
     { id: "chat", label: "Chat" },
     { id: "console", label: "API" },
+    { id: "governance", label: "Governance" },
+  ];
+  const moreItems = [
     { id: "registry", label: "Registry" },
     { id: "oracle", label: "Oracle" },
-    ...(!isUserLoggedIn || activeTab === "whitepaper"
-      ? [{ id: "whitepaper", label: "Whitepaper" }]
-      : []),
-    { id: "governance", label: "Governance" },
+    { id: "whitepaper", label: "Whitepaper" },
     { id: "vision", label: "Vision" },
   ];
+  const allItems = [...coreItems, ...moreItems];
+  const isActiveMore = moreItems.some((i) => i.id === activeTab);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#05070b]/90 border-b border-blue-500/15">
-      {/* Sepolia Testnet Notice Top Bar */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 font-mono text-[9.5px] sm:text-[10px] text-amber-300/90 tracking-wide flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap">
-        <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/20 border border-amber-500/40 text-[8.5px] font-bold text-amber-300 tracking-wider shrink-0">
-          SEPOLIA TESTNET
-        </span>
-        <span className="text-amber-500/40">/</span>
-        <span className="text-slate-300 truncate">
-          VŠE Praha Academic Project
-        </span>
-        <span className="hidden md:inline text-amber-500/40">/</span>
-        <a
-          href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden md:inline text-amber-300/80 hover:text-amber-200 underline decoration-amber-500/40 transition"
-        >
-          DAO: 0xf0e5...111a
-        </a>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Brand Logo & Name */}
-        <div
-          className="flex items-center gap-2 cursor-pointer py-1 shrink-0"
-          onClick={() => setActiveTab("overview")}
-        >
-          <img
-            src="/logo-square.jpg"
-            alt="Verxl Logo"
-            className="w-7 h-7 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20 shrink-0"
-          />
-          <span className="font-bold text-sm tracking-wider text-white font-mono hidden sm:inline">
-            VERXL<span className="text-blue-500">.COM</span>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex shrink-0 cursor-pointer items-center gap-2.5" onClick={() => setActiveTab("overview")}>
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+            <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
+            <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
+          </svg>
+          <span className="text-[15px] font-semibold tracking-[-0.02em] text-white">Verxl</span>
+          <span className="hidden border border-[#b8f6dd]/20 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-[#b8f6dd]/70 sm:inline">
+            Sepolia
           </span>
         </div>
 
-        {/* Navigation Tabs — Hairline instrument tabs */}
-        <nav className="hidden md:flex items-center gap-0.5 bg-[#090d16] p-0.5 rounded-[3px] border border-slate-800/90 font-mono text-xs">
-          {navItems.map((item) => (
+        <nav className="hidden items-center gap-6 md:flex">
+          {coreItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`px-1.5 lg:px-2.5 py-1 rounded-[2px] transition-all text-[10px] lg:text-[10.5px] uppercase tracking-wider font-medium whitespace-nowrap ${
+              className={`border-b pb-1 text-[12px] transition-colors ${
                 activeTab === item.id
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25 border border-blue-400/40"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                  ? "border-[#b8f6dd] text-white"
+                  : "border-transparent text-[#8b989e] hover:text-white"
               }`}
             >
               {item.label}
             </button>
           ))}
+          <div className="relative" onMouseLeave={() => setShowMore(false)}>
+            <button
+              onClick={() => setShowMore((v) => !v)}
+              className={`flex items-center gap-1 border-b pb-1 text-[12px] transition-colors ${
+                isActiveMore
+                  ? "border-[#b8f6dd] text-white"
+                  : "border-transparent text-[#8b989e] hover:text-white"
+              }`}
+            >
+              Protocol
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {showMore && (
+              <div className="absolute right-0 top-full mt-2 w-44 border border-white/10 bg-[#0b1016] p-1 shadow-2xl">
+                {moreItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setShowMore(false);
+                    }}
+                    className={`block w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
+                      activeTab === item.id ? "text-[#b8f6dd]" : "text-[#9aa7ad] hover:text-white"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           {user && (
-            <div
+            <button
               onClick={() => setActiveTab("console")}
-              className="cursor-pointer flex items-center gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-blue-500/40 text-blue-300 hover:border-blue-400 transition"
-              title={`Logged in as ${user.email} · Click to manage API & balance`}
+              className="hidden items-center gap-1.5 border border-white/10 px-2.5 py-1.5 font-mono text-[10px] text-[#c9d4d8] transition-colors hover:border-white/25 sm:flex"
+              title="Balance"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-              <span className="font-bold text-white tracking-tight">${Number(user.balance_usd || 0).toFixed(2)}</span>
-              <span className="text-[9.5px] text-slate-400 hidden xs:inline">USD</span>
-            </div>
+              <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
+              <span className="text-white">${Number(user.balance_usd || 0).toFixed(2)}</span>
+              <span className="text-[#77858b]">USD</span>
+            </button>
           )}
-          {/* DAO Address Copy Badge - Shown on wide screens when logged out, ultra-wide when logged in */}
-          <button
-            onClick={copyAddress}
-            title="Copy Aragon DAO Vault Address"
-            className={`${isUserLoggedIn ? "hidden 2xl:flex" : "hidden xl:flex"} items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>DAO: 0xf0e5...111a</span>
-            {copied ? (
-              <Check className="w-3 h-3 text-emerald-400" />
-            ) : (
-              <Copy className="w-3 h-3 text-slate-400" />
-            )}
-          </button>
-
-          {/* Web3 Wallet Connect Button — Strictly Square */}
-          {(walletAddress || user?.wallet_address) ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#090d16] border border-blue-500/40 text-xs font-mono text-blue-300">
-              <span className="w-1.5 h-1.5 status-dot bg-emerald-400 animate-pulse shrink-0" />
-              <span className="text-[11px] font-medium">
+          {walletAddress || user?.wallet_address ? (
+            <div className="flex items-center gap-1.5 border border-[#b8f6dd]/25 px-2.5 py-1.5 font-mono text-[10px] text-[#d7f8ec]">
+              <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
+              <span>
                 {(() => {
                   const raw = user?.wallet_address || walletAddress;
-                  if (typeof raw === "string" && raw.length >= 10) {
-                    return `${raw.slice(0, 6)}...${raw.slice(-4)}`;
-                  }
-                  return "Connected";
+                  return raw && raw.length >= 10 ? `${raw.slice(0, 6)}...${raw.slice(-4)}` : "Connected";
                 })()}
               </span>
             </div>
@@ -175,41 +150,37 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleConnectWalletClick}
               disabled={connectingWallet}
-              className="hero-btn hero-btn--primary !py-1 !px-2.5 !text-[10.5px] disabled:opacity-50"
-              title="Connect MetaMask to instantly authenticate or restore your account"
+              className="flex items-center gap-1.5 border border-[#b8f6dd]/30 px-2.5 py-1.5 text-[11px] text-[#dff8ef] transition-colors hover:border-[#b8f6dd]/70 disabled:opacity-50"
             >
-              <Wallet className="w-3.5 h-3.5" />
-              <span>{connectingWallet ? "Connecting..." : "Connect MetaMask"}</span>
+              <Wallet className="h-3.5 w-3.5" />
+              <span>{connectingWallet ? "Connecting" : "Connect"}</span>
             </button>
           )}
-
-          {/* External Aragon Link */}
           <a
             href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-400 hover:text-white hover:border-blue-500/40 transition shrink-0"
-            title="View Live DAO on Aragon OSx"
+            className="p-1.5 text-[#77858b] transition-colors hover:text-white"
+            title="Aragon DAO"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>
 
-      {/* Mobile Nav Bar */}
       <div
         ref={mobileNavRef}
-        className="flex md:hidden overflow-x-auto border-t border-slate-800/80 px-3 py-2 gap-2 bg-[#060911] no-scrollbar font-mono text-xs touch-pan-x scroll-smooth select-none"
+        className="no-scrollbar flex gap-5 overflow-x-auto border-t border-white/5 px-4 py-2.5 md:hidden"
       >
-        {navItems.map((item) => (
+        {allItems.map((item) => (
           <button
             key={item.id}
             data-active={activeTab === item.id ? "true" : "false"}
             onClick={() => setActiveTab(item.id)}
-            className={`min-h-[36px] px-3.5 py-1.5 whitespace-nowrap rounded-[2px] transition-all flex items-center justify-center tracking-wider text-[11px] font-bold uppercase active:scale-95 ${
+            className={`shrink-0 border-b pb-1 text-[11px] transition-colors ${
               activeTab === item.id
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30 border border-blue-400/50"
-                : "bg-[#0a0e17] text-slate-400 border border-slate-800/90 hover:text-white"
+                ? "border-[#b8f6dd] text-white"
+                : "border-transparent text-[#8b989e]"
             }`}
           >
             {item.label}
