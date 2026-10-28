@@ -63,7 +63,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const stream = Boolean(body.stream);
   const temperature = typeof body.temperature === "number" ? body.temperature : 0.7;
-  const maxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 4096) : 1024;
+  const maxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 32768) : 8192;
 
   if (messages.length === 0) {
     return new Response(

@@ -976,7 +976,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           messages: apiMessages,
           stream: true,
           temperature: 0.3,
-          max_tokens: 1536,
+          max_tokens: selectedModelConfig.isOfficialBridge ? 32768 : 8192,
           reasoning_effort:
             selectedModelConfig.isOfficialBridge && thinkLevel !== "off" ? thinkLevel : "none",
         }),
@@ -1054,10 +1054,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         (estCompletionTokens / 1e6) * selectedModelConfig.completionRate;
       const totalCost = requestFailed ? 0 : computeCost * 1.005; // 50 bps protocol fee
 
+      const hasContent = accumulatedContent.trim().length > 0;
+      if (!hasContent) requestFailed = true;
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
         role: "assistant",
-        content: accumulatedContent || "Response concluded.",
+        content: hasContent
+          ? accumulatedContent
+          : accumulatedReasoning
+          ? "**No final answer was returned.** The model produced reasoning but the stream ended before the answer. Retry, or lower the think level."
+          : "**No response was returned.** The upstream stream ended without content. Retry.",
         reasoning: accumulatedReasoning || undefined,
         sources: sources.length > 0 ? sources : undefined,
         createdAt: Date.now(),
@@ -1926,7 +1932,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     )}
 
                     {/* Assistant Telemetry Footer */}
-                    {msg.role === "assistant" && msg.metrics && !msg.metrics.failed && (
+                    {msg.role === "assistant" && msg.metrics && (
                       <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 select-none">
                         <div className="flex items-center gap-2">
                           <span className="text-emerald-400 font-semibold">
