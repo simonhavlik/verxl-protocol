@@ -725,6 +725,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   // Streaming & Message Generation State
   const [inputPrompt, setInputPrompt] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
+  const activeStreaming = isStreaming && streamingSessionId === activeSessionId;
   const [streamingContent, setStreamingContent] = useState("");
   const [streamingReasoning, setStreamingReasoning] = useState("");
   const [expandedReasoningIds, setExpandedReasoningIds] = useState<Record<string, boolean>>({});
@@ -1114,6 +1116,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     syncSessionToDb(updatedUserSession);
 
     setInputPrompt("");
+    setStreamingSessionId(targetSession.id);
     setIsStreaming(true);
     setStreamingContent("");
     setStreamingReasoning("");
@@ -1430,6 +1433,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       setTimeout(() => refreshSession(), 1000);
 
       setIsStreaming(false);
+      setStreamingSessionId(null);
       setStreamingContent("");
       setStreamingReasoning("");
     }
@@ -2090,7 +2094,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 select-text"
         >
           {/* Empty Conversation Welcome Screen */}
-          {activeSession.messages.length === 0 && !isStreaming ? (
+          {activeSession.messages.length === 0 && !activeStreaming ? (
             <div className="max-w-2xl mx-auto py-8 sm:py-12 flex flex-col items-center justify-center text-center space-y-6 select-none">
               <div className="relative">
                 <img
@@ -2334,7 +2338,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               ))}
 
               {/* Real-time Streaming Message */}
-              {isStreaming && (
+              {activeStreaming && (
                 <div className="flex flex-col items-start space-y-1 w-full">
                   <div className="flex items-center gap-2 px-1 text-[10px] font-mono text-blue-400">
                     <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
@@ -2389,6 +2393,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {/* Input Box Footer Container */}
         <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#080c14]/90 shrink-0">
           <div className="max-w-4xl mx-auto space-y-2">
+            {isStreaming && !activeStreaming && (
+              <div className="text-[9px] font-mono text-slate-500 px-1">
+                Another chat is still finishing in the background. This chat can send when it completes.
+              </div>
+            )}
+
             {/* Input Form */}
             <div className="relative flex items-end gap-2 bg-[#05070b] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
               <textarea
@@ -2469,7 +2479,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
 
               {/* Action Button: Send or Stop */}
-              {isStreaming ? (
+              {activeStreaming ? (
                 <button
                   onClick={handleStopGeneration}
                   className="p-2 rounded-[3px] bg-rose-600 hover:bg-rose-500 text-white transition shrink-0 active:scale-95"
@@ -2480,7 +2490,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               ) : (
                 <button
                   onClick={() => handleSendMessage()}
-                  disabled={!inputPrompt.trim()}
+                  disabled={!inputPrompt.trim() || isStreaming}
                   className={`p-2 rounded-[3px] transition shrink-0 ${
                     inputPrompt.trim()
                       ? "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/30 active:scale-95 cursor-pointer"
@@ -2580,10 +2590,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <span>
                   Est. Cost: ~${((Math.max(1, inputPrompt.length / 4) / 1e6) * 0.15).toFixed(6)} USD
                 </span>
-                {isSearching && (
+                {isSearching && activeStreaming && (
                   <span className="text-emerald-400">Searching the web...</span>
                 )}
-                {searchError && (
+                {searchError && activeStreaming && (
                   <span className="text-amber-400">{searchError}</span>
                 )}
               </div>
