@@ -2312,6 +2312,40 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 </select>
               )}
 
+              <div className="relative group shrink-0 font-mono text-[9px] text-slate-400">
+                <span className="cursor-help whitespace-nowrap" title="Context used by the last request">
+                  ctx {fmtTokens(contextStats.used)}/{fmtTokens(contextLimit)}
+                </span>
+                <div className="hidden group-hover:block absolute bottom-full right-0 mb-2 w-64 z-50 border border-slate-700 bg-[#080c14] p-2 shadow-2xl">
+                  <div className="text-[8px] uppercase tracking-wider text-slate-500 mb-1">
+                    Context · {lastAssistantContext ? "last request" : "current"}
+                  </div>
+                  {[
+                    ["System", contextStats.system],
+                    ["Tools · search", contextStats.tools],
+                    ["History", contextStats.history],
+                    ["Prompt", contextStats.prompt],
+                    ["Format", contextStats.format],
+                    ["Response", contextStats.response],
+                  ].map(([label, value]) => (
+                    <div key={String(label)} className="flex justify-between gap-2">
+                      <span className="text-slate-500">{label}</span>
+                      <span className="text-slate-300">{fmtTokens(Number(value))}</span>
+                    </div>
+                  ))}
+                  <div className="mt-1 pt-1 border-t border-slate-800 flex justify-between text-[8.5px]">
+                    <span className="text-slate-500">Left</span>
+                    <span className="text-emerald-400">{fmtTokens(contextStats.left)}</span>
+                  </div>
+                  {contextStats.compactionSaved > 0 && (
+                    <div className="flex justify-between text-[8.5px]">
+                      <span className="text-slate-500">Compacted</span>
+                      <span className="text-emerald-400">{fmtTokens(contextStats.compactionSaved)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Action Button: Send or Stop */}
               {isStreaming ? (
                 <button
