@@ -1855,7 +1855,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   return (
     <div
-      className="h-[calc(100vh-105px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
+      className="h-[calc(100vh-129px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
       onDragOver={(e) => {
         e.preventDefault();
         setDragActive(true);

@@ -156,7 +156,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
   return (
     <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       {/* Hero */}
-      <section className="grid min-h-[calc(100svh-68px)] grid-cols-1 items-center gap-10 py-12 lg:grid-cols-12 lg:gap-8 lg:py-16">
+      <section className="grid min-h-[calc(100svh-92px)] grid-cols-1 items-center gap-10 py-12 lg:grid-cols-12 lg:gap-8 lg:py-16">
         <div className="space-y-6 lg:col-span-5">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
             <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />

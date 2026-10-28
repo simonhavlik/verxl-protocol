@@ -353,7 +353,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       </div>
 
       {/* Main Hero Container */}
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-68px)] w-full max-w-7xl items-center px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-92px)] w-full max-w-7xl items-center px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-center">
           {/* Left Column: Copy & Actions */}
           <div className="lg:col-span-6 space-y-6">

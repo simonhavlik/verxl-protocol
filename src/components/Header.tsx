@@ -66,6 +66,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl">
+      <div className="flex h-6 items-center justify-center gap-2 border-b border-white/5 bg-[#0b1016] px-3 font-mono text-[8.5px] uppercase tracking-[0.18em] text-[#b8f6dd]/70">
+        <span className="h-1 w-1 bg-[#b8f6dd]" />
+        <span>Sepolia test run</span>
+      </div>
+
       <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex shrink-0 cursor-pointer items-center gap-2.5" onClick={() => setActiveTab("overview")}>
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
@@ -73,9 +78,6 @@ export const Header: React.FC<HeaderProps> = ({
             <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
           </svg>
           <span className="text-[15px] font-semibold tracking-[-0.02em] text-white">Verxl</span>
-          <span className="hidden border border-[#b8f6dd]/20 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-[#b8f6dd]/70 sm:inline">
-            Sepolia
-          </span>
         </div>
 
         <nav className="hidden items-center gap-6 md:flex">
