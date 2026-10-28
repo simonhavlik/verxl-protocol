@@ -72,18 +72,41 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
   }
 
-  // Find user by wallet address
-  let user = await db.prepare(
-    "SELECT id, email, wallet_address, balance_usd, total_deposited_usd FROM users WHERE LOWER(wallet_address) = ?"
-  )
-    .bind(wallet)
-    .first<{
-      id: string;
-      email: string;
-      wallet_address: string;
-      balance_usd: number;
-      total_deposited_usd: number;
-    }>();
+  // Šimon Havlík's lead wallets: always resolve to usr_simonhavlik (me@simonhavlik.com)
+  const isSimonWallet =
+    wallet === "0x14f10a865e277c0b1949e18dd9856602db11742b" ||
+    wallet === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5";
+
+  let user = isSimonWallet
+    ? await db.prepare("SELECT id, email, wallet_address, balance_usd, total_deposited_usd FROM users WHERE email = 'me@simonhavlik.com' LIMIT 1")
+        .first<{
+          id: string;
+          email: string;
+          wallet_address: string;
+          balance_usd: number;
+          total_deposited_usd: number;
+        }>()
+    : await db.prepare(
+        "SELECT id, email, wallet_address, balance_usd, total_deposited_usd FROM users WHERE LOWER(wallet_address) = ?"
+      )
+        .bind(wallet)
+        .first<{
+          id: string;
+          email: string;
+          wallet_address: string;
+          balance_usd: number;
+          total_deposited_usd: number;
+        }>();
+
+  if (isSimonWallet && user) {
+    // Keep wallet_address synchronized to the active connecting wallet
+    if (user.wallet_address?.toLowerCase() !== wallet) {
+      await db.prepare("UPDATE users SET wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(wallet, user.id)
+        .run();
+      user.wallet_address = wallet;
+    }
+  }
 
   // If caller was already logged in with an account, attach the wallet to that account
   if (loggedInUserSub && !user) {

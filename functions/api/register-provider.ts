@@ -1,5 +1,6 @@
 // Cloudflare Pages Function: /api/register-provider
-// Validates and records prospective GPU Provider registration applications
+// Validates and records prospective GPU Provider registration applications into PostgreSQL
+import { db } from "./lib/db";
 
 interface Env {}
 
@@ -37,12 +38,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     endpointUrl,
     modelIdentifier,
     hardware,
-    location,
+    location = "Global",
     region = "EU-Central",
-    stakedAmountVrxl = 1000,
-    pricePromptUsd = 0.50,
-    priceCompletionUsd = 0.50,
-    contactInfo,
+    pricePromptUsd = 0.05,
+    priceCompletionUsd = 0.10,
+    website = null,
+    contactEmail = null,
+    message = null,
   } = body;
 
   if (!name || !endpointUrl || !modelIdentifier || !hardware) {
@@ -57,47 +59,74 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (stakedAmountVrxl < 1000) {
+  const applicationId = `app_${crypto.randomUUID()}`;
+
+  try {
+    await db.prepare(
+      `INSERT INTO provider_applications (
+        id, name, operator_address, endpoint_url, model_identifier,
+        hardware, location, region, price_prompt_usd, price_completion_usd,
+        website, contact_email, message, status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_REVIEW', CURRENT_TIMESTAMP)`
+    )
+      .bind(
+        applicationId,
+        name.trim(),
+        operatorAddress ? operatorAddress.trim() : null,
+        endpointUrl.trim(),
+        modelIdentifier.trim(),
+        hardware.trim(),
+        location.trim(),
+        region.trim(),
+        Number(pricePromptUsd) || 0.05,
+        Number(priceCompletionUsd) || 0.10,
+        website ? website.trim() : null,
+        contactEmail ? contactEmail.trim().toLowerCase() : null,
+        message ? message.trim() : null
+      )
+      .run();
+
+    return new Response(
+      JSON.stringify(
+        {
+          success: true,
+          message: "Provider node application submitted successfully. Placed into admin review queue.",
+          application: {
+            id: applicationId,
+            name,
+            operatorAddress,
+            endpointUrl,
+            modelIdentifier,
+            hardware,
+            location,
+            region,
+            pricePromptUsd,
+            priceCompletionUsd,
+            website,
+            contactEmail,
+            message,
+            status: "PENDING_REVIEW",
+            submissionTimestamp: new Date().toISOString(),
+          },
+        },
+        null,
+        2
+      ),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      }
+    );
+  } catch (err: any) {
+    console.error("Failed to save provider application:", err);
     return new Response(
       JSON.stringify({
         error: {
-          message: "Minimum stake requirement is 1,000 $VRXL for Sepolia bonding.",
-          code: "INSUFFICIENT_BOND",
+          message: "Failed to record application into database: " + err.message,
+          code: "DB_ERROR",
         },
       }),
-      { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+      { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }
-
-  const providerId = `node-${Math.random().toString(36).substring(2, 9)}`;
-  const submissionTimestamp = new Date().toISOString();
-
-  const responsePayload = {
-    success: true,
-    message: "Inference provider registration submitted successfully. Node placed in PENDING_AUDIT queue for autonomous seed=42 canary verification.",
-    provider: {
-      id: providerId,
-      name,
-      operatorAddress: operatorAddress || "0x0000000000000000000000000000000000000000",
-      endpointUrl,
-      modelIdentifier,
-      hardware,
-      location: location || "Global",
-      region,
-      stakedAmountVrxl: Number(stakedAmountVrxl),
-      pricePromptUsd: Number(pricePromptUsd),
-      priceCompletionUsd: Number(priceCompletionUsd),
-      status: "PENDING_AUDIT",
-      contact: contactInfo || "unspecified",
-      submissionTimestamp,
-      canaryOracleCheck: "SCHEDULED",
-      contractAddress: "0x8F590f2098D71A8253ad50450D7A73F3201402F0",
-      daoVault: "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
-    },
-  };
-
-  return new Response(JSON.stringify(responsePayload, null, 2), {
-    status: 200,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-  });
 };

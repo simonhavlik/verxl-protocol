@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { WhitepaperContent } from "./WhitepaperContent";
+import { useAuth } from "../context/AuthContext";
+import { AdminRegistryTab } from "./AdminRegistryTab";
+import { AdminUsersTab } from "./AdminUsersTab";
 import {
   Shield,
   ExternalLink,
@@ -13,6 +16,7 @@ import {
   RefreshCw,
   Database,
   Server,
+  Users,
 } from "lucide-react";
 
 interface DaoStats {
@@ -69,7 +73,15 @@ interface ProposalItem {
 }
 
 export const Governance: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<"dao" | "whitepaper" | "charter">("dao");
+  const { user } = useAuth();
+  const isAdmin = Boolean(
+    user?.is_admin ||
+    user?.email?.toLowerCase() === "me@simonhavlik.com" ||
+    user?.wallet_address?.toLowerCase() === "0x14f10a865e277c0b1949e18dd9856602db11742b" ||
+    user?.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5"
+  );
+
+  const [activeSubTab, setActiveSubTab] = useState<"dao" | "whitepaper" | "charter" | "registry" | "users">("dao");
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [stats, setStats] = useState<DaoStats | null>(null);
   const [proposals, setProposals] = useState<ProposalItem[]>([]);
@@ -175,10 +187,10 @@ export const Governance: React.FC = () => {
       </div>
 
       {/* Sub-navigation tabs — Hairline sharp tabs */}
-      <div className="flex border-b border-slate-800 gap-1 pb-1 font-mono text-xs">
+      <div className="flex border-b border-slate-800 gap-1 pb-1 font-mono text-xs overflow-x-auto">
         <button
           onClick={() => setActiveSubTab("dao")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition whitespace-nowrap ${
             activeSubTab === "dao"
               ? "bg-blue-600 text-white shadow-sm border border-blue-400/40"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -190,7 +202,7 @@ export const Governance: React.FC = () => {
 
         <button
           onClick={() => setActiveSubTab("whitepaper")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium text-[11px] transition whitespace-nowrap ${
             activeSubTab === "whitepaper"
               ? "bg-blue-600 text-white shadow-sm border border-blue-400/40"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -202,7 +214,7 @@ export const Governance: React.FC = () => {
 
         <button
           onClick={() => setActiveSubTab("charter")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] uppercase tracking-wider font-medium transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium transition whitespace-nowrap text-[11px] ${
             activeSubTab === "charter"
               ? "bg-blue-600 text-white shadow-sm border border-blue-400/40"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -211,6 +223,42 @@ export const Governance: React.FC = () => {
           <Shield className="w-3.5 h-3.5" />
           <span>Founders' Charter (MoA)</span>
         </button>
+
+        {/* ADMIN TAB 4: REGISTRY (Strictly visible only to Šimon / Admin) */}
+        {isAdmin && (
+          <button
+            onClick={() => setActiveSubTab("registry")}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium transition whitespace-nowrap text-[11px] ${
+              activeSubTab === "registry"
+                ? "bg-purple-600 text-white shadow-sm border border-purple-400/50"
+                : "text-purple-300 hover:text-white hover:bg-purple-950/40 border border-purple-500/20"
+            }`}
+          >
+            <Server className="w-3.5 h-3.5 text-purple-400" />
+            <span>Registry</span>
+            <span className="px-1 py-0.2 text-[8.5px] rounded-[2px] bg-purple-500/30 text-purple-200 font-bold">
+              ADMIN
+            </span>
+          </button>
+        )}
+
+        {/* ADMIN TAB 5: USERS (Strictly visible only to Šimon / Admin) */}
+        {isAdmin && (
+          <button
+            onClick={() => setActiveSubTab("users")}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] uppercase tracking-wider font-medium transition whitespace-nowrap text-[11px] ${
+              activeSubTab === "users"
+                ? "bg-emerald-600 text-white shadow-sm border border-emerald-400/50"
+                : "text-emerald-300 hover:text-white hover:bg-emerald-950/40 border border-emerald-500/20"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Users</span>
+            <span className="px-1 py-0.2 text-[8.5px] rounded-[2px] bg-emerald-500/30 text-emerald-200 font-bold">
+              ADMIN
+            </span>
+          </button>
+        )}
       </div>
 
       {/* SubTab 1: Live DAO Portal */}
@@ -624,6 +672,16 @@ export const Governance: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* SubTab 4: Admin Registry (Model Submissions, Fleet Monitoring & Agent Mail) */}
+      {activeSubTab === "registry" && isAdmin && (
+        <AdminRegistryTab />
+      )}
+
+      {/* SubTab 5: Admin Users (User Management, Balance Rewriting, Suspensions, Activity) */}
+      {activeSubTab === "users" && isAdmin && (
+        <AdminUsersTab />
       )}
     </div>
   );

@@ -41,6 +41,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const isAdmin =
     user.email?.toLowerCase() === "me@simonhavlik.com" ||
+    user.wallet_address?.toLowerCase() === "0x14f10a865e277c0b1949e18dd9856602db11742b" ||
     user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5";
 
   // Admins can see all provider nodes; normal users see only their own
@@ -99,6 +100,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const isAdmin =
     user.email?.toLowerCase() === "me@simonhavlik.com" ||
+    user.wallet_address?.toLowerCase() === "0x14f10a865e277c0b1949e18dd9856602db11742b" ||
     user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5";
 
   let body: any;

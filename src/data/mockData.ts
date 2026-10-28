@@ -13,7 +13,7 @@ export interface GpuProvider {
   priceCompletionUsd: number; // per 1M tokens
   priceCachedPromptUsd?: number; // per 1M cached tokens
   specialHoursDiscount?: string;
-  stakedAmountVrxl: number;
+  stakedAmountVrxl?: number;
   status: "ACTIVE" | "PROBATION" | "SLASHED" | "OFFLINE" | "PENDING_AUDIT";
   lastAuditScore: number;     // e.g. 99.4%
   uptimePercent: number;
@@ -59,7 +59,7 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     providerType: "SELF_HOSTED",
     contextWindow: 1000000,
     operatorAddress: "0x8F590f2098D71A8253ad50450D7A73F3201402F0",
-    fallbacks: ["http://212.227.211.88:11645/v1"],
+    fallbacks: ["https://node1.verxl.com/v1"],
   },
   {
     id: "xiaomi-bridge-1",
@@ -82,7 +82,7 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     providerType: "OFFICIAL_BRIDGE",
     contextWindow: 1000000,
     operatorAddress: "0x1b7A7e9308F6B62f8D91Ce78D7e47761Af1E72A2",
-    fallbacks: ["https://opencode.ai/zen/go/v1"],
+    fallbacks: ["https://api.xiaomimimo.com/v1"],
   },
   {
     id: "deepseek-bridge-1",
@@ -99,14 +99,13 @@ export const INITIAL_PROVIDERS: GpuProvider[] = [
     priceCompletionUsd: 1.20,
     priceCachedPromptUsd: 0.006,
     specialHoursDiscount: "50% Off-Peak ($0.15 / $0.60, Cache $0.003) outside 01:00-04:00 & 06:00-10:00 UTC",
-    stakedAmountVrxl: 50000,
     status: "ACTIVE",
     lastAuditScore: 99.5,
     uptimePercent: 99.92,
     providerType: "OFFICIAL_BRIDGE",
     contextWindow: 1000000,
     operatorAddress: "0x789C19f85D208b07221C3470F16C6A08534C08D3",
-    fallbacks: ["https://opencode.ai/zen/go/v1", "https://api.deepseek.com/v1"],
+    fallbacks: ["https://api.deepseek.com/v1"],
   },
 ];
 
@@ -135,7 +134,7 @@ export const INITIAL_AUDITS: AuditRun[] = [
     throughputTps: 110.0,
     fidelityScore: 99.6,
     passed: true,
-    notes: "Official API bridge SLA verified. Escrow bond of 45,000 $VRXL locked.",
+    notes: "Official API bridge SLA verified. Active routing engaged.",
   },
   {
     id: "audit-run-900",

@@ -9,51 +9,42 @@ import {
   Filter,
   ShieldCheck,
   AlertTriangle,
-  Lock,
-  CheckCircle2,
   Server,
   Plus,
-  Radio,
-  ExternalLink,
   Clock,
   Sparkles,
 } from "lucide-react";
 
 interface RegistryProps {
   walletAddress: string | null;
-  onConnectWallet: () => void;
+  onConnectWallet?: () => void;
 }
 
 export const Registry: React.FC<RegistryProps> = ({
   walletAddress,
-  onConnectWallet,
+  onConnectWallet: _onConnectWallet,
 }) => {
   const [providers, setProviders] = useState<GpuProvider[]>(INITIAL_PROVIDERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [regionFilter, setRegionFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Staking Modal State
-  const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<GpuProvider | null>(null);
-  const [stakeAmount, setStakeAmount] = useState("10000");
-  const [stakeActionSuccess, setStakeActionSuccess] = useState<string | null>(null);
-
   // Provider Registration Onboarding Modal State
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [regForm, setRegForm] = useState({
     name: "",
     operatorAddress: walletAddress || "",
-    location: "Vienna, Austria",
+    location: "Prague, Czechia",
     region: "EU-Central",
-    hardware: "8x NVIDIA H100 SXM5 80GB",
-    modelIdentifier: "meta-llama/Llama-3.3-70B-Instruct",
-    contextWindow: "32768",
-    endpointUrl: "https://vienna-hpc.node.verxl.network/v1",
-    pricePromptUsd: "0.35",
-    priceCompletionUsd: "0.45",
-    stakedAmountVrxl: "10000",
-    contact: "@hpc_operator_telegram",
+    hardware: "Dedicated Bare-Metal GPU Pod",
+    modelIdentifier: "qwen3.5-4b-uncensored-32k",
+    contextWindow: "1000000",
+    endpointUrl: "https://node.cluster.network/v1",
+    pricePromptUsd: "0.05",
+    priceCompletionUsd: "0.10",
+    website: "",
+    contactEmail: "",
+    message: "",
   });
   const [probeResult] = useState<{ passed: boolean; latencyMs: number; score: number } | null>(null);
   const [regSubmitting, setRegSubmitting] = useState(false);
@@ -72,39 +63,6 @@ export const Registry: React.FC<RegistryProps> = ({
     return matchesSearch && matchesRegion && matchesStatus;
   });
 
-  const handleOpenStaking = (provider: GpuProvider) => {
-    setSelectedProvider(provider);
-    setIsStakingModalOpen(true);
-    setStakeActionSuccess(null);
-  };
-
-  const handleExecuteStake = () => {
-    if (!walletAddress) {
-      onConnectWallet();
-      return;
-    }
-
-    const amt = parseFloat(stakeAmount);
-    if (isNaN(amt) || amt <= 0) return;
-
-    if (selectedProvider) {
-      setProviders((prev) =>
-        prev.map((p) =>
-          p.id === selectedProvider.id
-            ? { ...p, stakedAmountVrxl: p.stakedAmountVrxl + amt }
-            : p
-        )
-      );
-      setStakeActionSuccess(
-        `Successfully staked ${amt.toLocaleString()} $VRXL to ${selectedProvider.name}. Collateral is bonded on Sepolia.`
-      );
-      setTimeout(() => {
-        setIsStakingModalOpen(false);
-        setStakeActionSuccess(null);
-      }, 2500);
-    }
-  };
-
   // Handle provider registration submission
   const handleSubmitProviderRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,10 +76,9 @@ export const Registry: React.FC<RegistryProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...regForm,
-          stakedAmountVrxl: parseFloat(regForm.stakedAmountVrxl) || 1000,
-          pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.35,
-          priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.45,
-          contextWindow: parseInt(regForm.contextWindow) || 32768,
+          pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.05,
+          priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.10,
+          contextWindow: parseInt(regForm.contextWindow) || 1000000,
         }),
       });
 
@@ -129,7 +86,7 @@ export const Registry: React.FC<RegistryProps> = ({
       const txHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`;
 
       const newProvider: GpuProvider = {
-        id: data?.provider?.id || `node-${Math.random().toString(36).substring(2, 8)}`,
+        id: data?.application?.id || `node-${Math.random().toString(36).substring(2, 8)}`,
         name: regForm.name,
         location: regForm.location,
         region: regForm.region,
@@ -139,20 +96,19 @@ export const Registry: React.FC<RegistryProps> = ({
         latencyMs: probeResult?.latencyMs || 24,
         ttftMs: (probeResult?.latencyMs || 24) * 3,
         throughputTps: 78.4,
-        pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.35,
-        priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.45,
-        stakedAmountVrxl: parseFloat(regForm.stakedAmountVrxl) || 10000,
+        pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.05,
+        priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.10,
         status: "PENDING_AUDIT",
         lastAuditScore: probeResult?.score || 99.8,
         uptimePercent: 100.0,
         providerType: "COMMUNITY_NODE",
-        contextWindow: parseInt(regForm.contextWindow) || 32768,
+        contextWindow: parseInt(regForm.contextWindow) || 1000000,
         operatorAddress: regForm.operatorAddress || walletAddress || "0x0000000000000000000000000000000000000000",
       };
 
       setProviders((prev) => [newProvider, ...prev]);
       setRegSuccessData({ txHash, providerName: regForm.name });
-    } catch (err) {
+    } catch {
       // Fallback local registration
       const txHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`;
       const newProvider: GpuProvider = {
@@ -166,14 +122,13 @@ export const Registry: React.FC<RegistryProps> = ({
         latencyMs: 24,
         ttftMs: 72,
         throughputTps: 78.4,
-        pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.35,
-        priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.45,
-        stakedAmountVrxl: parseFloat(regForm.stakedAmountVrxl) || 10000,
+        pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.05,
+        priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.10,
         status: "PENDING_AUDIT",
         lastAuditScore: 99.8,
         uptimePercent: 100.0,
         providerType: "COMMUNITY_NODE",
-        contextWindow: parseInt(regForm.contextWindow) || 32768,
+        contextWindow: parseInt(regForm.contextWindow) || 1000000,
         operatorAddress: regForm.operatorAddress || walletAddress || "0x0000000000000000000000000000000000000000",
       };
 
@@ -184,7 +139,6 @@ export const Registry: React.FC<RegistryProps> = ({
     }
   };
 
-  const totalBondedVrxl = providers.reduce((sum, p) => sum + p.stakedAmountVrxl, 0);
   const activeNodesCount = providers.filter((p) => p.status === "ACTIVE" || p.status === "PENDING_AUDIT").length;
 
   return (
@@ -200,7 +154,7 @@ export const Registry: React.FC<RegistryProps> = ({
             Decentralized GPU Compute Fleet
           </h2>
           <p className="text-xs text-slate-400 font-mono">
-            Audited, independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
+            Audited, high-throughput GPU clusters and official API bridges routed dynamically at 50 bps protocol fee.
           </p>
         </div>
 
@@ -208,16 +162,16 @@ export const Registry: React.FC<RegistryProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-3 bg-[#0a0e17] border border-blue-500/20 px-3 py-1.5 rounded-[3px] font-mono text-xs shadow-sm">
             <div>
-              <div className="text-[9px] text-slate-400 uppercase tracking-wider">TOTAL BONDED</div>
-              <div className="text-xs font-bold text-white tabular">
-                {totalBondedVrxl.toLocaleString()} $VRXL
+              <div className="text-[9px] text-slate-400 uppercase tracking-wider">ACTIVE FLEET</div>
+              <div className="text-xs font-bold text-emerald-400 tabular">
+                {activeNodesCount} / {providers.length} Nodes
               </div>
             </div>
             <div className="h-6 w-[1px] bg-slate-800"></div>
             <div>
-              <div className="text-[9px] text-slate-400 uppercase tracking-wider">ACTIVE NODES</div>
-              <div className="text-xs font-bold text-emerald-400 tabular">
-                {activeNodesCount} / {providers.length}
+              <div className="text-[9px] text-slate-400 uppercase tracking-wider">PROTOCOL FEE</div>
+              <div className="text-xs font-bold text-white tabular">
+                50 bps (0.5%)
               </div>
             </div>
           </div>
@@ -241,13 +195,10 @@ export const Registry: React.FC<RegistryProps> = ({
           <span className="w-2 h-2 rounded-[1px] bg-emerald-400 animate-pulse shrink-0" />
           <div className="text-[11px] leading-relaxed">
             <span className="text-white font-semibold">Active Fleet Scope:</span>{" "}
-            Currently live with our self-hosted Prague bare-metal cluster (Bulbasaur) and official bridges to Xiaomi Mi MIMO 2.6 Flash & DeepSeek V4.1 Flash. Independent compute hosts can bond $VRXL and register below.
+            Currently live with our self-hosted Prague bare-metal cluster (Bulbasaur) and official bridges to Xiaomi Mi MIMO 2.6 Flash & DeepSeek V4.1 Flash. Independent compute hosts can register endpoints below.
           </div>
         </div>
         <div className="text-[10px] text-blue-400 font-mono shrink-0 flex items-center gap-2">
-          <span className="bg-blue-500/10 px-2 py-0.5 rounded-[2px] border border-blue-500/20">
-            Min Bond: 1,000 $VRXL
-          </span>
           <span className="bg-blue-500/10 px-2 py-0.5 rounded-[2px] border border-blue-500/20">
             Take: 50 bps
           </span>
@@ -325,9 +276,8 @@ export const Registry: React.FC<RegistryProps> = ({
                 <th className="py-2.5 px-4 font-semibold">MODEL HOSTED</th>
                 <th className="py-2.5 px-4 font-semibold">PERF (TTFT / TPS)</th>
                 <th className="py-2.5 px-4 font-semibold">RATE ($/1M TKN)</th>
-                <th className="py-2.5 px-4 font-semibold">STAKED COLLATERAL</th>
-                <th className="py-2.5 px-4 font-semibold">STATUS & FIDELITY</th>
-                <th className="py-2.5 px-4 text-right font-semibold">ACTION</th>
+                <th className="py-2.5 px-4 font-semibold">DATA POLICY</th>
+                <th className="py-2.5 px-4 text-right font-semibold">STATUS & SLA</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-xs">
@@ -414,66 +364,52 @@ export const Registry: React.FC<RegistryProps> = ({
                     )}
                   </td>
 
-                  {/* Staked Collateral */}
-                  <td className="py-3 px-4 tabular">
-                    <div className="font-semibold text-white">
-                      {(Number(p.stakedAmountVrxl) || 0).toLocaleString()} $VRXL
-                    </div>
-                    <div className="text-[9.5px] text-slate-400">Bonded Sepolia</div>
+                  {/* Data Policy */}
+                  <td className="py-3 px-4">
+                    {p.providerType === "OFFICIAL_BRIDGE" || (p as any).is_official_bridge ? (
+                      <span
+                        className="text-[9px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-[2px] border border-amber-500/30 font-mono inline-block"
+                        title="Queries routed to upstream provider subject to their respective logging disclosures."
+                      >
+                        Bridge · Upstream Stored
+                      </span>
+                    ) : (
+                      <span
+                        className="text-[9px] text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] border border-emerald-500/30 font-mono font-bold inline-block"
+                        title="Local bare-metal inference with volatile RAM streaming and zero disk telemetry."
+                      >
+                        Bare-Metal · Zero-Logging
+                      </span>
+                    )}
                   </td>
 
-                  {/* Status & Fidelity */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      {p.status === "ACTIVE" && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                          <ShieldCheck className="w-3 h-3" />
-                          ACTIVE
-                        </span>
-                      )}
-                      {p.status === "PENDING_AUDIT" && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                          <Clock className="w-3 h-3" />
-                          PENDING AUDIT
-                        </span>
-                      )}
-                      {p.status === "PROBATION" && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                          <AlertTriangle className="w-3 h-3" />
-                          PROBATION
-                        </span>
-                      )}
-                      <span className="text-slate-400 text-[10.5px] tabular">
+                  {/* Status & SLA */}
+                  <td className="py-3 px-4 text-right">
+                    <div className="inline-flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-1.5">
+                        {p.status === "ACTIVE" && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            <ShieldCheck className="w-3 h-3" />
+                            ACTIVE
+                          </span>
+                        )}
+                        {p.status === "PENDING_AUDIT" && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+                            <Clock className="w-3 h-3" />
+                            PENDING AUDIT
+                          </span>
+                        )}
+                        {p.status === "PROBATION" && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            <AlertTriangle className="w-3 h-3" />
+                            PROBATION
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-slate-400 text-[10px] tabular">
                         {Number(p.lastAuditScore || 0).toFixed(1)}% SLA
                       </span>
                     </div>
-                    <div className="mt-1">
-                      {p.providerType === "OFFICIAL_BRIDGE" || (p as any).is_official_bridge ? (
-                        <span
-                          className="text-[8.5px] text-amber-400/90 bg-amber-500/10 px-1.5 py-0.2 rounded-[2px] border border-amber-500/20 font-mono"
-                          title="Queries routed to upstream servers (DeepSeek/Xiaomi) subject to their respective logging policies."
-                        >
-                          Bridge · Upstream Stored
-                        </span>
-                      ) : (
-                        <span
-                          className="text-[8.5px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded-[2px] border border-emerald-500/20 font-mono font-bold"
-                          title="Local bare-metal inference with volatile RAM streaming and zero disk telemetry."
-                        >
-                          Bare-Metal · Zero-Logging
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Action */}
-                  <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => handleOpenStaking(p)}
-                      className="px-2.5 py-1 rounded-[2px] bg-[#05070b] border border-slate-800 text-[11px] text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition uppercase tracking-wider font-semibold"
-                    >
-                      Bond
-                    </button>
                   </td>
                 </tr>
               ))}
@@ -486,13 +422,13 @@ export const Registry: React.FC<RegistryProps> = ({
           Provider Registration & Onboarding Modal
          ========================================================================= */}
       {isRegisterModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#0a0e17] border border-blue-500/30 rounded-[4px] max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative space-y-4 my-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#0a0e17] border border-blue-500/30 rounded-[4px] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative z-[101] my-auto space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
                 <Server className="w-4 h-4 text-blue-400" />
                 <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
-                  Submit Inference Provider Registration
+                  Submit Model / Node Provider Application
                 </h3>
               </div>
               <button
@@ -507,10 +443,10 @@ export const Registry: React.FC<RegistryProps> = ({
               <form onSubmit={handleSubmitProviderRegistration} className="space-y-3.5 text-xs font-mono text-slate-300">
                 <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-slate-800/80 text-[11px] leading-relaxed text-slate-300 space-y-1">
                   <div className="text-blue-400 font-semibold uppercase tracking-wider text-[10px]">
-                    Non-Custodial Staking Covenant · VerxlStakingRegistry.sol
+                    Decentralized Compute Onboarding · Verxl Network Protocol
                   </div>
                   <p>
-                    Prospective nodes register an OpenAI-compatible endpoint and bond minimum <strong>1,000 $VRXL</strong> collateral. The Autonomous Quality Oracle will execute deterministic seed=42 invariant probes before full clearing activation.
+                    Prospective nodes submit an OpenAI-compatible endpoint for verification. Our Autonomous Quality Oracle will execute deterministic SLA invariant probes before routing activation at 50 bps protocol fee.
                   </p>
                 </div>
 
@@ -529,7 +465,7 @@ export const Registry: React.FC<RegistryProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Operator Wallet Address (Sepolia)</label>
+                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Operator Wallet Ethereum/Metamask</label>
                     <input
                       type="text"
                       placeholder="0x..."
@@ -585,7 +521,7 @@ export const Registry: React.FC<RegistryProps> = ({
                       <input
                         type="text"
                         required
-                        placeholder="meta-llama/Llama-3.3-70B"
+                        placeholder="e.g. qwen3.5-4b-uncensored-32k"
                         value={regForm.modelIdentifier}
                         onChange={(e) => setRegForm({ ...regForm, modelIdentifier: e.target.value })}
                         className="col-span-2 bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
@@ -635,42 +571,36 @@ export const Registry: React.FC<RegistryProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Staking Collateral ($VRXL)</label>
+                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Contact Email (Optional)</label>
                     <input
-                      type="number"
-                      min="1000"
-                      step="500"
-                      required
-                      value={regForm.stakedAmountVrxl}
-                      onChange={(e) => setRegForm({ ...regForm, stakedAmountVrxl: e.target.value })}
+                      type="email"
+                      placeholder="admin@cluster.network"
+                      value={regForm.contactEmail}
+                      onChange={(e) => setRegForm({ ...regForm, contactEmail: e.target.value })}
                       className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
                     />
-                    <span className="text-[9px] text-blue-400">Min 1,000 $VRXL required</span>
-                  </div>
-                </div>
-
-                {/* Hardware Specifications Diagnostic Test Run */}
-                <div className="bg-[#05070b] border border-amber-500/25 p-2.5 rounded-[3px] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-amber-300 uppercase tracking-wider flex items-center gap-1.5 font-bold">
-                      <Radio className="w-3 h-3 text-amber-400" />
-                      <span>Hardware Specifications Diagnostic Test Run</span>
-                    </span>
-                    <button
-                      type="button"
-                      disabled={true}
-                      title="Specifications test run temporarily unavailable due to capacity constraints"
-                      className="text-[9.5px] px-2 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-300/80 border border-amber-500/30 cursor-not-allowed opacity-80"
-                    >
-                      Test Run Unavailable (Capacity)
-                    </button>
                   </div>
 
-                  <div className="p-2 rounded-[2px] bg-amber-500/5 border border-amber-500/20 text-[10px] text-amber-300/90 flex items-start gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <span>
-                      Hardware specifications test runs are temporarily unavailable due to bare-metal host capacity constraints (Qwen 3.5 32k resident context in GPU VRAM). Submitted nodes will bypass instant diagnostic and proceed directly to the asynchronous verification queue.
-                    </span>
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Website URL (Optional)</label>
+                    <input
+                      type="url"
+                      placeholder="https://cluster.network"
+                      value={regForm.website}
+                      onChange={(e) => setRegForm({ ...regForm, website: e.target.value })}
+                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Message / Hardware Notes (Optional)</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Notes on datacenter tier, cooling, SLA guarantees, or special hardware flags..."
+                      value={regForm.message}
+                      onChange={(e) => setRegForm({ ...regForm, message: e.target.value })}
+                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
+                    />
                   </div>
                 </div>
 
@@ -687,7 +617,7 @@ export const Registry: React.FC<RegistryProps> = ({
                     disabled={regSubmitting}
                     className="w-2/3 hero-btn hero-btn--primary !justify-center !py-2"
                   >
-                    {regSubmitting ? "Broadcasting Registration Tx..." : "Submit Registration & Bond Collateral"}
+                    {regSubmitting ? "Submitting Application..." : "Submit Model Application"}
                   </button>
                 </div>
               </form>
@@ -696,33 +626,21 @@ export const Registry: React.FC<RegistryProps> = ({
                 <div className="p-3 rounded-[3px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 space-y-1.5">
                   <div className="font-bold flex items-center gap-1.5 text-sm">
                     <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <span>Provider Registration Successfully Recorded!</span>
+                    <span>Provider Application Submitted!</span>
                   </div>
                   <p className="text-[11px] leading-relaxed text-slate-300">
-                    <strong>{regSuccessData.providerName}</strong> has been submitted to the Verxl Protocol compute fleet. The node collateral was bonded under <code>VerxlStakingRegistry.sol</code> and scheduled for autonomous quality oracle verification.
+                    <strong>{regSuccessData.providerName}</strong> has been submitted to the Verxl Protocol compute registry queue. Protocol administrators and our automated quality oracle will review and verify endpoint SLA.
                   </p>
                 </div>
 
                 <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800 space-y-2 text-[10.5px]">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Sepolia Transaction:</span>
-                    <a
-                      href={`https://sepolia.etherscan.io/tx/${regSuccessData.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <span>{regSuccessData.txHash.substring(0, 14)}...{regSuccessData.txHash.substring(54)}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <span className="text-slate-400">Application Reference:</span>
+                    <span className="text-white font-mono">{regSuccessData.txHash.substring(0, 16)}...</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Registry Contract:</span>
-                    <span className="text-white">0x8F590f2098D71A8253ad50450D7A73F3201402F0</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Clearing Status:</span>
-                    <span className="text-blue-400 font-bold">PENDING_AUDIT (Scheduled in 15m)</span>
+                    <span className="text-slate-400">Review Status:</span>
+                    <span className="text-blue-400 font-bold">PENDING_REVIEW</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Protocol Fee Take:</span>
@@ -739,97 +657,6 @@ export const Registry: React.FC<RegistryProps> = ({
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Staking & Collateral Modal — Strictly Square */}
-      {isStakingModalOpen && selectedProvider && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0a0e17] border border-blue-500/30 rounded-[4px] max-w-lg w-full p-6 shadow-2xl relative space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-blue-400" />
-                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
-                  Bond Collateral to Cluster
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsStakingModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm font-mono"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs font-mono text-slate-300">
-              <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800 space-y-1">
-                <div className="text-slate-400 text-[9.5px] uppercase tracking-wider">TARGET NODE</div>
-                <div className="font-semibold text-white text-sm">
-                  {selectedProvider.name}
-                </div>
-                <div className="text-slate-400 text-[10.5px]">
-                  Hardware: {selectedProvider.hardware} • Location: {selectedProvider.location}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1 text-[10.5px] uppercase tracking-wider">
-                  BOND AMOUNT ($VRXL)
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min="1000"
-                    step="500"
-                    value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-blue-500"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-                    $VRXL
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-[#05070b] p-3 rounded-[3px] border border-slate-800/80 space-y-1 text-[10.5px]">
-                <div className="text-slate-300 font-semibold flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Staking Registry Covenants:</span>
-                </div>
-                <p className="text-slate-400">
-                  • Minimum Node Stake: 1,000 $VRXL.
-                </p>
-                <p className="text-slate-400">
-                  • Unbonding Period: 24-Hour Timelock cooldown before withdrawal.
-                </p>
-                <p className="text-slate-400">
-                  • Slashing Penalty: 10% slashed upon detected FP16 spoofing (50% burned, 50% Aragon DAO vault).
-                </p>
-              </div>
-
-              {stakeActionSuccess && (
-                <div className="p-2.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>{stakeActionSuccess}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setIsStakingModalOpen(false)}
-                className="w-1/2 py-2 rounded-[2px] bg-[#05070b] border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-mono transition uppercase tracking-wider"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExecuteStake}
-                className="w-1/2 hero-btn hero-btn--primary !justify-center !py-2"
-              >
-                {walletAddress ? "Confirm Sepolia Bond" : "Connect Wallet to Stake"}
-              </button>
-            </div>
           </div>
         </div>
       )}

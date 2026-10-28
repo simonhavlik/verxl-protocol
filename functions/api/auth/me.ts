@@ -76,6 +76,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         has_linked_email: Boolean(user.email && !user.email.endsWith("@web3.verxl.user")),
         is_admin:
           user.email?.toLowerCase() === "me@simonhavlik.com" ||
+          user.wallet_address?.toLowerCase() === "0x14f10a865e277c0b1949e18dd9856602db11742b" ||
           user.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5",
       },
       keys: keys.results.map((k: any) => ({

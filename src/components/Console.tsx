@@ -2221,7 +2221,7 @@ main();`,
                         special_hours_discount: "Flat bare-metal $0.025 / $0.05"
                       }
                     ], null, 2),
-                    fallbacks_str: "http://212.227.211.88:11645/v1",
+                    fallbacks_str: "https://node1.verxl.com/v1",
                   });
                   setShowNodeModal(true);
                 }}
@@ -2347,7 +2347,7 @@ main();`,
                           <div className="flex items-center justify-between text-slate-400">
                             <span>Base URL:</span>
                             <span className="text-white truncate max-w-[280px]">
-                              {node.base_url || "Local Engine (http://212.227.211.88:11645/v1)"}
+                              {node.base_url || "https://node1.verxl.com/v1"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-slate-400">
@@ -2356,7 +2356,7 @@ main();`,
                               <span className="text-purple-300">
                                 {node.api_key
                                   ? (isKeyRevealed ? node.api_key : "••••••••••••••••")
-                                  : "(None required / Bare-metal direct)"}
+                                  : "Verxl Protocol Sovereign Vault"}
                               </span>
                               {node.api_key && (
                                 <button
@@ -2965,7 +2965,7 @@ main();`,
                   </label>
                   <input
                     type="url"
-                    placeholder="https://node1.verxl.com/v1 or http://212.227.211.88:11645/v1"
+                    placeholder="https://node1.verxl.com/v1"
                     value={nodeForm.base_url}
                     onChange={(e) => setNodeForm({ ...nodeForm, base_url: e.target.value })}
                     className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
@@ -3094,7 +3094,7 @@ main();`,
                   rows={2}
                   value={nodeForm.fallbacks_str}
                   onChange={(e) => setNodeForm({ ...nodeForm, fallbacks_str: e.target.value })}
-                  placeholder="http://212.227.211.88:11645/v1&#10;https://opencode.net/api/v1"
+                  placeholder="https://node1.verxl.com/v1"
                   className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] p-2 text-xs font-mono text-blue-200 focus:outline-none focus:border-purple-500"
                 />
               </div>

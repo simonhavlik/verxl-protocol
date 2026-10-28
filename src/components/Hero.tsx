@@ -967,14 +967,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     <tr>
                       <th className="text-left">Cluster Node</th>
                       <th className="text-left">Hardware</th>
-                      <th className="text-left">Bonded $VRXL</th>
+                      <th className="text-left">Data Policy</th>
                       <th className="text-right">1M P/C</th>
                       <th className="text-right">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {INITIAL_PROVIDERS.slice(0, 5).map((p) => {
-                      const stakePct = Math.min(100, Math.round((p.stakedAmountVrxl / 35000) * 100));
                       return (
                         <tr key={p.id}>
                           <td>
@@ -987,17 +986,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                             {p.hardware}
                           </td>
                           <td>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-slate-200 text-[10px]">
-                                {p.stakedAmountVrxl.toLocaleString()}
-                              </span>
-                              <div className="w-12 h-1 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
-                                <div
-                                  className="h-full bg-blue-500"
-                                  style={{ width: `${stakePct}%` }}
-                                />
-                              </div>
-                            </div>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-[2px] bg-blue-500/10 border border-blue-500/20 text-blue-300 font-mono">
+                              {p.providerType === "OFFICIAL_BRIDGE" ? "Bridge" : "Bare-Metal"}
+                            </span>
                           </td>
                           <td className="text-right text-[10px] text-slate-300 tabular">
                             ${p.pricePromptUsd} / ${p.priceCompletionUsd}

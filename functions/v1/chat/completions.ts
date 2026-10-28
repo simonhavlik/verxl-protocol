@@ -352,8 +352,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const estimatedPromptTokens = Math.max(16, Math.ceil(JSON.stringify(messages).length / 4));
 
-  // 4. Upstream Endpoints
-  const OPENCODE_GO_KEY = "";
+  // 4. Upstream Endpoints (Dynamically retrieved from secure PostgreSQL providers table)
+  let upstreamGatewayKey = (context.env as any)?.UPSTREAM_GATEWAY_KEY || "";
+  if (!upstreamGatewayKey) {
+    try {
+      const row = await db.prepare("SELECT api_key FROM providers WHERE id = 'deepseek-v4-bridge-01'").first<{ api_key: string }>();
+      upstreamGatewayKey = row?.api_key || "";
+    } catch {
+      // fallback
+    }
+  }
   const rawSession = request.headers.get("x-opencode-session");
   const opencodeSessionId = rawSession && rawSession.startsWith("ses_")
     ? rawSession
@@ -371,7 +379,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         url: "https://opencode.ai/zen/go/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+          Authorization: `Bearer ${upstreamGatewayKey}`,
           "x-opencode-session": opencodeSessionId,
         },
         modelName: upstreamModel,
@@ -381,7 +389,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         url: "https://opencode.ai/zen/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENCODE_GO_KEY}`,
+          Authorization: `Bearer ${upstreamGatewayKey}`,
           "x-opencode-session": opencodeSessionId,
         },
         modelName: upstreamModel,
@@ -389,18 +397,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
     ];
   } else {
-    // Bulbasaur / Qwen resident 32k cluster — Dedicated Bare-Metal Bulbasaur Node only (no alternatives)
+    // Bulbasaur / Qwen resident 32k cluster — Dedicated Bare-Metal Bulbasaur Node via direct Edge Tunnel
     upstreamEndpoints = [
       {
         url: "https://node1.verxl.com/v1/chat/completions",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        modelName: "qwen3.5-4b-uncensored-32k:latest",
-        timeoutMs: 25000,
-      },
-      {
-        url: "http://212.227.211.88:11645/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
         },

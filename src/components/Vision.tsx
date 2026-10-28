@@ -3153,46 +3153,6 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0a0e17] border border-blue-500/30 rounded-[3px] p-4 shadow-lg">
-        <div className="space-y-0.5">
-          <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-blue-400" />
-            <span>Operational System Deployment</span>
-          </div>
-          <p className="text-slate-400 text-[11px] font-sans">
-            Test our Prague GPU host in the Terminal, verify active clusters in the Registry, or access the commercial billing Console.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => onNavigate("playground")}
-            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
-          >
-            <Terminal className="w-3.5 h-3.5 text-blue-400" />
-            <span>Terminal</span>
-          </button>
-          <button
-            onClick={() => onNavigate("registry")}
-            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
-          >
-            <span>Registry</span>
-          </button>
-          <button
-            onClick={() => onNavigate("console")}
-            className="hero-btn hero-btn--ghost !py-2 !px-3.5 !text-[11px]"
-          >
-            <span>Console</span>
-          </button>
-          <button
-            onClick={() => onNavigate("whitepaper")}
-            className="hero-btn hero-btn--primary !py-2 !px-4 !text-[11px]"
-          >
-            <span>Whitepaper</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
