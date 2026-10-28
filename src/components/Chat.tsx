@@ -2348,7 +2348,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         <span>
                           {isSearching
                             ? "Searching the web for sources..."
-                            : "Waiting for Qwen. A cold start can take ~20-30s before the first token."}
+                            : currentModelConfig.id === "qwen3.5-4b-uncensored-32k"
+                            ? "Waiting for Qwen. A cold start can take ~20-30s before the first token."
+                            : `Waiting for ${currentModelConfig.name} to return the first token...`}
                         </span>
                       </div>
                     )}
