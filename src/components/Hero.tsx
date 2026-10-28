@@ -11,6 +11,7 @@ import {
   KeyRound,
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
+import { Playground } from "./Playground";
 
 interface HeroProps {
   onNavigate: (tab: string) => void;
@@ -33,6 +34,15 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [streamedText, setStreamedText] = useState("");
   const fullSampleText =
     "Inference stream routed via Cloudflare Edge to Prague Tier-3 Cluster (8x NVIDIA H100 SXM5). Token fidelity verified against FP16 ground truth with 99.8% precision SLA. Protocol fee settled: 50 bps.";
+
+  const handleTryPlayground = () => {
+    const el = document.getElementById("live-playground");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      onNavigate("playground");
+    }
+  };
 
   const stages = [
     {
@@ -372,13 +382,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-normal max-w-xl">
               Eliminate centralized SaaS rent extraction. While commercial aggregators mark up raw compute by{" "}
               <strong className="text-rose-400 font-mono">840–1,040 bps</strong>, Verxl routes inference
-              statelessly to independent GPU clusters bonded by $VRXL staking collateral on Ethereum Sepolia testnet.
+              statelessly to independent GPU clusters with verifiable cryptographic SLAs on Ethereum Sepolia testnet.
             </p>
 
             {/* Primary Action Buttons */}
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
-                onClick={() => onNavigate("playground")}
+                onClick={handleTryPlayground}
                 className="relative group px-5 py-3 rounded-[3px] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-mono text-xs sm:text-[13px] font-bold uppercase tracking-wider flex items-center gap-2.5 shadow-xl shadow-blue-600/30 border border-blue-400/50 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.99] transition-all overflow-hidden cursor-pointer"
               >
                 {/* Animated sheen highlight */}
@@ -706,9 +716,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       {stages[activeStepIdx].desc}
                     </span>
                   </div>
-                  <span className="text-[9px] text-slate-400 shrink-0 ml-2">
-                    Click stage to freeze
-                  </span>
+                  <button
+                    onClick={handleTryPlayground}
+                    className="text-[10px] text-blue-400 hover:text-blue-300 underline shrink-0 ml-2 font-mono flex items-center gap-0.5"
+                  >
+                    <span>Try in Playground</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -777,6 +791,40 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           </span>
         </div>
       </div>
+
+      {/* =========================================================================
+          Live Interactive Terminal Playground (Embedded on Homepage)
+          Try inference immediately with zero sign-up required
+         ========================================================================= */}
+      <section id="live-playground" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full scroll-mt-14">
+        <div className="border border-blue-500/30 bg-[#080c14]/90 backdrop-blur-md rounded-[4px] p-4 sm:p-6 shadow-2xl shadow-blue-950/50 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/20 pb-3 font-mono">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h2 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <span>Interactive Inference Playground</span>
+                <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9.5px] font-normal">
+                  Live Prague Node
+                </span>
+              </h2>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-[10.5px] text-slate-400 hidden md:inline">
+                Test prompts in real time with 50 bps protocol clearing
+              </span>
+              <button
+                onClick={() => onNavigate("playground")}
+                className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold text-[11px] uppercase tracking-wider transition"
+              >
+                <span>Full Terminal View</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <Playground onNavigate={onNavigate} />
+        </div>
+      </section>
 
       {/* =========================================================================
           Institutional Overview Dashboard (Modeled on Portfolio Optimizer)

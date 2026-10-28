@@ -44,7 +44,7 @@ interface PlaygroundProps {
 }
 
 export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
-  const { user, token, customApiKey } = useAuth();
+  const { user, token, customApiKey, keys } = useAuth();
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
@@ -52,7 +52,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
   const [userPrompt, setUserPrompt] = useState(
     "Calculate the net protocol fee savings for an AI fintech startup processing 500 million tokens monthly through Verxl (50 bps fee) versus centralized aggregators (950 bps fee)."
   );
-  const [temperature, setTemperature] = useState(0.2);
+  const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(512);
   const [isStreaming, setIsStreaming] = useState(false);
   const [reasoningOutput, setReasoningOutput] = useState("");
@@ -461,10 +461,18 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
     setTimeout(() => setCopiedSnippet(false), 2000);
   };
 
+  const activeKeyDisplay = customApiKey
+    ? customApiKey
+    : keys && keys.length > 0
+    ? keys[0].key_prefix.replace("...", "_live_key")
+    : user
+    ? "vrxl_live_your_key_here"
+    : "vrxl_live_8f3a2b1c";
+
   const codeSnippets = {
     curl: `curl https://verxl.com/v1/chat/completions \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer vrxl_live_8f3a2b1c" \\
+  -H "Authorization: Bearer ${activeKeyDisplay}" \\
   -d '{
     "model": "${model}",
     "messages": [
@@ -479,7 +487,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
 # Verxl is a 100% drop-in replacement for OpenAI API with 50 bps routing
 client = OpenAI(
     base_url="https://verxl.com/v1",
-    api_key="vrxl_live_8f3a2b1c",
+    api_key="${activeKeyDisplay}",
 )
 
 response = client.chat.completions.create(
@@ -499,7 +507,7 @@ for chunk in response:
 
 const openai = new OpenAI({
   baseURL: "https://verxl.com/v1",
-  apiKey: "vrxl_live_8f3a2b1c",
+  apiKey: "${activeKeyDisplay}",
 });
 
 async function main() {
@@ -634,41 +642,64 @@ main();`,
                   qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (Bare-Metal · Free Demo)
                 </option>
                 <option value="deepseek-v4.1-flash">
-                  deepseek-v4.1-flash · DeepSeek V4.1 Flash (1M Context · Bridge) {user ? `[Balance: $${Number(user.balance_usd || 0).toFixed(2)}]` : `[Paid USDC Account Required]`}
+                  deepseek-v4.1-flash · DeepSeek V4.1 Flash (1M Context · Bridge) {user ? `[UNLOCKED · $${Number(user.balance_usd || 0).toFixed(2)} USD]` : `[Sign in to Run · Snippets Unlocked]`}
                 </option>
                 <option value="mimo-v2.6-flash">
-                  mimo-v2.6-flash · Xiaomi MiMo 2.6 Flash (1M Context · Bridge) {user ? `[Balance: $${Number(user.balance_usd || 0).toFixed(2)}]` : `[Paid USDC Account Required]`}
+                  mimo-v2.6-flash · Xiaomi MiMo 2.6 Flash (1M Context · Bridge) {user ? `[UNLOCKED · $${Number(user.balance_usd || 0).toFixed(2)} USD]` : `[Sign in to Run · Snippets Unlocked]`}
                 </option>
               </select>
 
               {/* Free Tier vs Paid Models Callout */}
-              <div className="mt-2 p-2.5 rounded-[2px] bg-[#070b14] border border-blue-500/20 text-[10.5px] font-mono space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-blue-400 font-bold">
-                    <Server className="w-3.5 h-3.5 shrink-0" />
-                    <span>
-                      {model.includes("qwen") || model.includes("uncensored")
-                        ? "Free Playground Model: Qwen 3.5 4B Uncensored (Bulbasaur)"
-                        : model.includes("deepseek")
-                        ? "Official Bridge Model: DeepSeek V4.1 Flash"
-                        : "Official Bridge Model: Xiaomi MiMo 2.6 Flash"}
+              {user ? (
+                <div className="mt-2 p-2.5 rounded-[2px] bg-emerald-950/20 border border-emerald-500/30 text-[10.5px] font-mono space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                      <span>ALL PLATFORM MODELS UNLOCKED</span>
                     </span>
-                  </span>
-                  <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    {model.includes("qwen") ? "Unlimited Free Demo" : "Commercial Bridge"}
-                  </span>
+                    <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                      ${Number(user.balance_usd || 0).toFixed(2)} USD Available
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-300 leading-relaxed font-sans">
+                    Authenticated session active. You can run all 3 platform models directly in this terminal, and code snippets below automatically generate ready-to-run curl and Python SDK requests with your active model.
+                  </p>
+                  <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
+                    <span className="text-blue-300">Active Model: <strong>{model}</strong></span>
+                    <span className="text-emerald-400">50 bps Protocol Fee</span>
+                  </div>
                 </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
-                  Verxl provides strictly 3 authorized models: <strong>Bulbasaur Qwen 3.5 4B Uncensored</strong> (dedicated bare-metal resident node in Prague), <strong>DeepSeek V4.1 Flash</strong>, and <strong>Xiaomi MiMo 2.6 Flash</strong>. Commercial bridge models require an authenticated account with positive USDC balance.
-                </p>
-                <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
-                  <span className="flex items-center gap-1 text-slate-400">
-                    <Lock className="w-3 h-3 text-amber-400" />
-                    <span>Rate Limit: 40 req / 10 min demo</span>
-                  </span>
-                  <span className="text-emerald-400">50 bps Protocol Fee</span>
+              ) : (
+                <div className="mt-2 p-2.5 rounded-[2px] bg-[#070b14] border border-blue-500/20 text-[10.5px] font-mono space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-blue-400 font-bold">
+                      <Server className="w-3.5 h-3.5 shrink-0" />
+                      <span>
+                        {model.includes("qwen") || model.includes("uncensored")
+                          ? "Free Demo Model: Qwen 3.5 4B Uncensored (Bulbasaur)"
+                          : model.includes("deepseek")
+                          ? "Official Bridge Model: DeepSeek V4.1 Flash (Snippet Ready)"
+                          : "Official Bridge Model: Xiaomi MiMo 2.6 Flash (Snippet Ready)"}
+                      </span>
+                    </span>
+                    <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      {model.includes("qwen") ? "Unlimited Free Demo" : "Login to Execute"}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                    {model.includes("qwen")
+                      ? "Bulbasaur Qwen 3.5 4B Uncensored is completely free to test with zero sign-up required. Select any model to preview its integration code snippets."
+                      : "You selected an official bridge model. Code snippets are updated in real time with this model. To execute live streaming inference, connect your MetaMask wallet or log in to unlock."}
+                  </p>
+                  <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
+                    <span className="flex items-center gap-1 text-slate-400">
+                      <Lock className="w-3 h-3 text-amber-400" />
+                      <span>Rate Limit: 40 req / 10 min demo</span>
+                    </span>
+                    <span className="text-emerald-400">50 bps Protocol Fee</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* System Prompt */}
@@ -759,7 +790,9 @@ main();`,
                   className="w-full hero-btn hero-btn--primary !justify-center !py-2.5"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Execute Bulbasaur Live Stream</span>
+                  <span>
+                    Execute {model.includes("qwen") || model.includes("uncensored") ? "Bulbasaur" : model.includes("deepseek") ? "DeepSeek V4.1" : "MiMo 2.6"} Live Stream
+                  </span>
                 </button>
               ) : (
                 <button
@@ -910,10 +943,18 @@ main();`,
           {/* Multi-Language Code Snippets Drawer */}
           <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden">
             <div className="px-4 py-2.5 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Code2 className="w-3.5 h-3.5 text-blue-400" />
+              <div className="flex items-center gap-2">
+                <Code2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span className="text-[11px] font-mono text-slate-300 uppercase tracking-wider">
-                  Code Integration (OpenAI SDK Compatible)
+                  Code Integration
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[9.5px] px-1.5 py-0.2 rounded-[2px] bg-blue-500/15 text-blue-300 border border-blue-500/30 font-mono">
+                  <span>model:</span>
+                  <strong className="text-white">{model}</strong>
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[9.5px] px-1.5 py-0.2 rounded-[2px] bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
+                  <span>temp:</span>
+                  <strong className="text-white">{temperature}</strong>
                 </span>
               </div>
 
