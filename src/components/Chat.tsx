@@ -32,7 +32,6 @@ import {
   LogOut,
   User,
   Mail,
-  KeyRound,
   ShieldCheck,
   Search,
   Wallet,
@@ -64,7 +63,7 @@ interface MessageMetrics {
   ttftMs?: number;
   tps?: number;
   provider?: string;
-  rejected?: boolean;
+  failed?: boolean;
 }
 
 interface ChatMessage {
@@ -225,19 +224,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     user,
     logout,
     refreshSession,
-    loginWithApiKey,
     loginWithToken,
     loginWithWallet,
-    customApiKey,
-    setCustomApiKey,
   } = useAuth();
 
   const balanceUsd = user ? Number(user.balance_usd) : 0.0;
 
   // Auth Modal State
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authTab, setAuthTab] = useState<"key" | "email" | "wallet">("key");
-  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [authTab, setAuthTab] = useState<"email" | "wallet">("wallet");
   const [emailInput, setEmailInput] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -491,26 +486,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken, user?.id, (user as any)?.wallet_address]);
-
-  const handleAuthModalLoginWithApiKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!apiKeyInput.trim() || !apiKeyInput.startsWith("vrxl_live_")) {
-      setAuthError("Valid production API key required (vrxl_live_...)");
-      return;
-    }
-    setAuthLoading(true);
-    setAuthError(null);
-    setAuthSuccess(null);
-    const result = await loginWithApiKey(apiKeyInput.trim());
-    setAuthLoading(false);
-    if (result.success) {
-      setAuthSuccess("Authenticated successfully!");
-      setApiKeyInput("");
-      setTimeout(() => setShowAuthModal(false), 700);
-    } else {
-      setAuthError(result.error || "Authentication failed. Key may be invalid or inactive.");
-    }
-  };
 
   const handleAuthModalSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -780,9 +755,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             } else {
               await refreshSession();
             }
-            if (data.new_api_key) {
-              setCustomApiKey(data.new_api_key);
-            }
             settled = true;
             setTimeout(() => setShowDepositModal(false), 2000);
             break;
@@ -844,9 +816,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         } else {
           await refreshSession();
         }
-        if (data.new_api_key) {
-          setCustomApiKey(data.new_api_key);
-        }
         setDepositTxHash("");
       } else {
         setDepositStatus(`Verification note: ${data.error || "Transaction pending confirmation on Arbitrum."}`);
@@ -863,20 +832,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const textToSend = (promptOverride || inputPrompt).trim();
     if (!textToSend || isStreaming) return;
 
-    // Determine authorization header
-    let authorizationHeader = "";
-    if (customApiKey.trim()) {
-      authorizationHeader = `Bearer ${customApiKey.trim()}`;
-    } else if (authToken) {
-      authorizationHeader = `Bearer ${authToken}`;
+    // Chat uses the signed-in session only. API keys are for external endpoints.
+    const authorizationHeader = authToken ? `Bearer ${authToken}` : "";
+    if (!authorizationHeader) {
+      setShowAuthModal(true);
+      return;
     }
-
-    // Check authorization & balance
-    if (!customApiKey.trim()) {
-      if (!authorizationHeader || balanceUsd <= 0.0) {
-        setShowDepositModal(true);
-        return;
-      }
+    if (balanceUsd <= 0.0) {
+      setShowDepositModal(true);
+      return;
     }
 
     const userMessage: ChatMessage = {
@@ -924,7 +888,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
     const currentModel = activeSession.model || "qwen3.5-4b-uncensored-32k";
     const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
-    let apiKeyRejected = false;
+    let requestFailed = false;
 
     try {
       const response = await fetch("/v1/chat/completions", {
@@ -946,20 +910,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       if (!response.ok) {
         const errorData = (await response.json().catch(() => ({}))) as any;
         const serverMessage = errorData?.error?.message || "";
-        const errorCode = errorData?.error?.code || "";
         if (response.status === 402) {
+          requestFailed = true;
           setShowDepositModal(true);
         }
-        if (
-          response.status === 401 &&
-          (errorCode === "invalid_api_key" ||
-            errorCode === "api_key_deactivated" ||
-            /api key/i.test(serverMessage))
-        ) {
-          apiKeyRejected = true;
-          throw new Error(
-            "**API key revoked.** The key this chat was using is no longer active. Generate a new key in the API console, then open Chat settings with the gear icon at the top right of this window and paste it into the custom key field."
-          );
+        if (response.status === 401) {
+          requestFailed = true;
+          setShowAuthModal(true);
+          throw new Error("Session expired. Sign in again with your wallet or email.");
         }
         throw new Error(serverMessage || `HTTP ${response.status}: Failed to generate response.`);
       }
@@ -1008,18 +966,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        accumulatedContent += apiKeyRejected
-          ? `\n\n${err.message}`
-          : `\n\n> [!WARNING]\n> **Inference Notice:** ${err.message || "Upstream bare-metal node cycling. Please retry."}`;
+        requestFailed = true;
+        accumulatedContent += `\n\n> [!WARNING]\n> **Inference Notice:** ${err.message || "Upstream bare-metal node cycling. Please retry."}`;
       }
     } finally {
       const totalLatency = Math.round(performance.now() - startTime);
       const estPromptTokens = Math.max(16, Math.ceil(JSON.stringify(apiMessages).length / 4));
-      const estCompletionTokens = apiKeyRejected ? 0 : Math.max(4, tokenCount);
+      const estCompletionTokens = requestFailed ? 0 : Math.max(4, tokenCount);
       const computeCost =
         (estPromptTokens / 1e6) * selectedModelConfig.promptRate +
         (estCompletionTokens / 1e6) * selectedModelConfig.completionRate;
-      const totalCost = apiKeyRejected ? 0 : computeCost * 1.005; // 50 bps protocol fee
+      const totalCost = requestFailed ? 0 : computeCost * 1.005; // 50 bps protocol fee
 
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
@@ -1034,7 +991,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           ttftMs: firstTokenTime || 45,
           tps: Math.round((estCompletionTokens / (totalLatency / 1000)) * 10) / 10 || 52.4,
           provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
-          rejected: apiKeyRejected || undefined,
+          failed: requestFailed || undefined,
         },
       };
 
@@ -1322,7 +1279,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[3px] bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 text-[11px] font-mono font-medium transition"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In / Key</span>
+                <span>Sign In</span>
               </button>
               <button
                 onClick={() => setShowSettingsModal(true)}
@@ -1716,7 +1673,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     />
 
                     {/* Assistant Telemetry Footer */}
-                    {msg.role === "assistant" && msg.metrics && !msg.metrics.rejected && (
+                    {msg.role === "assistant" && msg.metrics && !msg.metrics.failed && (
                       <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 select-none">
                         <div className="flex items-center gap-2">
                           <span className="text-emerald-400 font-semibold">
@@ -2064,7 +2021,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {/* Already have an account prompt */}
             <div className="pt-2 border-t border-slate-800/80 text-center">
               <p className="text-[10.5px] text-slate-400">
-                Already have an account or API key?{" "}
+                Already have an account?{" "}
                 <button
                   type="button"
                   onClick={() => {
@@ -2073,7 +2030,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   }}
                   className="text-blue-400 hover:text-blue-300 underline font-semibold transition"
                 >
-                  Sign In with API Key or Email
+                  Sign In
                 </button>
               </p>
             </div>
@@ -2097,27 +2054,32 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             <div className="flex items-center gap-2 text-white">
               <Settings className="w-4 h-4 text-blue-400" />
               <h3 className="text-sm font-bold uppercase tracking-wider">
-                API Configuration
+                Chat account
               </h3>
             </div>
 
-            {/* Custom API Key Override */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-800">
-              <label className="text-[10px] uppercase tracking-wider text-slate-400">
-                Optional: Custom Verxl API Key (vrxl_live_...):
-              </label>
-              <input
-                type="password"
-                placeholder="vrxl_live_..."
-                value={customApiKey}
-                onChange={(e) => {
-                  setCustomApiKey(e.target.value);
-                  localStorage.setItem("vrxl_custom_api_key", e.target.value);
-                }}
-                className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
-              />
-              <p className="text-[9.5px] text-slate-400">
-                If provided, inferences will be billed against this specific API key.
+            <div className="space-y-2 pt-2 border-t border-slate-800">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400">Signed in</div>
+              <div className="text-xs text-white break-all">
+                {user?.email || (user as any)?.wallet_address || "Not signed in"}
+              </div>
+              {(user as any)?.wallet_address && (
+                <div className="text-[9px] text-slate-500 font-mono break-all">
+                  {(user as any).wallet_address}
+                </div>
+              )}
+              <div className="flex items-center justify-between text-[9.5px] text-slate-400">
+                <span>Chat encryption</span>
+                <span className={cryptoStatus === "ready" ? "text-emerald-300" : "text-amber-300"}>
+                  {cryptoStatus === "ready"
+                    ? "AES-256-GCM · wallet key"
+                    : cryptoStatus === "unavailable"
+                    ? "local only"
+                    : "sync off"}
+                </span>
+              </div>
+              <p className="text-[9px] text-slate-500 leading-relaxed">
+                API keys are for external endpoints. Chat uses the signed-in session only.
               </p>
             </div>
 
@@ -2140,7 +2102,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 onClick={() => setShowSettingsModal(false)}
                 className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-[3px] font-bold tracking-wider"
               >
-                Save & Close
+                Close
               </button>
             </div>
           </div>
@@ -2176,7 +2138,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Tabs: MetaMask (Primary) vs Email (Optional) vs API Key */}
+            {/* Tabs: MetaMask vs Email */}
             <div className="flex border-b border-slate-800">
               <button
                 onClick={() => {
@@ -2208,21 +2170,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <Mail className="w-3.5 h-3.5" />
                 <span>Email (Optional)</span>
               </button>
-              <button
-                onClick={() => {
-                  setAuthTab("key");
-                  setAuthError(null);
-                  setAuthSuccess(null);
-                }}
-                className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
-                  authTab === "key"
-                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
-                    : "border-transparent text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                <KeyRound className="w-3.5 h-3.5" />
-                <span>API Key</span>
-              </button>
             </div>
 
             {/* Error / Success Banners */}
@@ -2241,7 +2188,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {authTab === "wallet" && (
               <div className="space-y-3 pt-1">
                 <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Connect your Web3 MetaMask wallet directly. Account creation, balance recovery, and PostgreSQL chat persistence are instantaneous and permissionless. Email is optional for notifications or secondary 2FA.
+                  Connect your Web3 MetaMask wallet directly. Account creation, balance recovery, and encrypted chat persistence are instantaneous and permissionless. Email is optional for notifications or secondary 2FA.
                 </p>
                 <button
                   type="button"
@@ -2278,36 +2225,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             )}
 
-            {/* Tab 1: API Key Login */}
-            {authTab === "key" && (
-              <form onSubmit={handleAuthModalLoginWithApiKey} className="space-y-3">
-                <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Log in instantaneously using your private production key (<span className="text-blue-300 font-mono">vrxl_live_...</span>). Your account, USDC balance, and history load instantly without email.
-                </p>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-                    Production API Key:
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="vrxl_live_..."
-                    value={apiKeyInput}
-                    onChange={(e) => setApiKeyInput(e.target.value)}
-                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono"
-                    autoFocus
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={authLoading || !apiKeyInput.trim()}
-                  className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2"
-                >
-                  {authLoading ? "Authenticating..." : "Authenticate with Key"}
-                </button>
-              </form>
-            )}
-
-            {/* Tab 2: Email OTP Login */}
+            {/* Email OTP Login */}
             {authTab === "email" && (
               <div className="space-y-3">
                 {!otpSent ? (
