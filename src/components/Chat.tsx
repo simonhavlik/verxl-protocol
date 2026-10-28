@@ -333,7 +333,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         left: Math.max(0, contextLimit - lastAssistantContext.used),
       }
     : estimateContext();
-  const contextPct = Math.min(100, (contextStats.used / contextLimit) * 100);
   const compactSafety = Math.max(2048, (activeSession.searchBudget || 512) + 512);
   const compactAt = currentModelConfig.isOfficialBridge
     ? null
@@ -909,13 +908,19 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const maybeCompactSession = (
     session: ChatSession,
     messages: ChatMessage[],
-    model: ModelConfig
+    model: ModelConfig,
+    forSearch = false
   ): ChatSession => {
     // Large-context bridges (1M) keep full history; compaction is for the 32K Qwen.
     if (model.contextTokens >= 40_000) return session;
     const outputReserve = model.isOfficialBridge ? 32768 : 4096;
     const safety = Math.max(2048, (session.searchBudget || 512) + 512);
-    const threshold = model.contextTokens - outputReserve - safety;
+    const normalThreshold = model.contextTokens - outputReserve - safety;
+    // Max splits the window: conversation gets half, search fills the rest.
+    const threshold =
+      forSearch && session.searchBudget === -1
+        ? Math.min(normalThreshold, Math.floor(model.contextTokens / 2))
+        : normalThreshold;
     const prior = session.compaction;
     const priorIdx = prior ? messages.findIndex((m) => m.id === prior.throughId) : -1;
     const recent = priorIdx >= 0 ? messages.slice(priorIdx + 1) : messages;
@@ -998,7 +1003,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const maxOutputTokens = selectedModelConfig.isOfficialBridge ? 32768 : 4096;
     const isSmallContext = selectedModelConfig.contextTokens < 40_000;
     // Compact only near the model's input limit; the full history stays visible.
-    const compactedSession = maybeCompactSession(targetSession, updatedMessages, selectedModelConfig);
+    const compactedSession = maybeCompactSession(
+      targetSession,
+      updatedMessages,
+      selectedModelConfig,
+      searchEnabled
+    );
     const updatedUserSession: ChatSession = {
       ...compactedSession,
       title: newTitle,
@@ -1045,10 +1055,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         const searchRes = await fetch("https://api.firecrawl.dev/v2/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: textToSend.slice(0, 400), limit: 5 }),
+          body: JSON.stringify({
+            query: textToSend.slice(0, 400),
+            limit: isSmallContext && targetSession.searchBudget === -1 ? 20 : 5,
+          }),
         });
         const searchData = (await searchRes.json()) as any;
-        const raw: SearchSource[] = (searchData?.data?.web || []).slice(0, 5).map((r: any) => ({
+        const raw: SearchSource[] = (searchData?.data?.web || [])
+          .slice(0, isSmallContext && targetSession.searchBudget === -1 ? 20 : 5)
+          .map((r: any) => ({
           title: String(r.title || r.url || ""),
           url: String(r.url || ""),
           description: String(r.description || "").replace(/\s+/g, " "),
@@ -2321,15 +2336,28 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   className="flex items-center gap-1 hover:text-white transition"
                   title="Context usage"
                 >
-                  <span
-                    className={`w-1.5 h-1.5 ${
-                      contextPct > 90
-                        ? "bg-rose-400"
-                        : contextPct > 75
-                        ? "bg-amber-400"
-                        : "bg-emerald-400"
-                    }`}
-                  />
+                  <span className="relative w-10 h-1 bg-slate-800 overflow-hidden">
+                    <span
+                      className="absolute top-0 bottom-0 left-0 bg-emerald-500"
+                      style={{
+                        width: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt) / contextLimit) * 100)}%`,
+                      }}
+                    />
+                    <span
+                      className="absolute top-0 bottom-0 bg-blue-500"
+                      style={{
+                        left: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt) / contextLimit) * 100)}%`,
+                        width: `${Math.min(100, (contextStats.tools / contextLimit) * 100)}%`,
+                      }}
+                    />
+                    <span
+                      className="absolute top-0 bottom-0 bg-amber-400"
+                      style={{
+                        left: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt + contextStats.tools) / contextLimit) * 100)}%`,
+                        width: `${Math.min(100, (contextStats.response / contextLimit) * 100)}%`,
+                      }}
+                    />
+                  </span>
                   <span>
                     ctx {fmtTokens(contextStats.used)}/{fmtTokens(contextLimit)}
                   </span>
