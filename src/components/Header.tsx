@@ -53,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "chat", label: "Chat" },
     { id: "console", label: "API" },
     { id: "governance", label: "Governance" },
+    { id: "about", label: "About" },
   ];
   const moreItems = [
     { id: "registry", label: "Registry" },
