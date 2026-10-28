@@ -105,6 +105,7 @@ interface ChatSession {
   title: string;
   model: string;
   think?: ThinkLevel;
+  searchBudget?: number;
   compaction?: { summary: string; throughId: string; at: number };
   messages: ChatMessage[];
   createdAt: number;
@@ -333,9 +334,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }
     : estimateContext();
   const contextPct = Math.min(100, (contextStats.used / contextLimit) * 100);
+  const compactSafety = Math.max(2048, (activeSession.searchBudget || 512) + 512);
   const compactAt = currentModelConfig.isOfficialBridge
     ? null
-    : currentModelConfig.contextTokens - 4096 - 2048;
+    : currentModelConfig.contextTokens - 4096 - compactSafety;
   const sessionsRef = useRef(sessions);
   sessionsRef.current = sessions;
 
@@ -912,7 +914,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     // Large-context bridges (1M) keep full history; compaction is for the 32K Qwen.
     if (model.contextTokens >= 40_000) return session;
     const outputReserve = model.isOfficialBridge ? 32768 : 4096;
-    const threshold = model.contextTokens - outputReserve - 2048;
+    const safety = Math.max(2048, (session.searchBudget || 512) + 512);
+    const threshold = model.contextTokens - outputReserve - safety;
     const prior = session.compaction;
     const priorIdx = prior ? messages.findIndex((m) => m.id === prior.throughId) : -1;
     const recent = priorIdx >= 0 ? messages.slice(priorIdx + 1) : messages;
@@ -1025,19 +1028,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           body: JSON.stringify({ query: textToSend.slice(0, 400), limit: 5 }),
         });
         const searchData = (await searchRes.json()) as any;
-        sources = (searchData?.data?.web || [])
-          .slice(0, 5)
-          .map((r: any) => {
-            const description = String(r.description || "").replace(/\s+/g, " ");
-            return {
-              title: isSmallContext
-                ? String(r.title || r.url || "").slice(0, 160)
-                : String(r.title || r.url || ""),
-              url: String(r.url || ""),
-              description: isSmallContext ? description.slice(0, 240) : description,
-            };
-          })
-          .filter((r: SearchSource) => r.url);
+        const raw: SearchSource[] = (searchData?.data?.web || []).slice(0, 5).map((r: any) => ({
+          title: String(r.title || r.url || ""),
+          url: String(r.url || ""),
+          description: String(r.description || "").replace(/\s+/g, " "),
+        }));
+        if (isSmallContext) {
+          const budgetChars = (targetSession.searchBudget || 512) * 4;
+          const fixed = raw.reduce((n, r) => n + r.title.length + r.url.length + 16, 0);
+          const per = Math.max(60, Math.floor(Math.max(0, budgetChars - fixed) / Math.max(1, raw.length)));
+          sources = raw
+            .map((r) => ({
+              ...r,
+              title: r.title.slice(0, 160),
+              description: (r.description || "").slice(0, per),
+            }))
+            .filter((r) => r.url);
+        } else {
+          sources = raw.filter((r) => r.url);
+        }
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
       } catch {
         setSearchError("Web search unavailable; answering without sources.");
@@ -1369,6 +1378,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setEditingText("");
     syncSessionToDb(updated);
     handleSendMessage(text, { skipUserAppend: true, session: updated });
+  };
+
+  const updateSearchBudget = (budget: number) => {
+    const updated = { ...activeSession, searchBudget: budget, updatedAt: Date.now() };
+    setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+    syncSessionToDb(updated);
   };
 
   const updateThinkLevel = (level: ThinkLevel) => {
@@ -2208,79 +2223,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {/* Input Box Footer Container */}
         <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#080c14]/90 shrink-0">
           <div className="max-w-4xl mx-auto space-y-2">
-            {/* Context usage: prompt, tools, history, response, headroom */}
-            <div className="border border-slate-800 bg-[#05070b] rounded-[3px]">
-              <button
-                onClick={() => setShowContextDetails((v) => !v)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 font-mono text-[9px] text-slate-400"
-              >
-                <span className="uppercase tracking-wider text-slate-500">Context</span>
-                <div className="relative flex-1 h-1 bg-slate-800 overflow-visible">
-                  <div
-                    className={`h-full ${
-                      contextPct > 90
-                        ? "bg-rose-400"
-                        : contextPct > 75
-                        ? "bg-amber-400"
-                        : "bg-emerald-400"
-                    }`}
-                    style={{ width: `${contextPct}%` }}
-                  />
-                  {compactAt !== null && (
-                    <div
-                      className="absolute -top-1 -bottom-1 w-px bg-amber-400/80"
-                      style={{ left: `${Math.min(100, (compactAt / contextLimit) * 100)}%` }}
-                      title={`Auto-compact at ${fmtTokens(compactAt)}`}
-                    />
-                  )}
-                </div>
-                <span className="text-slate-300">
-                  {fmtTokens(contextStats.used)} / {fmtTokens(contextLimit)}
-                </span>
-                <span className={contextStats.left < 4096 ? "text-amber-400" : "text-emerald-400"}>
-                  {fmtTokens(contextStats.left)} left
-                </span>
-                {showContextDetails ? (
-                  <ChevronDown className="w-3 h-3" />
-                ) : (
-                  <ChevronRight className="w-3 h-3" />
-                )}
-              </button>
-              {showContextDetails && (
-                <div className="px-2 pb-2 pt-1 border-t border-slate-800 font-mono">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[9px]">
-                    {[
-                      ["System", contextStats.system],
-                      ["Tools · search", contextStats.tools],
-                      ["History", contextStats.history],
-                      ["Prompt", contextStats.prompt],
-                      ["Format", contextStats.format],
-                      ["Response", contextStats.response],
-                    ].map(([label, value]) => (
-                      <div key={String(label)} className="flex items-center justify-between gap-2">
-                        <span className="text-slate-500">{label}</span>
-                        <span className="text-slate-300">{fmtTokens(Number(value))}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1.5 mt-1.5 border-t border-slate-800 text-[8.5px] text-slate-500">
-                    <span>{lastAssistantContext ? "Last request" : "Current context"}</span>
-                    <span>Used = prompt + response</span>
-                    {contextStats.compactionSaved > 0 && (
-                      <span className="text-emerald-400">
-                        Compacted: {fmtTokens(contextStats.compactionSaved)} not sent
-                      </span>
-                    )}
-                    <span>
-                      {compactAt !== null
-                        ? `Auto-compact at ${fmtTokens(compactAt)}`
-                        : "Auto-compact off (1M context)"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Input Form */}
             <div className="relative flex items-end gap-2 bg-[#05070b] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
               <textarea
@@ -2338,7 +2280,73 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
             {/* Input Status & Cost Preview Bar */}
             <div className="flex flex-wrap items-center justify-between text-[10px] font-mono text-slate-400 px-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
+                <button
+                  onClick={() => setShowContextDetails((v) => !v)}
+                  className="flex items-center gap-1 hover:text-white transition"
+                  title="Context usage"
+                >
+                  <span
+                    className={`w-1.5 h-1.5 ${
+                      contextPct > 90
+                        ? "bg-rose-400"
+                        : contextPct > 75
+                        ? "bg-amber-400"
+                        : "bg-emerald-400"
+                    }`}
+                  />
+                  <span>
+                    ctx {fmtTokens(contextStats.used)}/{fmtTokens(contextLimit)}
+                  </span>
+                  <span className="text-slate-500">· {fmtTokens(contextStats.left)} left</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
+                </button>
+                {showContextDetails && (
+                  <div className="absolute bottom-full left-0 mb-2 w-[300px] border border-slate-700 bg-[#080c14] shadow-2xl z-50 p-2 font-mono text-[9px]">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                      {[
+                        ["System", contextStats.system],
+                        ["Tools · search", contextStats.tools],
+                        ["History", contextStats.history],
+                        ["Prompt", contextStats.prompt],
+                        ["Format", contextStats.format],
+                        ["Response", contextStats.response],
+                      ].map(([label, value]) => (
+                        <div key={String(label)} className="flex justify-between">
+                          <span className="text-slate-500">{label}</span>
+                          <span className="text-slate-300">{fmtTokens(Number(value))}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t border-slate-800">
+                      <span className="text-slate-500">Search context</span>
+                      {currentModelConfig.contextTokens < 40_000 ? (
+                        <select
+                          value={activeSession.searchBudget || 512}
+                          onChange={(e) => updateSearchBudget(Number(e.target.value))}
+                          className="bg-[#05070b] border border-slate-700 text-slate-300 text-[9px] px-1 py-0.5 outline-none"
+                        >
+                          {[256, 512, 1024, 2048, 4096].map((n) => (
+                            <option key={n} value={n}>
+                              {fmtTokens(n)} tokens
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-slate-300">full</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 mt-1 pt-1 border-t border-slate-800 text-[8px] text-slate-500">
+                      <span>{compactAt ? `Auto-compact ${fmtTokens(compactAt)}` : "No auto-compact"}</span>
+                      {contextStats.compactionSaved > 0 && (
+                        <span className="text-emerald-400">
+                          {fmtTokens(contextStats.compactionSaved)} compacted
+                        </span>
+                      )}
+                      <span>{lastAssistantContext ? "Last request" : "Current"}</span>
+                    </div>
+                  </div>
+                )}
                 <span>50 bps Protocol Fee</span>
                 <span>•</span>
                 <span>
