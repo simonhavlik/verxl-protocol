@@ -1614,6 +1614,26 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           : 0,
       };
 
+      const extractedCharts: any[] = [];
+      if (chartToolEnabled) {
+        const blocks = accumulatedContent.match(/```json\s*([\s\S]*?)```/gi) || [];
+        for (const block of blocks) {
+          try {
+            const raw = block.replace(/```json/i, "").replace(/```$/, "").trim();
+            const spec = JSON.parse(raw);
+            if (
+              spec &&
+              typeof spec === "object" &&
+              (spec.mark || spec.layer || spec.vconcat || spec.hconcat || spec.facet) &&
+              JSON.stringify(spec.$schema || "").includes("vega-lite")
+            ) {
+              extractedCharts.push(spec);
+            }
+          } catch {}
+        }
+      }
+      const allCharts = [...charts, ...extractedCharts];
+
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
         role: "assistant",
@@ -1624,7 +1644,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           : "**No response was returned.** The upstream stream ended without content. Retry.",
         reasoning: accumulatedReasoning || undefined,
         sources: sources.length > 0 ? sources : undefined,
-        charts: charts.length > 0 ? charts : undefined,
+        charts: allCharts.length > 0 ? allCharts : undefined,
         createdAt: Date.now(),
         metrics: {
           promptTokens: estPromptTokens,
