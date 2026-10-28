@@ -153,7 +153,7 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
 ];
 
 const DEFAULT_SYSTEM_PROMPT =
-  "You are Verxl Protocol's verified institutional AI assistant. Provide mathematically rigorous, technically exact, and non-custodial quantitative intelligence. Respond concisely with clear structure and code examples where appropriate.";
+  "Answer directly and concisely. Prefer exact numbers over generalities.";
 
 const STARTER_PROMPTS = [
   {
@@ -773,9 +773,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let accumulatedReasoning = "";
     let tokenCount = 0;
 
-    // Prepare OpenAI formatted messages payload
+    // Prepare OpenAI formatted messages payload. Keep the system turn light for small models.
+    const systemContent = (activeSession.systemPrompt || DEFAULT_SYSTEM_PROMPT).trim();
     const apiMessages = [
-      { role: "system", content: activeSession.systemPrompt || DEFAULT_SYSTEM_PROMPT },
+      ...(systemContent ? [{ role: "system", content: systemContent }] : []),
       ...updatedMessages.map((m) => ({ role: m.role, content: m.content })),
     ];
 

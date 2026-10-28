@@ -100,7 +100,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
   const { user, token, customApiKey, keys } = useAuth();
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
-    "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
+    "Answer directly and concisely. Prefer exact numbers over generalities."
   );
   const [userPrompt, setUserPrompt] = useState(
     "Calculate the net protocol fee savings for an AI fintech startup processing 500 million tokens monthly through Verxl (50 bps fee) versus centralized aggregators (950 bps fee)."
@@ -197,7 +197,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
         body: JSON.stringify({
           model,
           messages: [
-            { role: "system", content: systemPrompt },
+            ...(systemPrompt.trim() ? [{ role: "system", content: systemPrompt.trim() }] : []),
             { role: "user", content: userPrompt },
           ],
           temperature,
