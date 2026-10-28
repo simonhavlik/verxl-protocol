@@ -1066,12 +1066,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query: textToSend.slice(0, 400),
-            limit: isSmallContext && targetSession.searchBudget === -1 ? 20 : 5,
+            limit: isSmallContext ? 5 : targetSession.searchBudget === -1 ? 20 : 5,
           }),
         });
         const searchData = (await searchRes.json()) as any;
         const raw: SearchSource[] = (searchData?.data?.web || [])
-          .slice(0, isSmallContext && targetSession.searchBudget === -1 ? 20 : 5)
+          .slice(0, isSmallContext ? 5 : targetSession.searchBudget === -1 ? 20 : 5)
           .map((r: any) => ({
           title: String(r.title || r.url || ""),
           url: String(r.url || ""),
@@ -1244,8 +1244,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         /\[Verxl Protocol Clearing Switch\]|Deterministic Probe:\s*Seed=42/i.test(
           accumulatedContent
         );
+      const feeTemplate = /Verxl Fee|Aggregator Fee|Net Protocol Fee Savings|Fee Differential/i.test(
+        accumulatedContent
+      );
       const hasContent =
-        accumulatedContent.trim().length > 0 && !(protocolTemplate && sources.length > 0);
+        accumulatedContent.trim().length > 0 &&
+        !(protocolTemplate && sources.length > 0) &&
+        !(isSmallContext && sources.length > 0 && feeTemplate && !/fee|verxl|protocol/i.test(textToSend));
       if (!hasContent) requestFailed = true;
 
       const tokenEst = (text: string) => Math.ceil(text.length / 4);
@@ -2252,7 +2257,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         <span>
                           {isSearching
                             ? "Searching the web for sources..."
-                            : "Awaiting first token chunk from Prague cluster..."}
+                            : "Waiting for Qwen. A cold start can take ~20-30s before the first token."}
                         </span>
                       </div>
                     )}
