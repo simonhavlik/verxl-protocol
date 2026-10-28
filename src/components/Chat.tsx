@@ -2625,6 +2625,29 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </button>
 
               <button
+                onClick={() => {
+                  const next = !forcePdfOcr;
+                  setForcePdfOcr(next);
+                  localStorage.setItem("vrxl_force_pdf_ocr", next ? "1" : "0");
+                  if (next && !pdfOcrEnabled) {
+                    setPdfOcrEnabled(true);
+                    localStorage.setItem("vrxl_pdf_ocr", "1");
+                    saveChatSettings({ pdfOcrEnabled: true, forcePdfOcr: true });
+                  } else {
+                    saveChatSettings({ forcePdfOcr: next });
+                  }
+                }}
+                className={`px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition ${
+                  forcePdfOcr
+                    ? "bg-amber-600/20 border-amber-500/50 text-amber-300"
+                    : "bg-[#05070b] border-slate-800 text-slate-400 hover:text-white"
+                }`}
+                title="Force PDF OCR on every page"
+              >
+                PDF OCR
+              </button>
+
+              <button
                 onClick={() => setSearchEnabled((v) => !v)}
                 className={`p-2 rounded-[3px] border transition shrink-0 ${
                   searchEnabled
@@ -3168,7 +3191,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     const next = !pdfOcrEnabled;
                     setPdfOcrEnabled(next);
                     localStorage.setItem("vrxl_pdf_ocr", next ? "1" : "0");
-                    saveChatSettings({ pdfOcrEnabled: next });
+                    if (!next) {
+                      setForcePdfOcr(false);
+                      localStorage.setItem("vrxl_force_pdf_ocr", "0");
+                      saveChatSettings({ pdfOcrEnabled: false, forcePdfOcr: false });
+                    } else {
+                      saveChatSettings({ pdfOcrEnabled: true });
+                    }
                   }}
                   aria-pressed={pdfOcrEnabled}
                   className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
