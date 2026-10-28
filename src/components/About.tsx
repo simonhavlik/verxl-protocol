@@ -113,85 +113,99 @@ export const About: React.FC<AboutProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Creators */}
+      {/* Team */}
       <section className="py-16">
         <SectionHead
-          kicker="The creators"
+          kicker="The team"
           index="01"
-          title={<>One builder.<br /><span className="text-[#8fa39b]">One repository.</span></>}
-          copy="Verxl is currently built by Simon Havlík, with the public repository open to contributors. The scope is deliberately small."
+          title={<>Three roles.<br /><span className="text-[#8fa39b]">One project.</span></>}
+          copy="Verxl is a VŠE Praha applied blockchain project. Architecture, verification and governance operate as one small team."
         />
 
-        <div className="mt-10 grid grid-cols-1 border-t border-white/10 md:grid-cols-12">
-          <div className="border-b border-white/10 py-8 md:col-span-4 md:border-b-0 md:border-r md:pr-8">
-            <div className="flex aspect-[4/3] items-center justify-center border border-white/10 bg-[#080c12]">
-              <span className="font-mono text-[58px] tracking-[-0.06em] text-[#b8f6dd]/80">SH</span>
+        <div className="mt-10 grid grid-cols-1 gap-8 border-t border-white/10 pt-8 md:grid-cols-3">
+          {[
+            {
+              name: "Simon Havlík",
+              role: "Founder / Lead Architect",
+              bio: "Simon built the edge router, the clearing switch, the Prague Qwen host and the encrypted Chat. He is the lead architect of the VŠE Praha applied blockchain project.",
+              image: "/team/simon-havlik.jpg",
+              meta: "PROTOCOL · PRODUCT · INFRASTRUCTURE",
+              links: true,
+            },
+            {
+              name: "Daniel Kolárovský",
+              role: "Head of Verification / SLA & Process",
+              bio: "Daniel runs the empirical side: canary probes, SLA measurement and the process checks behind each release. The verification loop is part of the product, not a postscript.",
+              image: "/team/daniel-kolarovsky.jpg",
+              meta: "VERIFICATION · PROCESS · EVIDENCE",
+              links: false,
+            },
+            {
+              name: "Miroslava Valová",
+              role: "Head of Compliance / Research & Governance",
+              bio: "Miroslava leads regulatory scope, market research and institutional governance, including the MiCA/GDPR boundary, partner diligence and the protocol's public positioning.",
+              image: "/team/miroslava-valova.jpg",
+              meta: "COMPLIANCE · RESEARCH · GOVERNANCE",
+              links: false,
+            },
+          ].map((member, i) => (
+            <div key={member.name}>
+              <div className="overflow-hidden border border-white/10 bg-[#080c12]">
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  loading="lazy"
+                  className="aspect-[4/5] w-full object-cover object-top saturate-[.85]"
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.12em] text-[#65737b]">
+                <span>Prague, CZ</span>
+                <span>0{i + 1}</span>
+              </div>
+              <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">
+                {member.role}
+              </div>
+              <h3 className="mt-1 text-[22px] font-medium tracking-[-0.025em] text-[#f3f6f5]">
+                {member.name}
+              </h3>
+              <p className="mt-2 max-w-[330px] text-[13px] leading-relaxed text-[#9aa7ad]">{member.bio}</p>
+              <div className="mt-3 font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">
+                {member.meta}
+              </div>
+              {member.links && (
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[9.5px]">
+                  <a
+                    href="https://github.com/simonhavlik"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
+                  >
+                    <Github className="h-3 w-3" />
+                    GitHub
+                    <ArrowUpRight className="h-2.5 w-2.5" />
+                  </a>
+                  <a
+                    href="mailto:havlik.simon@post.cz"
+                    className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
+                  >
+                    <Mail className="h-3 w-3" />
+                    Email
+                  </a>
+                </div>
+              )}
             </div>
-            <div className="mt-3 flex items-center justify-between font-mono text-[8px] text-[#65737b]">
-              <span>PRAGUE, CZ</span>
-              <span>50.08N / 14.42E</span>
-            </div>
-          </div>
-
-          <div className="py-8 md:col-span-8 md:pl-8">
-            <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">
-              Founder / lead architect
-            </div>
-            <h3 className="mt-2 text-[30px] font-medium tracking-[-0.03em] text-[#f3f6f5]">
-              Simon Havlík
-            </h3>
-            <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-[#a9b6bd]">
-              Simon built the edge router, the clearing switch, the Prague Qwen host and the encrypted
-              Chat. He is the lead architect of the VŠE Praha applied blockchain project.
-            </p>
-            <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-[#87959b]">
-              The work is intentionally narrow: one host, three models, one fee and one boundary. Everything
-              else is either deferred or explicitly out of scope.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10px]">
-              <a
-                href="https://github.com/simonhavlik"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
-              >
-                <Github className="h-3.5 w-3.5" />
-                github.com/simonhavlik
-                <ArrowUpRight className="h-3 w-3" />
-              </a>
-              <a
-                href="mailto:havlik.simon@post.cz"
-                className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
-              >
-                <Mail className="h-3.5 w-3.5" />
-                havlik.simon@post.cz
-              </a>
-              <a
-                href="https://github.com/simonhavlik/verxl-protocol"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
-              >
-                source repository
-                <ArrowUpRight className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-white/10 py-5 font-mono text-[9px] text-[#65737b] sm:flex-row sm:items-center sm:justify-between">
-          <span className="uppercase tracking-[0.14em] text-[#87959b]">Contributors</span>
-          <span className="max-w-xl text-[9.5px] leading-relaxed">
-            The repository is public. Contributions are reviewed by the maintainer; no contributor is
-            implied by this page.
-          </span>
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-4 font-mono text-[9px] text-[#65737b] sm:flex-row sm:items-center sm:justify-between">
+          <span>VŠE Praha applied blockchain project · Prague</span>
           <a
             href="https://github.com/simonhavlik/verxl-protocol"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1 text-[#9aa7ad] hover:text-white"
+            className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white"
           >
-            Open repository <ArrowUpRight className="h-3 w-3" />
+            Repository <ArrowUpRight className="h-3 w-3" />
           </a>
         </div>
       </section>

@@ -400,7 +400,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
           {/* Right Column: Interactive Scripted Walkthrough Demo Window */}
           <div
-            className="lg:col-span-6 relative"
+            className="relative min-w-0 lg:col-span-6"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
@@ -449,7 +449,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               </div>
 
               {/* Stage Body Displays */}
-              <div className="p-4 sm:p-5 min-h-[252px] flex flex-col justify-between font-mono text-xs">
+              <div className="flex flex-1 min-h-0 flex-col justify-between overflow-y-auto p-4 font-mono text-xs sm:p-5">
                 {/* Stage 01: Ingest */}
                 {activeStepIdx === 0 && (
                   <div className="space-y-3">
