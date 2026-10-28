@@ -147,6 +147,7 @@ interface ChatSession {
   searchBaseUrl?: string;
   searchKey?: string;
   chartTool?: boolean;
+  mcpConnections?: { name: string; url: string }[];
   pdfOcrEnabled?: boolean;
   forcePdfOcr?: boolean;
   showForcePdfOcrToggle?: boolean;
@@ -320,6 +321,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_chart_tool") === "1";
   });
+  const [mcpQuery, setMcpQuery] = useState("");
+  const [mcpResults, setMcpResults] = useState<any[]>([]);
+  const [mcpLoading, setMcpLoading] = useState(false);
+  const [mcpError, setMcpError] = useState<string | null>(null);
+  const [mcpConnections, setMcpConnections] = useState<{ name: string; url: string }[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem("vrxl_mcp_connections") || "[]"); } catch { return []; }
+  });
   const [attachments, setAttachments] = useState<{ name: string; text: string; kind: string }[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
@@ -491,6 +500,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
     setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
     setChartToolEnabled(activeSession.chartTool ?? localStorage.getItem("vrxl_chart_tool") === "1");
+    setMcpConnections(activeSession.mcpConnections ?? (() => {
+      try { return JSON.parse(localStorage.getItem("vrxl_mcp_connections") || "[]"); } catch { return []; }
+    })());
     setForcePdfOcr(activeSession.forcePdfOcr ?? localStorage.getItem("vrxl_force_pdf_ocr") === "1");
     setShowForcePdfOcrToggle(
       activeSession.showForcePdfOcrToggle ?? localStorage.getItem("vrxl_show_force_pdf_ocr") === "1"
@@ -1153,6 +1165,36 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       compaction: { summary, throughId, at: Date.now() },
       updatedAt: Date.now(),
     };
+  };
+
+  const searchMcpRegistry = async () => {
+    setMcpLoading(true);
+    setMcpError(null);
+    try {
+      const res = await fetch(
+        `https://registry.modelcontextprotocol.io/v0/servers?search=${encodeURIComponent(mcpQuery)}&limit=10`
+      );
+      const data = (await res.json()) as any;
+      setMcpResults(data.servers || []);
+    } catch (err: any) {
+      setMcpError(err?.message || "Registry request failed");
+    } finally {
+      setMcpLoading(false);
+    }
+  };
+
+  const addMcpServer = (name: string, url: string) => {
+    const next = [...mcpConnections.filter((c) => c.url !== url), { name, url }];
+    setMcpConnections(next);
+    localStorage.setItem("vrxl_mcp_connections", JSON.stringify(next));
+    saveChatSettings({ mcpConnections: next });
+  };
+
+  const removeMcpServer = (url: string) => {
+    const next = mcpConnections.filter((c) => c.url !== url);
+    setMcpConnections(next);
+    localStorage.setItem("vrxl_mcp_connections", JSON.stringify(next));
+    saveChatSettings({ mcpConnections: next });
   };
 
   const handleFiles = async (files: File[]) => {
@@ -3401,6 +3443,67 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   </button>
                 </div>
               )}
+              <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                  MCP registry
+                </div>
+                <div className="flex gap-1">
+                  <input
+                    value={mcpQuery}
+                    onChange={(e) => setMcpQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") void searchMcpRegistry(); }}
+                    placeholder="Search registry.modelcontextprotocol.io"
+                    className="flex-1 bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                  />
+                  <button
+                    onClick={() => void searchMcpRegistry()}
+                    className="px-2 py-1 rounded-[2px] bg-blue-600/80 hover:bg-blue-500 text-white text-[9px] font-mono"
+                  >
+                    Search
+                  </button>
+                </div>
+                {mcpLoading && <div className="text-[9px] text-amber-400">Searching registry...</div>}
+                {mcpError && <div className="text-[9px] text-rose-400">{mcpError}</div>}
+                <div className="max-h-44 overflow-y-auto space-y-1">
+                  {mcpResults.map((entry: any, i) => {
+                    const srv = entry.server;
+                    const remote = srv?.remotes?.find((r: any) => r.type === "streamable-http");
+                    return (
+                      <div key={`${srv?.name}_${i}`} className="border border-slate-800 bg-[#05070b] p-1.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[9px] text-slate-300 font-mono break-all">{srv?.name}</span>
+                          {remote ? (
+                            <button
+                              onClick={() => addMcpServer(srv.name, remote.url)}
+                              className="shrink-0 px-1.5 py-0.5 border border-blue-500/40 text-blue-300 text-[8px] font-mono"
+                            >
+                              Add
+                            </button>
+                          ) : (
+                            <span className="text-[8px] text-slate-500 shrink-0">no remote</span>
+                          )}
+                        </div>
+                        {srv?.description && (
+                          <div className="text-[8px] text-slate-500 line-clamp-2 mt-0.5">{srv.description}</div>
+                        )}
+                        {remote?.url && <div className="text-[8px] text-slate-600 font-mono break-all mt-0.5">{remote.url}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+                {mcpConnections.length > 0 && (
+                  <div className="pt-1 border-t border-slate-800 space-y-1">
+                    <div className="text-[9px] text-slate-500 uppercase tracking-wider">Added</div>
+                    {mcpConnections.map((c) => (
+                      <div key={c.url} className="flex items-center justify-between gap-2 text-[8px] font-mono">
+                        <span className="text-slate-300 truncate">{c.name}</span>
+                        <button onClick={() => removeMcpServer(c.url)} className="text-slate-500 hover:text-rose-400 shrink-0">remove</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[8px] text-slate-500">Adds remote Streamable HTTP servers. MCP execution proxy is not wired yet.</p>
+              </div>
               <p className="text-[9px] text-slate-500 leading-relaxed">
                 API keys are for external endpoints. Chat uses the signed-in session only.
               </p>
