@@ -107,6 +107,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
   );
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2048);
+  const [thinkLevel, setThinkLevel] = useState<"off" | "low" | "medium" | "high">("medium");
   const [isStreaming, setIsStreaming] = useState(false);
   const [reasoningOutput, setReasoningOutput] = useState("");
   const [output, setOutput] = useState("");
@@ -203,7 +204,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
           temperature,
           max_tokens: maxTokens,
           stream: true,
-          ...(model.includes("qwen") ? { reasoning_effort: "none" } : {}),
+          reasoning_effort: thinkLevel === "off" ? "none" : thinkLevel,
         }),
         signal: controller.signal,
       });
@@ -588,6 +589,23 @@ main();`,
             </label>
           </div>
 
+          <div className="flex items-center gap-1.5 text-[9px] font-mono text-slate-400">
+            <span className="uppercase tracking-wider">Think</span>
+            {(["off", "low", "medium", "high"] as const).map((level) => (
+              <button
+                key={level}
+                onClick={() => setThinkLevel(level)}
+                className={`px-1.5 py-0.5 border rounded-[2px] uppercase transition ${
+                  thinkLevel === level
+                    ? "border-blue-500 text-blue-300 bg-blue-500/10"
+                    : "border-slate-800 text-slate-400 hover:text-white"
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+
           {isStreaming ? (
             <button onClick={handleStop} className="hero-btn w-full justify-center !py-2 !bg-rose-600 !text-white !border-rose-400/50">
               <Square className="w-3.5 h-3.5 fill-current" />
@@ -968,6 +986,25 @@ main();`,
                   onChange={(e) => setMaxTokens(parseInt(e.target.value))}
                   className="w-full accent-blue-500 bg-slate-800 rounded-[2px] h-1.5 cursor-pointer"
                 />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] font-mono text-slate-400">Think Level</span>
+              <div className="flex items-center gap-1">
+                {(["off", "low", "medium", "high"] as const).map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setThinkLevel(level)}
+                    className={`px-2 py-0.5 rounded-[2px] border text-[10px] font-mono uppercase transition ${
+                      thinkLevel === level
+                        ? "border-blue-500 text-blue-300 bg-blue-500/10"
+                        : "border-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
               </div>
             </div>
 
