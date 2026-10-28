@@ -460,16 +460,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         { title: sess.title, model: sess.model, messages: sess.messages },
         key
       );
-      const res = await fetch("/api/chat/conversations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ id: sess.id, ciphertext, keyId: wallet.toLowerCase() }),
-      });
+      const send = () =>
+        fetch("/api/chat/conversations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ id: sess.id, ciphertext, keyId: wallet.toLowerCase() }),
+        });
+      let res = await send();
+      if (!res.ok && res.status >= 500) {
+        await new Promise((r) => setTimeout(r, 700));
+        res = await send();
+      }
       if (!res.ok) {
-        setSyncError(`Cloud save failed (HTTP ${res.status}). Messages stay on this device.`);
+        const detail = (await res.json().catch(() => ({}))) as any;
+        setSyncError(
+          `Cloud save failed (HTTP ${res.status})${detail?.error ? `: ${detail.error}` : ""}. Messages stay on this device.`
+        );
       } else {
         setSyncError(null);
       }

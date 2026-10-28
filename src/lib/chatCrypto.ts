@@ -122,14 +122,25 @@ export async function deriveChatKey(wallet: string, userId: string): Promise<Cry
   return key;
 }
 
+const gzip = async (bytes: Uint8Array): Promise<Uint8Array> =>
+  new Uint8Array(
+    await new Response(
+      new Blob([bytes.buffer as ArrayBuffer]).stream().pipeThrough(new CompressionStream("gzip"))
+    ).arrayBuffer()
+  );
+
+const gunzip = async (bytes: Uint8Array): Promise<Uint8Array> =>
+  new Uint8Array(
+    await new Response(
+      new Blob([bytes.buffer as ArrayBuffer]).stream().pipeThrough(new DecompressionStream("gzip"))
+    ).arrayBuffer()
+  );
+
 export async function encryptChatPayload(payload: ChatPlaintext, key: CryptoKey): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(new ArrayBuffer(12)));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    encoder.encode(JSON.stringify(payload))
-  );
-  return `v1.${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(ciphertext))}`;
+  const compressed = await gzip(encoder.encode(JSON.stringify(payload)));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, compressed.buffer as ArrayBuffer);
+  return `v2.${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(ciphertext))}`;
 }
 
 export async function decryptChatPayload<T = ChatPlaintext>(
@@ -137,11 +148,14 @@ export async function decryptChatPayload<T = ChatPlaintext>(
   key: CryptoKey
 ): Promise<T> {
   const parts = envelope.split(".");
-  if (parts.length !== 3 || parts[0] !== "v1") {
+  if (parts.length !== 3 || (parts[0] !== "v1" && parts[0] !== "v2")) {
     throw new Error("Unsupported chat ciphertext format.");
   }
   const iv = base64ToBytes(parts[1]);
   const ciphertext = base64ToBytes(parts[2]);
-  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  const decrypted = new Uint8Array(
+    await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext)
+  );
+  const plaintext = parts[0] === "v2" ? await gunzip(decrypted) : decrypted;
   return JSON.parse(decoder.decode(plaintext)) as T;
 }
