@@ -1250,8 +1250,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           stream: true,
           temperature: 0.3,
           max_tokens: maxOutputTokens,
-          reasoning_effort:
-            selectedModelConfig.isOfficialBridge && thinkLevel !== "off" ? thinkLevel : "none",
+          reasoning_effort: thinkLevel === "off" ? "none" : thinkLevel,
         }),
         signal: controller.signal,
       });
@@ -1952,7 +1951,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {currentModelConfig.isOfficialBridge && (
+          {(
             <div className="hidden lg:flex items-center gap-1 px-1.5 py-1 rounded-[3px] bg-[#05070b] border border-slate-800 font-mono text-[9px]">
               <span className="text-slate-500 uppercase tracking-wider mr-0.5">Think</span>
               {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
