@@ -1016,6 +1016,26 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setStreamingContent("");
     setStreamingReasoning("");
 
+    // Max fills the prompt headroom left after compaction, question and output reserve.
+    let searchBudgetTokens = Infinity;
+    if (isSmallContext) {
+      const compact = compactedSession.compaction;
+      const cut = compact ? updatedMessages.findIndex((m) => m.id === compact.throughId) : -1;
+      const recent = cut >= 0 ? updatedMessages.slice(cut + 1) : updatedMessages;
+      const base = [
+        ...(compact ? [{ role: "system", content: compact.summary }] : []),
+        ...recent.map((m) => ({ role: m.role, content: m.content })),
+      ];
+      const baseTokens = Math.ceil(JSON.stringify(base).length / 4);
+      const available = Math.max(
+        256,
+        selectedModelConfig.contextTokens - maxOutputTokens - 2048 - baseTokens
+      );
+      searchBudgetTokens = (targetSession.searchBudget || 512) === -1
+        ? available
+        : targetSession.searchBudget || 512;
+    }
+
     // Search from the browser IP, so the keyless Firecrawl limit applies per user.
     let sources: SearchSource[] = [];
     if (searchEnabled) {
@@ -1034,7 +1054,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           description: String(r.description || "").replace(/\s+/g, " "),
         }));
         if (isSmallContext) {
-          const budgetChars = (targetSession.searchBudget || 512) * 4;
+          const budgetChars = searchBudgetTokens * 4;
           const fixed = raw.reduce((n, r) => n + r.title.length + r.url.length + 16, 0);
           const per = Math.max(60, Math.floor(Math.max(0, budgetChars - fixed) / Math.max(1, raw.length)));
           sources = raw
@@ -2253,6 +2273,21 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <Globe className="w-4 h-4" />
               </button>
 
+              {currentModelConfig.contextTokens < 40_000 && (
+                <select
+                  value={activeSession.searchBudget ?? 512}
+                  onChange={(e) => updateSearchBudget(Number(e.target.value))}
+                  title="Search context budget"
+                  className="bg-[#05070b] border border-slate-800 text-slate-400 text-[9px] font-mono px-1 py-1 rounded-[2px] outline-none shrink-0"
+                >
+                  <option value={256}>256 ctx</option>
+                  <option value={512}>512 ctx</option>
+                  <option value={1024}>1K ctx</option>
+                  <option value={2048}>2K ctx</option>
+                  <option value={-1}>Max</option>
+                </select>
+              )}
+
               {/* Action Button: Send or Stop */}
               {isStreaming ? (
                 <button
@@ -2326,9 +2361,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           onChange={(e) => updateSearchBudget(Number(e.target.value))}
                           className="bg-[#05070b] border border-slate-700 text-slate-300 text-[9px] px-1 py-0.5 outline-none"
                         >
-                          {[256, 512, 1024, 2048, 4096].map((n) => (
+                          {[256, 512, 1024, 2048, -1].map((n) => (
                             <option key={n} value={n}>
-                              {fmtTokens(n)} tokens
+                              {n === -1 ? "Max" : `${fmtTokens(n)} tokens`}
                             </option>
                           ))}
                         </select>
