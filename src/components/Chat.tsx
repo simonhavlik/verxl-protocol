@@ -118,6 +118,8 @@ interface ChatSession {
   searchProvider?: string;
   searchBaseUrl?: string;
   searchKey?: string;
+  forcePdfOcr?: boolean;
+  showForcePdfOcrToggle?: boolean;
   compaction?: { summary: string; throughId: string; at: number };
   messages: ChatMessage[];
   createdAt: number;
@@ -302,6 +304,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("vrxl_search_key") || "";
   });
+  const [forcePdfOcr, setForcePdfOcr] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("vrxl_force_pdf_ocr") === "1";
+  });
+  const [showForcePdfOcrToggle, setShowForcePdfOcrToggle] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("vrxl_show_force_pdf_ocr") === "1";
+  });
   const [searchBaseUrl, setSearchBaseUrl] = useState(() => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("vrxl_search_base") || "";
@@ -439,6 +449,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     );
     setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
     setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
+    setForcePdfOcr(activeSession.forcePdfOcr ?? localStorage.getItem("vrxl_force_pdf_ocr") === "1");
+    setShowForcePdfOcrToggle(
+      activeSession.showForcePdfOcrToggle ?? localStorage.getItem("vrxl_show_force_pdf_ocr") === "1"
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSessionId]);
 
@@ -1118,7 +1132,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               const page = await doc.getPage(i);
               const content = await page.getTextContent();
               const pageText = content.items.map((x: any) => x.str).join(" ").trim();
-              if (pageText.length >= 80) {
+              if (!forcePdfOcr && pageText.length >= 80) {
                 text += pageText + "\n";
                 continue;
               }
@@ -3123,6 +3137,60 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   Keys stay in this browser. Custom expects POST {"{query, limit}"} and returns data.web or results.
                 </p>
               </div>
+              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                    Show force PDF OCR toggle
+                  </div>
+                  <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
+                    Reveals the force OCR switch for PDF attachments.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const next = !showForcePdfOcrToggle;
+                    setShowForcePdfOcrToggle(next);
+                    localStorage.setItem("vrxl_show_force_pdf_ocr", next ? "1" : "0");
+                    saveChatSettings({ showForcePdfOcrToggle: next });
+                  }}
+                  aria-pressed={showForcePdfOcrToggle}
+                  className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
+                    showForcePdfOcrToggle
+                      ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
+                      : "bg-[#05070b] border-slate-700 text-slate-500"
+                  }`}
+                >
+                  {showForcePdfOcrToggle ? "ON" : "OFF"}
+                </button>
+              </div>
+              {showForcePdfOcrToggle && (
+                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                      Force PDF OCR
+                    </div>
+                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
+                      OCR every PDF page, including pages with a text layer. Slower.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !forcePdfOcr;
+                      setForcePdfOcr(next);
+                      localStorage.setItem("vrxl_force_pdf_ocr", next ? "1" : "0");
+                      saveChatSettings({ forcePdfOcr: next });
+                    }}
+                    aria-pressed={forcePdfOcr}
+                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
+                      forcePdfOcr
+                        ? "bg-amber-600/20 border-amber-500/50 text-amber-300"
+                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                    }`}
+                  >
+                    {forcePdfOcr ? "ON" : "OFF"}
+                  </button>
+                </div>
+              )}
               <p className="text-[9px] text-slate-500 leading-relaxed">
                 API keys are for external endpoints. Chat uses the signed-in session only.
               </p>
