@@ -296,7 +296,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_search_tool") === "1";
   });
-  const [temperature, setTemperature] = useState(0.3);
+  const [temperature, setTemperature] = useState(0.7);
   const [searchProvider, setSearchProvider] = useState(() => {
     if (typeof window === "undefined") return "firecrawl";
     return localStorage.getItem("vrxl_search_provider") || "firecrawl";
@@ -388,6 +388,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     id: `chat_${Date.now()}`,
     title: "New Chat",
     model: "qwen3.5-4b-uncensored-32k",
+    temperature:
+      typeof window !== "undefined" && localStorage.getItem("vrxl_chat_temperature") !== null
+        ? Number(localStorage.getItem("vrxl_chat_temperature"))
+        : 0.7,
     messages: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -445,7 +449,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   sessionsRef.current = sessions;
 
   useEffect(() => {
-    setTemperature(activeSession.temperature ?? 0.3);
+    const savedTemp = Number(localStorage.getItem("vrxl_chat_temperature"));
+    setTemperature(
+      activeSession.temperature ?? (Number.isFinite(savedTemp) ? savedTemp : 0.7)
+    );
     setSearchToolEnabled(
       activeSession.searchTool ?? localStorage.getItem("vrxl_search_tool") === "1"
     );
@@ -1408,7 +1415,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           model: currentModel,
           messages: apiMessages,
           stream: true,
-          temperature: targetSession.temperature ?? 0.3,
+          temperature: targetSession.temperature ?? 0.7,
           max_tokens: maxOutputTokens,
           reasoning_effort: thinkLevel === "off" ? "none" : thinkLevel,
         }),
@@ -3126,6 +3133,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   onChange={(e) => {
                     const v = parseFloat(e.target.value);
                     setTemperature(v);
+                    localStorage.setItem("vrxl_chat_temperature", String(v));
                     saveChatSettings({ temperature: v });
                   }}
                   className="w-full accent-blue-500 bg-slate-800 h-1 cursor-pointer"
