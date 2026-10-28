@@ -100,7 +100,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
   const { user, token, customApiKey, keys } = useAuth();
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
-    "Answer directly and concisely. Prefer exact numbers over generalities."
+    "Answer directly and concisely."
   );
   const [userPrompt, setUserPrompt] = useState(
     "Calculate the net protocol fee savings for an AI fintech startup processing 500 million tokens monthly through Verxl (50 bps fee) versus centralized aggregators (950 bps fee)."

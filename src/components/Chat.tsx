@@ -153,7 +153,7 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
 ];
 
 const DEFAULT_SYSTEM_PROMPT =
-  "Answer directly and concisely. Prefer exact numbers over generalities.";
+  "Answer directly and concisely.";
 
 const STARTER_PROMPTS = [
   {
