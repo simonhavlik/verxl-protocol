@@ -970,9 +970,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         sources = (searchData?.data?.web || [])
           .slice(0, 5)
           .map((r: any) => ({
-            title: r.title || r.url,
-            url: r.url,
-            description: r.description || "",
+            title: String(r.title || r.url || "").slice(0, 160),
+            url: String(r.url || ""),
+            description: String(r.description || "").replace(/\s+/g, " ").slice(0, 240),
           }))
           .filter((r: SearchSource) => r.url);
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
@@ -1010,14 +1010,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             )
             .join("\n\n")}`
         : "";
-    const apiMessages = [
+    const searchInstruction =
+      "Answer the user's question directly from the provided web results. Do not mention Verxl, its protocol, clearing, settlement, routing, fees, seeds, or testnet. If the results are insufficient, say so. Cite sources as [n].";
+    const systemParts = [
       ...(compaction && boundaryIdx >= 0
-        ? [
-            {
-              role: "system",
-              content: `Summary of earlier conversation turns:\n${compaction.summary}`,
-            },
-          ]
+        ? [`Summary of earlier conversation turns:\n${compaction.summary}`]
+        : []),
+      ...(sources.length > 0 ? [searchInstruction] : []),
+    ];
+    const apiMessages = [
+      ...(systemParts.length > 0
+        ? [{ role: "system", content: systemParts.join("\n\n") }]
         : []),
       ...contextMessages.map((m, i) => ({
         role: m.role,
@@ -1120,7 +1123,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         (estCompletionTokens / 1e6) * selectedModelConfig.completionRate;
       const totalCost = requestFailed ? 0 : computeCost * 1.005; // 50 bps protocol fee
 
-      const hasContent = accumulatedContent.trim().length > 0;
+      const protocolTemplate =
+        /\[Verxl Protocol Clearing Switch\]|Deterministic Probe:\s*Seed=42/i.test(
+          accumulatedContent
+        );
+      const hasContent =
+        accumulatedContent.trim().length > 0 && !(protocolTemplate && sources.length > 0);
       if (!hasContent) requestFailed = true;
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
