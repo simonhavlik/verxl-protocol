@@ -1112,10 +1112,35 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
           pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
           const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
-          for (let i = 1; i <= Math.min(doc.numPages, 25); i++) {
-            const page = await doc.getPage(i);
-            const content = await page.getTextContent();
-            text += content.items.map((x: any) => x.str).join(" ") + "\n";
+          let pdfTessWorker: any = null;
+          try {
+            for (let i = 1; i <= Math.min(doc.numPages, 25); i++) {
+              const page = await doc.getPage(i);
+              const content = await page.getTextContent();
+              const pageText = content.items.map((x: any) => x.str).join(" ").trim();
+              if (pageText.length >= 80) {
+                text += pageText + "\n";
+                continue;
+              }
+              // Suspiciously little text layer: rasterize the page and OCR it.
+              const viewport = page.getViewport({ scale: 2 });
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.floor(viewport.width);
+              canvas.height = Math.floor(viewport.height);
+              const ctx = canvas.getContext("2d");
+              if (!ctx) continue;
+              await (page as any).render({ canvasContext: ctx, viewport }).promise;
+              const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+              if (!blob) continue;
+              if (!pdfTessWorker) {
+                const { createWorker } = await import("tesseract.js");
+                pdfTessWorker = await createWorker("eng");
+              }
+              const { data } = await pdfTessWorker.recognize(blob);
+              text += data.text + "\n";
+            }
+          } finally {
+            if (pdfTessWorker) await pdfTessWorker.terminate();
           }
         } else if (file.name.toLowerCase().endsWith(".docx")) {
           const mammoth = await import("mammoth");
