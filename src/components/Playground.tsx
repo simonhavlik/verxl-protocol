@@ -37,7 +37,14 @@ const renderMarkdown = (content: string): string => {
   try {
     // LLMs often output bold headers like **Cost:**95x without a space before the next alphanumeric character.
     // In strict CommonMark, delimiters touching words don't render bold. We normalize this edge case:
-    const preprocessed = content.replace(/\*\*([^\s*][^*]*?)\*\*([a-zA-Z0-9])/g, "**$1** $2");
+    const preprocessed = content
+      .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `\n$$\n${m}\n$$\n`)
+      .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => `$${m}$`)
+      .replace(/(^|\n)\[\s*\n([\s\S]*?)\n\]\s*(?=\n|$)/g, (_, lead, m) => `${lead}$$\n${m}\n$$`)
+      .replace(/\^=/g, "^*=")
+      .replace(/\\left\{/g, "\\left\\{")
+      .replace(/\\right\}/g, "\\right\\}")
+      .replace(/\*\*([^\s*][^*]*?)\*\*([a-zA-Z0-9])/g, "**$1** $2");
     return marked.parse(preprocessed) as string;
   } catch (err) {
     return content;

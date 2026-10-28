@@ -78,7 +78,14 @@ const VegaChart = ({ spec }: { spec: any }) => {
 const renderMarkdown = (content: string): string => {
   if (!content) return "";
   try {
-    const preprocessed = content.replace(/\*\*([^\s*][^*]*?)\*\*([a-zA-Z0-9])/g, "**$1** $2");
+    const preprocessed = content
+      .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `\n$$\n${m}\n$$\n`)
+      .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => `$${m}$`)
+      .replace(/(^|\n)\[\s*\n([\s\S]*?)\n\]\s*(?=\n|$)/g, (_, lead, m) => `${lead}$$\n${m}\n$$`)
+      .replace(/\^=/g, "^*=")
+      .replace(/\\left\{/g, "\\left\\{")
+      .replace(/\\right\}/g, "\\right\\}")
+      .replace(/\*\*([^\s*][^*]*?)\*\*([a-zA-Z0-9])/g, "**$1** $2");
     return marked.parse(preprocessed) as string;
   } catch {
     return content;
