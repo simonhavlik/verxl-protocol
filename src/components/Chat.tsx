@@ -1057,34 +1057,43 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         }));
         sources = raw.filter((r) => r.url);
         if (isSmallContext && sources.length > 0) {
-          const compactPrompt = `Compact these web search results for the user's question. Preserve facts, names, dates, numbers, and source numbers. Remove navigation, cookie text, and boilerplate. Keep [n] citations. Be dense.
-
-Question: ${textToSend}
-
-${sources
-  .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.description}`)
-  .join("\n\n")}`;
-          try {
-            const compactRes = await fetch("/v1/chat/completions", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: authorizationHeader },
-              body: JSON.stringify({
-                model: "deepseek-v4.1-flash",
-                messages: [{ role: "user", content: compactPrompt }],
-                stream: false,
-                max_tokens: 2048,
-                temperature: 0.1,
-              }),
-            });
-            const compactData = (await compactRes.json()) as any;
-            searchDigest = compactData?.choices?.[0]?.message?.content || "";
-          } catch {}
+          const sourceText = sources
+            .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.description}`)
+            .join("\n\n");
+          const mid = Math.ceil(sourceText.length / 2);
+          const chunks = [sourceText.slice(0, mid), sourceText.slice(mid)].filter((c) => c.trim());
+          const parts: string[] = [];
+          for (const chunk of chunks) {
+            try {
+              const compactRes = await fetch("/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: authorizationHeader },
+                body: JSON.stringify({
+                  model: currentModel,
+                  messages: [
+                    {
+                      role: "user",
+                      content: `Compact this web search excerpt for the question. Preserve facts, names, dates, numbers, and source numbers. Remove navigation and boilerplate. Be dense.\n\nQuestion: ${textToSend}\n\nExcerpt:\n${chunk}`,
+                    },
+                  ],
+                  stream: false,
+                  max_tokens: 1024,
+                  temperature: 0.1,
+                }),
+              });
+              const compactData = (await compactRes.json()) as any;
+              const part = compactData?.choices?.[0]?.message?.content;
+              if (part) parts.push(part);
+            } catch {}
+          }
+          searchDigest = parts.join("\n\n");
         }
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
       } catch {
         setSearchError("Web search unavailable; answering without sources.");
       } finally {
         setIsSearching(false);
+        setSearchEnabled(false);
       }
     }
 
