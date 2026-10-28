@@ -426,6 +426,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         temperature,
         max_tokens: maxTokens,
         stream,
+        ...(Array.isArray((body as any).tools) ? { tools: (body as any).tools } : {}),
+        ...(typeof (body as any).tool_choice === "string"
+          ? { tool_choice: (body as any).tool_choice }
+          : {}),
         // Qwen uses none; DeepSeek/MiMo receive the selected think level.
         ...(typeof (body as any).reasoning_effort === "string"
           ? { reasoning_effort: (body as any).reasoning_effort }

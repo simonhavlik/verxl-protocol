@@ -272,6 +272,75 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [cryptoError, setCryptoError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [searchToolEnabled, setSearchToolEnabled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("vrxl_search_tool") === "1";
+  });
+  const [searchProvider, setSearchProvider] = useState(() => {
+    if (typeof window === "undefined") return "firecrawl";
+    return localStorage.getItem("vrxl_search_provider") || "firecrawl";
+  });
+  const [searchKey, setSearchKey] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("vrxl_search_key") || "";
+  });
+  const [searchBaseUrl, setSearchBaseUrl] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("vrxl_search_base") || "";
+  });
+
+  const runSearch = async (query: string): Promise<SearchSource[]> => {
+    const q = query.slice(0, 400);
+    if (searchProvider === "brave") {
+      if (!searchKey) throw new Error("Brave Search API key is missing.");
+      const r = await fetch(
+        `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=5`,
+        { headers: { Accept: "application/json", "X-Subscription-Token": searchKey } }
+      );
+      const d = (await r.json()) as any;
+      return (d.web?.results || [])
+        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || "").replace(/\s+/g, " ") }))
+        .filter((x: SearchSource) => x.url);
+    }
+    if (searchProvider === "exa") {
+      if (!searchKey) throw new Error("Exa API key is missing.");
+      const r = await fetch("https://api.exa.ai/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": searchKey },
+        body: JSON.stringify({ query: q, numResults: 5, contents: { text: { maxCharacters: 1000 } } }),
+      });
+      const d = (await r.json()) as any;
+      return (d.results || [])
+        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.text || "").replace(/\s+/g, " ") }))
+        .filter((x: SearchSource) => x.url);
+    }
+    if (searchProvider === "custom") {
+      if (!searchBaseUrl) throw new Error("Custom search base URL is missing.");
+      const r = await fetch(searchBaseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(searchKey ? { Authorization: `Bearer ${searchKey}` } : {}),
+        },
+        body: JSON.stringify({ query: q, limit: 5 }),
+      });
+      const d = (await r.json()) as any;
+      const arr = d.data?.web || d.web?.results || d.results || d.web || d.data || [];
+      return (Array.isArray(arr) ? arr : [])
+        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || x.text || "").replace(/\s+/g, " ") }))
+        .filter((x: SearchSource) => x.url);
+    }
+    const r = await fetch("https://api.firecrawl.dev/v2/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: q, limit: 5 }),
+    });
+    const d = (await r.json()) as any;
+    return (d.data?.web || [])
+      .slice(0, 5)
+      .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || "").replace(/\s+/g, " ") }))
+      .filter((x: SearchSource) => x.url);
+  };
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -1034,28 +1103,55 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let searchDigest = "";
     let sources: SearchSource[] = [];
 
+    // Model-callable search tool, only for >40K models and only when the user enabled it.
+    if (searchToolEnabled && currentModelConfig.contextTokens >= 40_000 && !searchEnabled) {
+      setIsSearching(true);
+      try {
+        const planRes = await fetch("/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authorizationHeader },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
+            stream: false,
+            max_tokens: 256,
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "web_search",
+                  description:
+                    "Search the web for current information. Use only when the answer depends on recent events or facts that need live sources.",
+                  parameters: {
+                    type: "object",
+                    properties: { query: { type: "string", description: "Search query" } },
+                    required: ["query"],
+                  },
+                },
+              },
+            ],
+            tool_choice: "auto",
+          }),
+        });
+        const planData = (await planRes.json()) as any;
+        const call = planData?.choices?.[0]?.message?.tool_calls?.[0];
+        if (call?.function?.name === "web_search") {
+          let query = textToSend;
+          try {
+            query = JSON.parse(call.function.arguments || "{}").query || textToSend;
+          } catch {}
+          sources = await runSearch(String(query));
+        }
+      } catch {}
+      setIsSearching(false);
+    }
+
     // Search from the browser IP, so the keyless Firecrawl limit applies per user.
     if (searchEnabled) {
       setIsSearching(true);
       setSearchError(null);
       try {
-        const searchRes = await fetch("https://api.firecrawl.dev/v2/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: textToSend.slice(0, 400),
-            limit: isSmallContext ? 5 : targetSession.searchBudget === -1 ? 20 : 5,
-          }),
-        });
-        const searchData = (await searchRes.json()) as any;
-        const raw: SearchSource[] = (searchData?.data?.web || [])
-          .slice(0, isSmallContext ? 5 : targetSession.searchBudget === -1 ? 20 : 5)
-          .map((r: any) => ({
-          title: String(r.title || r.url || ""),
-          url: String(r.url || ""),
-          description: String(r.description || "").replace(/\s+/g, " "),
-        }));
-        sources = raw.filter((r) => r.url);
+        sources = await runSearch(textToSend);
         if (isSmallContext && sources.length > 0) {
           const sourceText = sources
             .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.description}`)
@@ -2721,6 +2817,76 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     ? "local only"
                     : "sync off"}
                 </span>
+              </div>
+              {currentModelConfig.contextTokens >= 40_000 && (
+                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                      Web search tool
+                    </div>
+                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
+                      Let the model call web search when it needs current information. 1M-context models only.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !searchToolEnabled;
+                      setSearchToolEnabled(next);
+                      localStorage.setItem("vrxl_search_tool", next ? "1" : "0");
+                    }}
+                    aria-pressed={searchToolEnabled}
+                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
+                      searchToolEnabled
+                        ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
+                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                    }`}
+                  >
+                    {searchToolEnabled ? "ON" : "OFF"}
+                  </button>
+                </div>
+              )}
+              <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">Search provider</div>
+                <select
+                  value={searchProvider}
+                  onChange={(e) => {
+                    setSearchProvider(e.target.value);
+                    localStorage.setItem("vrxl_search_provider", e.target.value);
+                  }}
+                  className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                >
+                  <option value="firecrawl">Firecrawl (keyless, browser IP)</option>
+                  <option value="brave">Brave Search (own key)</option>
+                  <option value="exa">Exa (own key)</option>
+                  <option value="custom">Custom base URL + key</option>
+                </select>
+                {searchProvider !== "firecrawl" && (
+                  <input
+                    type="password"
+                    placeholder={searchProvider === "brave" ? "Brave API key" : searchProvider === "exa" ? "Exa API key" : "API key (optional)"}
+                    value={searchKey}
+                    onChange={(e) => {
+                      setSearchKey(e.target.value);
+                      localStorage.setItem("vrxl_search_key", e.target.value);
+                    }}
+                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                  />
+                )}
+                {searchProvider === "custom" && (
+                  <input
+                    type="url"
+                    placeholder="https://your-search.example/search"
+                    value={searchBaseUrl}
+                    onChange={(e) => {
+                      setSearchBaseUrl(e.target.value);
+                      localStorage.setItem("vrxl_search_base", e.target.value);
+                    }}
+                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                  />
+                )}
+                <p className="text-[8.5px] text-slate-500 leading-relaxed">
+                  Keys stay in this browser. Custom expects POST {"{query, limit}"} and returns data.web or results.
+                </p>
               </div>
               <p className="text-[9px] text-slate-500 leading-relaxed">
                 API keys are for external endpoints. Chat uses the signed-in session only.
