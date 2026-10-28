@@ -1042,7 +1042,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       const cut = compact ? updatedMessages.findIndex((m) => m.id === compact.throughId) : -1;
       const recent = cut >= 0 ? updatedMessages.slice(cut + 1) : updatedMessages;
       const base = [
-        ...(compact ? [{ role: "system", content: compact.summary }] : []),
+        ...(compact ? [{ role: "user", content: compact.summary }] : []),
         ...recent.map((m) => ({ role: m.role, content: m.content })),
       ];
       const baseTokens = Math.ceil(JSON.stringify(base).length / 4);
@@ -1126,23 +1126,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             )
             .join("\n\n")}`
         : "";
-    const searchInstruction =
-      "Answer the user's question directly from the provided web results. Do not mention Verxl, its protocol, clearing, settlement, routing, fees, seeds, or testnet. If the results are insufficient, say so. Cite sources as [n].";
-    const systemParts = [
-      ...(compaction && boundaryIdx >= 0
-        ? [`Summary of earlier conversation turns:\n${compaction.summary}`]
-        : []),
-      ...(sources.length > 0 && isSmallContext ? [searchInstruction] : []),
-    ];
+    // No system turn. Compaction context is a user-level summary, never a system prompt.
     const apiMessages = [
-      ...(systemParts.length > 0
-        ? [{ role: "system", content: systemParts.join("\n\n") }]
+      ...(compaction && boundaryIdx >= 0
+        ? [{ role: "user", content: `Earlier conversation summary:\n${compaction.summary}` }]
         : []),
       ...contextMessages.map((m, i) => ({
         role: m.role,
         content:
           i === lastUserPos && searchContext
-            ? `${searchContext}\n\nQuestion: ${m.content}`
+            ? `${searchContext}\n\nAnswer the question below using these results.\nQuestion: ${m.content}`
             : m.content,
       })),
     ];
@@ -1254,22 +1247,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       if (!hasContent) requestFailed = true;
 
       const tokenEst = (text: string) => Math.ceil(text.length / 4);
-      const systemText = systemParts.join("\n\n");
-      const historyText = contextMessages
-        .filter((_, i) => i !== lastUserPos)
-        .map((m) => `${m.role}: ${m.content}`)
-        .join("\n");
+      const summaryText =
+        compaction && boundaryIdx >= 0 ? `Summary: ${compaction.summary}\n` : "";
+      const historyText =
+        summaryText +
+        contextMessages
+          .filter((_, i) => i !== lastUserPos)
+          .map((m) => `${m.role}: ${m.content}`)
+          .join("\n");
       const promptText = contextMessages[lastUserPos]?.content || "";
       const contextStats: ContextStats = {
         limit: selectedModelConfig.contextTokens,
-        system: tokenEst(systemText),
+        system: 0,
         tools: tokenEst(searchContext),
         history: tokenEst(historyText),
         prompt: tokenEst(promptText),
         format: Math.max(
           0,
           estPromptTokens -
-            tokenEst(systemText) -
+            0 -
             tokenEst(searchContext) -
             tokenEst(historyText) -
             tokenEst(promptText)
