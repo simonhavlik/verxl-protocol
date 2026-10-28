@@ -854,6 +854,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     messages: ChatMessage[],
     model: ModelConfig
   ): ChatSession => {
+    // Large-context bridges (1M) keep full history; compaction is for the 32K Qwen.
+    if (model.contextTokens >= 40_000) return session;
     const outputReserve = model.isOfficialBridge ? 32768 : 4096;
     const threshold = model.contextTokens - outputReserve - 2048;
     const prior = session.compaction;
@@ -936,6 +938,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const selectedModelConfig =
       AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
     const maxOutputTokens = selectedModelConfig.isOfficialBridge ? 32768 : 4096;
+    const isSmallContext = selectedModelConfig.contextTokens < 40_000;
     // Compact only near the model's input limit; the full history stays visible.
     const compactedSession = maybeCompactSession(targetSession, updatedMessages, selectedModelConfig);
     const updatedUserSession: ChatSession = {
@@ -969,11 +972,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         const searchData = (await searchRes.json()) as any;
         sources = (searchData?.data?.web || [])
           .slice(0, 5)
-          .map((r: any) => ({
-            title: String(r.title || r.url || "").slice(0, 160),
-            url: String(r.url || ""),
-            description: String(r.description || "").replace(/\s+/g, " ").slice(0, 240),
-          }))
+          .map((r: any) => {
+            const description = String(r.description || "").replace(/\s+/g, " ");
+            return {
+              title: isSmallContext
+                ? String(r.title || r.url || "").slice(0, 160)
+                : String(r.title || r.url || ""),
+              url: String(r.url || ""),
+              description: isSmallContext ? description.slice(0, 240) : description,
+            };
+          })
           .filter((r: SearchSource) => r.url);
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
       } catch {
@@ -1016,7 +1024,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       ...(compaction && boundaryIdx >= 0
         ? [`Summary of earlier conversation turns:\n${compaction.summary}`]
         : []),
-      ...(sources.length > 0 ? [searchInstruction] : []),
+      ...(sources.length > 0 && isSmallContext ? [searchInstruction] : []),
     ];
     const apiMessages = [
       ...(systemParts.length > 0
@@ -1124,6 +1132,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       const totalCost = requestFailed ? 0 : computeCost * 1.005; // 50 bps protocol fee
 
       const protocolTemplate =
+        isSmallContext &&
         /\[Verxl Protocol Clearing Switch\]|Deterministic Probe:\s*Seed=42/i.test(
           accumulatedContent
         );
