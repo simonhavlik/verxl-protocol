@@ -157,7 +157,6 @@ export const onRequestGet: PagesFunction<Env> = async () => {
     total_count: PROPOSALS_DATA.length,
     active_count: PROPOSALS_DATA.filter((p) => p.status === "ACTIVE").length,
     passed_count: PROPOSALS_DATA.filter((p) => p.status === "PASSED" || p.status === "EXECUTED").length,
-    
     synced_at: new Date().toISOString(),
   };
 

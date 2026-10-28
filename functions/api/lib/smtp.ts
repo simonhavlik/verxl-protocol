@@ -71,10 +71,14 @@ export async function sendEmailDirect({
   html,
   from = "automated@verxl.com",
   smtpUser = "automated@verxl.com",
-  smtpPass = "***REMOVED***",
+  smtpPass = "",
   smtpHost = "smtp.seznam.cz",
   smtpPort = 465,
 }: SendMailOptions): Promise<{ success: boolean; log: string }> {
+  if (!smtpPass) {
+    return { success: false, log: "SMTP password is not configured." };
+  }
+
   const buffer = { text: "" };
   let sessionLog = "";
 

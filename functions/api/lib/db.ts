@@ -10,9 +10,6 @@ if (types && typeof types.setTypeParser === "function") {
 
 // Charizard PostgreSQL Configuration (strictly isolated to 'verxl' schema)
 // Used across Verxl Protocol for non-custodial user balances, api keys, deposits, and usage records.
-export const DB_CONNECTION_STRING =
-  "postgresql://***REMOVED***";
-
 let _env: any = null;
 
 export function setDbEnv(env: any) {
@@ -21,8 +18,13 @@ export function setDbEnv(env: any) {
 
 export function createPgClient(connStr?: string): pg.Client {
   const hyperdriveStr = _env?.HYPERDRIVE?.connectionString;
+  const fallbackStr = _env?.DATABASE_URL;
   const isHyperdrive = Boolean(hyperdriveStr && !connStr);
-  const targetStr = connStr || hyperdriveStr || DB_CONNECTION_STRING;
+  const targetStr = connStr || hyperdriveStr || fallbackStr;
+
+  if (!targetStr) {
+    throw new Error("Database is not configured: bind HYPERDRIVE or set DATABASE_URL");
+  }
 
   return new Client({
     connectionString: targetStr,

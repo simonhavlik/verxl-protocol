@@ -90,7 +90,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     subject: `Your Verxl Authentication Code: ${code}`,
     html: emailHtml,
     smtpUser: env.SMTP_USER || "automated@verxl.com",
-    smtpPass: env.SMTP_PASS || "***REMOVED***",
+    smtpPass: env.SMTP_PASS,
   });
 
   if (!emailRes.success) {

@@ -11,9 +11,11 @@ interface InboundEmail {
 }
 
 export async function fetchRecentEmailsFromSeznam(
-  filterFromEmail?: string
+  filterFromEmail?: string,
+  password = ""
 ): Promise<InboundEmail[]> {
   const emails: InboundEmail[] = [];
+  if (!password) return emails;
 
   try {
     const socket = connect(
@@ -62,7 +64,7 @@ export async function fetchRecentEmailsFromSeznam(
     await readLine();
 
     // 2. Login
-    await sendCmd("t1", "LOGIN automated@verxl.com ***REMOVED***");
+    await sendCmd("t1", `LOGIN automated@verxl.com ${password}`);
 
     // 3. Select INBOX
     const selectLines = await sendCmd("t2", "SELECT INBOX");

@@ -6,7 +6,19 @@ export const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Provider-Secret",
 };
 
-const JWT_SECRET = "***REMOVED***";
+let _authEnv: Record<string, any> | null = null;
+
+export function setAuthEnv(env: Record<string, any>) {
+  if (env) _authEnv = env;
+}
+
+function getJwtSecret(): string {
+  const secret = _authEnv?.JWT_SECRET || (globalThis as any)?.process?.env?.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not configured");
+  }
+  return secret;
+}
 
 export async function hashSha256(input: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(input);
@@ -103,7 +115,7 @@ export async function signSessionToken(payload: Record<string, any>): Promise<st
 
   const key = await crypto.subtle.importKey(
     "raw",
-    enc.encode(JWT_SECRET),
+    enc.encode(getJwtSecret()),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -127,7 +139,7 @@ export async function signChallengeToken(payload: Record<string, any>): Promise<
 
   const key = await crypto.subtle.importKey(
     "raw",
-    enc.encode(JWT_SECRET),
+    enc.encode(getJwtSecret()),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -154,7 +166,7 @@ export async function verifySessionToken(token: string): Promise<Record<string, 
   try {
     const key = await crypto.subtle.importKey(
       "raw",
-      enc.encode(JWT_SECRET),
+      enc.encode(getJwtSecret()),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["verify"]
