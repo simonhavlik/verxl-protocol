@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
+import { useAuth } from "../context/AuthContext";
 import {
   Play,
   Square,
@@ -43,6 +44,7 @@ interface PlaygroundProps {
 }
 
 export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
+  const { user, token, customApiKey } = useAuth();
   const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are Verxl Protocol's verified high-throughput institutional AI engine. Respond concisely with exact technical and quantitative precision."
@@ -122,11 +124,17 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
     let firstTokenReceived = false;
 
     try {
+      const authHeader = token
+        ? `Bearer ${token}`
+        : customApiKey
+        ? `Bearer ${customApiKey}`
+        : "Bearer vrxl_testnet_demo_key";
+
       const response = await fetch("/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer vrxl_testnet_demo_key",
+          Authorization: authHeader,
         },
         body: JSON.stringify({
           model,
@@ -358,15 +366,21 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate }) => {
         `*   **Throughput:** Zero-overhead TCP connection reuse with connection pooling.\n` +
         `*   **Protocol Fee:** 50 bps hardcoded clearing rate.`;
     } else {
+      const routedNode = model.includes("qwen") || model.includes("uncensored")
+        ? "bulbasaur-prague-01 (Prague Bare-Metal Vulkan Host)"
+        : model.includes("deepseek")
+        ? "deepseek-v4-bridge-01 (Official DeepSeek Bridge · Tokyo Edge)"
+        : "xiao-mimo-bridge-01 (Official Xiaomi MiMo Bridge · Frankfurt Edge)";
+
       targetReasoning =
         `[Phase 1 · Stateless Dispatch] Evaluating lowest latency cluster route across Tier-3 network.\n` +
-        `[Phase 2 · Routing Selection] Selecting Prague node 'bulbasaur-prague-01' (8x H100 SXM5, 32k resident context).\n` +
+        `[Phase 2 · Routing Selection] Selecting node '${routedNode}'.\n` +
         `[Phase 3 · Invariant Verification] Checking deterministic seed=42 oracle attestation on Sepolia.\n` +
         `[Phase 4 · Stream Initialization] Streaming FP16 linear tensor weights directly to client socket.`;
 
       targetText =
         `**Verxl Protocol Inference Stream Response:**\n\n` +
-        `*   **Routed Node:** \`bulbasaur-prague-01\` (Prague Tier-3 Cluster)\n` +
+        `*   **Routed Node:** \`${routedNode}\`\n` +
         `*   **Model:** \`${model}\`\n` +
         `*   **Protocol Fee:** 50 bps (0.50% non-custodial take)\n` +
         `*   **Verification:** Deterministic SLA seed=42 invariant validated on Ethereum Sepolia.\n\n` +
@@ -603,7 +617,13 @@ main();`,
                 <label className="text-[11px] font-mono text-slate-400">
                   Active Testing Model
                 </label>
-                <span className="text-[10px] font-mono text-emerald-400">PRAGUE HOST: BULBASAUR (32K)</span>
+                <span className="text-[10px] font-mono text-emerald-400">
+                  {model.includes("qwen") || model.includes("uncensored")
+                    ? "PRAGUE BARE-METAL: BULBASAUR (32K)"
+                    : model.includes("deepseek")
+                    ? "OFFICIAL BRIDGE: DEEPSEEK V4.1 FLASH (1M)"
+                    : "OFFICIAL BRIDGE: XIAOMI MIMO 2.6 FLASH (1M)"}
+                </span>
               </div>
               <select
                 value={model}
@@ -611,13 +631,13 @@ main();`,
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500 transition"
               >
                 <option value="qwen3.5-4b-uncensored-32k">
-                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (32k Resident Context) [Free Demo]
+                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (Bare-Metal · Free Demo)
                 </option>
-                <option disabled value="deepseek-v4.1-flash" className="text-slate-500 bg-[#070b14]">
-                  🔒 deepseek-v4.1-flash (Paid USDC Balance Required · Verxl Chat / Console)
+                <option value="deepseek-v4.1-flash">
+                  deepseek-v4.1-flash · DeepSeek V4.1 Flash (1M Context · Bridge) {user ? `[Balance: $${Number(user.balance_usd || 0).toFixed(2)}]` : `[Paid USDC Account Required]`}
                 </option>
-                <option disabled value="mimo-v2.6-flash" className="text-slate-500 bg-[#070b14]">
-                  🔒 mimo-v2.6-flash (Paid USDC Balance Required · Verxl Chat / Console)
+                <option value="mimo-v2.6-flash">
+                  mimo-v2.6-flash · Xiaomi MiMo 2.6 Flash (1M Context · Bridge) {user ? `[Balance: $${Number(user.balance_usd || 0).toFixed(2)}]` : `[Paid USDC Account Required]`}
                 </option>
               </select>
 
@@ -626,19 +646,25 @@ main();`,
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-blue-400 font-bold">
                     <Server className="w-3.5 h-3.5 shrink-0" />
-                    <span>Free Playground Model: Qwen 3.5 4B Uncensored</span>
+                    <span>
+                      {model.includes("qwen") || model.includes("uncensored")
+                        ? "Free Playground Model: Qwen 3.5 4B Uncensored (Bulbasaur)"
+                        : model.includes("deepseek")
+                        ? "Official Bridge Model: DeepSeek V4.1 Flash"
+                        : "Official Bridge Model: Xiaomi MiMo 2.6 Flash"}
+                    </span>
                   </span>
                   <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    Unlimited Free Demo
+                    {model.includes("qwen") ? "Unlimited Free Demo" : "Commercial Bridge"}
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
-                  The demo terminal is restricted exclusively to <strong>Qwen 3.5 4B Uncensored</strong>. For official bridge models (DeepSeek V4.1 Flash, Xiaomi MiMo 2.6 Flash), one must pay per token via <a href="/chat" className="text-blue-400 underline hover:text-blue-300 font-mono">Verxl Chat</a> or with an API key generated in <a href="/console" className="text-blue-400 underline hover:text-blue-300 font-mono">Console</a> after depositing USDC on Arbitrum.
+                  Verxl provides strictly 3 authorized models: <strong>Bulbasaur Qwen 3.5 4B Uncensored</strong> (dedicated bare-metal resident node in Prague), <strong>DeepSeek V4.1 Flash</strong>, and <strong>Xiaomi MiMo 2.6 Flash</strong>. Commercial bridge models require an authenticated account with positive USDC balance.
                 </p>
                 <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
                   <span className="flex items-center gap-1 text-slate-400">
                     <Lock className="w-3 h-3 text-amber-400" />
-                    <span>IP Demo Limit: 40 requests / 10 min</span>
+                    <span>Rate Limit: 40 req / 10 min demo</span>
                   </span>
                   <span className="text-emerald-400">50 bps Protocol Fee</span>
                 </div>

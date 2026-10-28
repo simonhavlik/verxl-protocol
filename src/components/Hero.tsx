@@ -546,7 +546,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
                         <div className="text-slate-400 text-[10px]">SELECTED MODEL</div>
                         <div className="text-white font-semibold mt-0.5">
-                          meta-llama/llama-3-70b-instruct
+                          qwen3.5-4b-uncensored-32k (Bulbasaur)
                         </div>
                       </div>
                       <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
@@ -590,41 +590,41 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       <div className="p-2 bg-blue-950/20 border border-blue-500/40 flex items-center justify-between">
                         <div>
                           <div className="text-white font-semibold">
-                            Prague Tier-3 Cluster 01 [SELECTED]
+                            Prague Bare-Metal Cluster 01 [SELECTED]
                           </div>
                           <div className="text-slate-400 text-[10px]">
-                            8x NVIDIA H100 SXM5 • 35,000 $VRXL Bonded
+                            Bulbasaur Vulkan Host • Bare-Metal · Zero-Logging
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-emerald-400 font-bold">18ms TTFT</div>
-                          <div className="text-[10px] text-slate-400">84.5 TPS</div>
+                          <div className="text-[10px] text-slate-400">52.4 TPS</div>
                         </div>
                       </div>
 
                       <div className="p-2 bg-[#05070b] border border-slate-800/80 flex items-center justify-between opacity-70">
                         <div>
-                          <div className="text-slate-300">Frankfurt Equinix Node A</div>
+                          <div className="text-slate-300">DeepSeek Official Bridge</div>
                           <div className="text-slate-400 text-[10px]">
-                            4x NVIDIA A100 80GB • 15,000 $VRXL Bonded
+                            Hangzhou & Tokyo Edge • Bridge · Upstream Logged
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-slate-300 font-bold">14ms TTFT</div>
-                          <div className="text-[10px] text-slate-400">124 TPS</div>
+                          <div className="text-slate-300 font-bold">28ms TTFT</div>
+                          <div className="text-[10px] text-slate-400">135 TPS</div>
                         </div>
                       </div>
 
                       <div className="p-2 bg-[#05070b] border border-slate-800/80 flex items-center justify-between opacity-70">
                         <div>
-                          <div className="text-slate-300">Brno Transition Cluster</div>
+                          <div className="text-slate-300">Xiaomi MiMo Official Bridge</div>
                           <div className="text-slate-400 text-[10px]">
-                            16x RTX 4090 • 28,000 $VRXL Bonded
+                            Frankfurt Cloud Edge • Bridge · Upstream Logged
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-slate-300 font-bold">24ms TTFT</div>
-                          <div className="text-[10px] text-slate-400">68.2 TPS</div>
+                          <div className="text-slate-300 font-bold">22ms TTFT</div>
+                          <div className="text-[10px] text-slate-400">110 TPS</div>
                         </div>
                       </div>
                     </div>
@@ -720,28 +720,28 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       <div className="hero-tape">
         <div className="tape-track">
           <span className="tape-item is-blue">
-            <b>META-LLAMA-3-70B</b> 84.5 TPS
+            <b>BULBASAUR-QWEN-3.5</b> 52.4 TPS (BARE-METAL)
           </span>
           <span className="tape-item is-up">
-            <b>P50 TTFT</b> 48ms
+            <b>DEEPSEEK-V4.1-FLASH</b> 135 TPS (OFFICIAL BRIDGE)
           </span>
           <span className="tape-item is-blue">
-            <b>PROTOCOL FEE</b> 50 BPS (-94.1%)
+            <b>MIMO-V2.6-FLASH</b> 110 TPS (OFFICIAL BRIDGE)
           </span>
           <span className="tape-item">
-            <b>PRAGUE-01</b> 8x H100 SXM5 (18ms)
+            <b>PRAGUE-01 HOST</b> Dedicated Bare-Metal Vulkan
           </span>
           <span className="tape-item is-up">
             <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
           </span>
-          <span className="tape-item">
-            <b>COLLATERAL POOL</b> 130,000 $VRXL
+          <span className="tape-item is-blue">
+            <b>PROTOCOL CLEARING</b> 50 BPS (-94.7%)
           </span>
           <span className="tape-item is-up">
-            <b>CANARY ORACLE</b> 99.8% FIDELITY
+            <b>CANARY ORACLE</b> 99.8% FIDELITY (seed=42)
           </span>
-          <span className="tape-item is-down">
-            <b>SLASH PENALTY</b> 10% (50% BURN / 50% VAULT)
+          <span className="tape-item">
+            <b>DATA POLICY</b> Volatile RAM · Zero Prompt Storage
           </span>
           <span className="tape-item is-blue">
             <b>ETHEREUM SEPOLIA</b> VIP-1 ACTIVE
@@ -749,28 +749,28 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
           {/* Repeat for seamless infinite marquee loop */}
           <span className="tape-item is-blue">
-            <b>META-LLAMA-3-70B</b> 84.5 TPS
+            <b>BULBASAUR-QWEN-3.5</b> 52.4 TPS (BARE-METAL)
           </span>
           <span className="tape-item is-up">
-            <b>P50 TTFT</b> 48ms
+            <b>DEEPSEEK-V4.1-FLASH</b> 135 TPS (OFFICIAL BRIDGE)
           </span>
           <span className="tape-item is-blue">
-            <b>PROTOCOL FEE</b> 50 BPS (-94.1%)
+            <b>MIMO-V2.6-FLASH</b> 110 TPS (OFFICIAL BRIDGE)
           </span>
           <span className="tape-item">
-            <b>PRAGUE-01</b> 8x H100 SXM5 (18ms)
+            <b>PRAGUE-01 HOST</b> Dedicated Bare-Metal Vulkan
           </span>
           <span className="tape-item is-up">
             <b>ARAGON OSx DAO</b> 0xf0e51fB0...111a
           </span>
-          <span className="tape-item">
-            <b>COLLATERAL POOL</b> 130,000 $VRXL
+          <span className="tape-item is-blue">
+            <b>PROTOCOL CLEARING</b> 50 BPS (-94.7%)
           </span>
           <span className="tape-item is-up">
-            <b>CANARY ORACLE</b> 99.8% FIDELITY
+            <b>CANARY ORACLE</b> 99.8% FIDELITY (seed=42)
           </span>
-          <span className="tape-item is-down">
-            <b>SLASH PENALTY</b> 10% (50% BURN / 50% VAULT)
+          <span className="tape-item">
+            <b>DATA POLICY</b> Volatile RAM · Zero Prompt Storage
           </span>
           <span className="tape-item is-blue">
             <b>ETHEREUM SEPOLIA</b> VIP-1 ACTIVE

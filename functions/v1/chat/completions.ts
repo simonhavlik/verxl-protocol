@@ -48,10 +48,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  // Model selection
+  // Strict Model Selection: Only Bulbasaur Qwen 3.5, DeepSeek V4.1 Flash, and Xiaomi MiMo 2.6 Flash
   const rawModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-32k";
-  let requestedModel = rawModel;
-  if (rawModel.includes("uncensored") || rawModel.includes("qwen")) {
+  const lowerModel = rawModel.toLowerCase();
+  let requestedModel = "qwen3.5-4b-uncensored-32k";
+  if (lowerModel.includes("deepseek")) {
+    requestedModel = "deepseek-v4.1-flash";
+  } else if (lowerModel.includes("mimo") || lowerModel.includes("xiaomi")) {
+    requestedModel = "mimo-v2.6-flash";
+  } else {
     requestedModel = "qwen3.5-4b-uncensored-32k";
   }
 

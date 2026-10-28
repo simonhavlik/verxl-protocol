@@ -1143,7 +1143,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               >
                 <Cpu className="w-3.5 h-3.5 text-blue-400" />
                 <span className="font-semibold truncate max-w-[150px] sm:max-w-[260px]">
-                  {AVAILABLE_MODELS.find((m) => m.id === activeSession?.model)?.name || "Select Model"}
+                  {(AVAILABLE_MODELS.find((m) => m.id === activeSession?.model) || AVAILABLE_MODELS[0]).name}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>

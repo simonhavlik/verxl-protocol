@@ -253,8 +253,8 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="qwen-2.5-coder-32b",
-    messages=[{"role": "user", "content": "Explain Verxl Protocol staking."}],
+    model="qwen3.5-4b-uncensored-32k",
+    messages=[{"role": "user", "content": "Explain Verxl Protocol non-custodial clearing."}],
     stream=True
 )
 
@@ -292,7 +292,7 @@ for chunk in response:
 {`[ Scheduled Oracle Worker ]
             │
             │ Dispatches Seed-Locked Probe:
-            │ { model: "llama-3-70b", temperature: 0.0, seed: 42, prompt: P_canary }
+            │ { model: "qwen3.5-4b-uncensored-32k", temperature: 0.0, seed: 42, prompt: P_canary }
             ▼
 [ Target Provider Endpoint ] ─────────────────────────► Returns Output R_probe
                                                                │
