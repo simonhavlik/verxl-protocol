@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
+import "katex/dist/katex.min.css";
+import markedKatex from "marked-katex-extension";
 import { useAuth } from "../context/AuthContext";
 import {
   Play,
@@ -8,6 +10,7 @@ import {
   Check,
   Zap,
   Clock,
+  ArrowDown,
   Code2,
   DollarSign,
   Terminal,
@@ -21,6 +24,8 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+
+marked.use(markedKatex({ throwOnError: false }));
 
 marked.setOptions({
   gfm: true,
@@ -133,12 +138,30 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
   const abortControllerRef = useRef<AbortController | null>(null);
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
   const terminalWindowRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollOutput, setShowScrollOutput] = useState(false);
+  const autoScrollRef = useRef(true);
 
   // Auto-scroll terminal interior whenever new output or reasoning tokens arrive
+  const handleOutputScroll = () => {
+    const el = outputContainerRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    autoScrollRef.current = atBottom;
+    setShowScrollOutput(!atBottom);
+  };
+
+  const scrollOutputToLatest = () => {
+    const el = outputContainerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    autoScrollRef.current = true;
+    setShowScrollOutput(false);
+  };
+
   useEffect(() => {
-    if (outputContainerRef.current) {
+    if (outputContainerRef.current && autoScrollRef.current) {
       requestAnimationFrame(() => {
-        if (outputContainerRef.current) {
+        if (outputContainerRef.current && autoScrollRef.current) {
           outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
         }
       });
@@ -169,6 +192,8 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
       terminalWindowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
+    autoScrollRef.current = true;
+    setShowScrollOutput(false);
     setIsStreaming(true);
     setHasRun(true);
     setRunMode("pending");
@@ -673,6 +698,7 @@ main();`,
 
             <div
               ref={outputContainerRef}
+              onScroll={handleOutputScroll}
               className="h-[196px] overflow-y-auto px-2.5 py-2 font-mono text-[10.5px] leading-relaxed text-slate-200 select-text bg-[#05070b]/60"
             >
               {reasoningOutput && (
@@ -770,6 +796,15 @@ main();`,
 
   return (
     <div className="space-y-3.5">
+      {showScrollOutput && (
+        <button
+          onClick={scrollOutputToLatest}
+          className="fixed bottom-5 right-5 z-50 p-2 rounded-full bg-[#0c1220] border border-blue-500/40 text-blue-300 shadow-lg hover:text-white"
+          title="Jump to latest"
+        >
+          <ArrowDown className="w-4 h-4" />
+        </button>
+      )}
       {/* Section Header */}
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
@@ -1134,6 +1169,7 @@ main();`,
             {/* Output Scrollable Body */}
             <div
               ref={outputContainerRef}
+              onScroll={handleOutputScroll}
               className="flex-1 p-3 sm:p-4 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-200 select-text bg-[#05070b]/60"
             >
               {reasoningOutput && (

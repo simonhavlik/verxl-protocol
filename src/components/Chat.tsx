@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { marked } from "marked";
+import "katex/dist/katex.min.css";
+import markedKatex from "marked-katex-extension";
 import {
   deriveChatKey,
   encryptChatPayload,
@@ -40,10 +42,13 @@ import {
   Server,
   Lock,
   Globe,
+  ArrowDown,
   Paperclip,
   FileText,
   Pencil,
 } from "lucide-react";
+
+marked.use(markedKatex({ throwOnError: false }));
 
 marked.setOptions({
   gfm: true,
@@ -360,6 +365,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [editingText, setEditingText] = useState("");
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showContextDetails, setShowContextDetails] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const autoScrollRef = useRef(true);
 
   // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
   const createBlankSession = (): ChatSession => ({
@@ -777,18 +784,41 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   }, [inputPrompt]);
 
   // Auto-scroll strictly the internal messages scroll area during streaming (prevents outer window/page jumping)
+  const handleChatScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    autoScrollRef.current = atBottom;
+    setShowScrollButton(!atBottom);
+  };
+
+  const scrollChatToLatest = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    autoScrollRef.current = true;
+    setShowScrollButton(false);
+  };
+
   useEffect(() => {
-    if (scrollContainerRef.current && isStreaming) {
+    if (scrollContainerRef.current && isStreaming && autoScrollRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [streamingContent, streamingReasoning, isStreaming]);
 
-  // Scroll internal messages area to bottom on session switch or new user message
   useEffect(() => {
+    autoScrollRef.current = true;
+    setShowScrollButton(false);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
-  }, [activeSessionId, activeSession?.messages.length]);
+  }, [activeSessionId]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current && autoScrollRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [activeSession?.messages.length]);
 
   // Create New Chat Session
   const createNewSession = () => {
@@ -2162,6 +2192,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {/* Messages Scroll Area */}
         <div
           ref={scrollContainerRef}
+          onScroll={handleChatScroll}
           className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 select-text"
         >
           {/* Empty Conversation Welcome Screen */}
@@ -2460,6 +2491,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           )}
           <div ref={messagesEndRef} />
         </div>
+
+        {showScrollButton && (
+          <button
+            onClick={scrollChatToLatest}
+            className="absolute bottom-28 right-4 z-40 p-2 rounded-full bg-[#0c1220] border border-blue-500/40 text-blue-300 shadow-lg hover:text-white"
+            title="Jump to latest"
+          >
+            <ArrowDown className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Input Box Footer Container */}
         <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#080c14]/90 shrink-0">
