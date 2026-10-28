@@ -426,8 +426,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         temperature,
         max_tokens: maxTokens,
         stream,
-        // Bare-metal Qwen host supports reasoning_effort; bridges reject unknown fields.
-        ...(ep.url.includes("node1.verxl.com") && typeof (body as any).reasoning_effort === "string"
+        // Qwen uses none; DeepSeek/MiMo receive the selected think level.
+        ...(typeof (body as any).reasoning_effort === "string"
           ? { reasoning_effort: (body as any).reasoning_effort }
           : {}),
       });

@@ -39,6 +39,8 @@ import {
   Sparkles,
   Server,
   Lock,
+  Globe,
+  Pencil,
 } from "lucide-react";
 
 marked.setOptions({
@@ -66,19 +68,29 @@ interface MessageMetrics {
   failed?: boolean;
 }
 
+interface SearchSource {
+  title: string;
+  url: string;
+  description?: string;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   reasoning?: string;
+  sources?: SearchSource[];
   createdAt: number;
   metrics?: MessageMetrics;
 }
+
+type ThinkLevel = "off" | "low" | "medium" | "high";
 
 interface ChatSession {
   id: string;
   title: string;
   model: string;
+  think?: ThinkLevel;
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
@@ -243,6 +255,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [cryptoStatus, setCryptoStatus] = useState<"locked" | "unlocking" | "ready" | "unavailable">("locked");
   const [cryptoError, setCryptoError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
   const createBlankSession = (): ChatSession => ({
@@ -260,6 +278,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   });
   const [activeSessionId, setActiveSessionId] = useState<string>(sessions[0].id);
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  const currentModelConfig =
+    AVAILABLE_MODELS.find((m) => m.id === activeSession.model) || AVAILABLE_MODELS[0];
   const sessionsRef = useRef(sessions);
   sessionsRef.current = sessions;
 
@@ -828,7 +848,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   // Send Message & Stream Response
-  const handleSendMessage = async (promptOverride?: string) => {
+  const handleSendMessage = async (
+    promptOverride?: string,
+    options?: { skipUserAppend?: boolean; session?: ChatSession }
+  ) => {
+    const targetSession = options?.session || activeSession;
     const textToSend = (promptOverride || inputPrompt).trim();
     if (!textToSend || isStreaming) return;
 
@@ -843,29 +867,33 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       return;
     }
 
-    const userMessage: ChatMessage = {
-      id: `msg_user_${Date.now()}`,
-      role: "user",
-      content: textToSend,
-      createdAt: Date.now(),
-    };
+    const userMessage: ChatMessage | null = options?.skipUserAppend
+      ? null
+      : {
+          id: `msg_user_${Date.now()}`,
+          role: "user",
+          content: textToSend,
+          createdAt: Date.now(),
+        };
 
-    // Update session with user message and generate title if first message
-    const updatedMessages = [...activeSession.messages, userMessage];
-    let newTitle = activeSession.title;
-    if (activeSession.messages.length === 0) {
+    // Regenerate and edit resend the existing truncated history, not a new turn.
+    const updatedMessages = options?.skipUserAppend
+      ? targetSession.messages
+      : [...targetSession.messages, userMessage as ChatMessage];
+    let newTitle = targetSession.title;
+    if (targetSession.messages.length === 0) {
       newTitle = textToSend.slice(0, 32) + (textToSend.length > 32 ? "..." : "");
     }
 
     const updatedUserSession: ChatSession = {
-      ...activeSession,
+      ...targetSession,
       title: newTitle,
       messages: updatedMessages,
       updatedAt: Date.now(),
     };
 
     setSessions((prev) =>
-      prev.map((s) => (s.id === activeSession.id ? updatedUserSession : s))
+      prev.map((s) => (s.id === targetSession.id ? updatedUserSession : s))
     );
     syncSessionToDb(updatedUserSession);
 
@@ -873,6 +901,34 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setIsStreaming(true);
     setStreamingContent("");
     setStreamingReasoning("");
+
+    // Search from the browser IP, so the keyless Firecrawl limit applies per user.
+    let sources: SearchSource[] = [];
+    if (searchEnabled) {
+      setIsSearching(true);
+      setSearchError(null);
+      try {
+        const searchRes = await fetch("https://api.firecrawl.dev/v2/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: textToSend.slice(0, 400), limit: 5 }),
+        });
+        const searchData = (await searchRes.json()) as any;
+        sources = (searchData?.data?.web || [])
+          .slice(0, 5)
+          .map((r: any) => ({
+            title: r.title || r.url,
+            url: r.url,
+            description: r.description || "",
+          }))
+          .filter((r: SearchSource) => r.url);
+        if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
+      } catch {
+        setSearchError("Web search unavailable; answering without sources.");
+      } finally {
+        setIsSearching(false);
+      }
+    }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -883,11 +939,29 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let accumulatedReasoning = "";
     let tokenCount = 0;
 
-    // No system turn. Chat sends the conversation exactly as the user wrote it.
-    const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
+    // No system turn. Search context is appended to the last user turn only.
+    const lastUserIndex = [...updatedMessages].reverse().findIndex((m) => m.role === "user");
+    const lastUserPos = lastUserIndex >= 0 ? updatedMessages.length - 1 - lastUserIndex : -1;
+    const searchContext =
+      sources.length > 0
+        ? `Web search results. Use them and cite [n] where relevant:\n${sources
+            .map(
+              (r, i) =>
+                `[${i + 1}] ${r.title}\n${r.url}${r.description ? `\n${r.description}` : ""}`
+            )
+            .join("\n\n")}`
+        : "";
+    const apiMessages = updatedMessages.map((m, i) => ({
+      role: m.role,
+      content:
+        i === lastUserPos && searchContext
+          ? `${searchContext}\n\nQuestion: ${m.content}`
+          : m.content,
+    }));
 
-    const currentModel = activeSession.model || "qwen3.5-4b-uncensored-32k";
+    const currentModel = targetSession.model || "qwen3.5-4b-uncensored-32k";
     const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
+    const thinkLevel = targetSession.think || "medium";
     let requestFailed = false;
 
     try {
@@ -903,6 +977,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           stream: true,
           temperature: 0.3,
           max_tokens: 1536,
+          reasoning_effort:
+            selectedModelConfig.isOfficialBridge && thinkLevel !== "off" ? thinkLevel : "none",
         }),
         signal: controller.signal,
       });
@@ -983,27 +1059,28 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         role: "assistant",
         content: accumulatedContent || "Response concluded.",
         reasoning: accumulatedReasoning || undefined,
+        sources: sources.length > 0 ? sources : undefined,
         createdAt: Date.now(),
         metrics: {
           promptTokens: estPromptTokens,
           completionTokens: estCompletionTokens,
           costUsd: totalCost,
-          ttftMs: firstTokenTime || 45,
-          tps: Math.round((estCompletionTokens / (totalLatency / 1000)) * 10) / 10 || 52.4,
+          ttftMs: firstTokenTime || undefined,
+          tps: Math.round((estCompletionTokens / (totalLatency / 1000)) * 10) / 10,
           provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
           failed: requestFailed || undefined,
         },
       };
 
       const updatedWithAssistant: ChatSession = {
-        ...activeSession,
+        ...targetSession,
         title: newTitle,
         messages: [...updatedMessages, assistantMessage],
         updatedAt: Date.now(),
       };
 
       setSessions((prev) =>
-        prev.map((s) => (s.id === activeSession.id ? updatedWithAssistant : s))
+        prev.map((s) => (s.id === targetSession.id ? updatedWithAssistant : s))
       );
       syncSessionToDb(updatedWithAssistant);
 
@@ -1074,6 +1151,55 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const copyTranscript = () => {
+    const body = activeSession.messages
+      .map((m) => `## ${m.role === "user" ? "User" : "Verxl Assistant"}\n\n${m.content}`)
+      .join("\n\n---\n\n");
+    navigator.clipboard.writeText(`# ${activeSession.title}\n\n${body}`);
+    setCopiedMessageId("transcript");
+    setTimeout(() => setCopiedMessageId(null), 2000);
+  };
+
+  const regenerateFrom = (assistantId: string) => {
+    if (isStreaming) return;
+    const idx = activeSession.messages.findIndex((m) => m.id === assistantId);
+    if (idx < 1) return;
+    const kept = activeSession.messages.slice(0, idx);
+    const lastUser = [...kept].reverse().find((m) => m.role === "user");
+    if (!lastUser) return;
+    const updated = { ...activeSession, messages: kept, updatedAt: Date.now() };
+    setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+    syncSessionToDb(updated);
+    handleSendMessage(lastUser.content, { skipUserAppend: true, session: updated });
+  };
+
+  const startEditMessage = (msg: ChatMessage) => {
+    setEditingMessageId(msg.id);
+    setEditingText(msg.content);
+  };
+
+  const saveEditedMessage = () => {
+    const text = editingText.trim();
+    if (!text || !editingMessageId) return;
+    const idx = activeSession.messages.findIndex((m) => m.id === editingMessageId);
+    if (idx < 0) return;
+    const kept = activeSession.messages
+      .slice(0, idx + 1)
+      .map((m) => (m.id === editingMessageId ? { ...m, content: text } : m));
+    const updated = { ...activeSession, messages: kept, updatedAt: Date.now() };
+    setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+    setEditingMessageId(null);
+    setEditingText("");
+    syncSessionToDb(updated);
+    handleSendMessage(text, { skipUserAppend: true, session: updated });
+  };
+
+  const updateThinkLevel = (level: ThinkLevel) => {
+    const updated = { ...activeSession, think: level, updatedAt: Date.now() };
+    setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+    syncSessionToDb(updated);
   };
 
   return (
@@ -1496,6 +1622,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             </div>
           </div>
 
+          {currentModelConfig.isOfficialBridge && (
+            <div className="hidden lg:flex items-center gap-1 px-1.5 py-1 rounded-[3px] bg-[#05070b] border border-slate-800 font-mono text-[9px]">
+              <span className="text-slate-500 uppercase tracking-wider mr-0.5">Think</span>
+              {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
+                <button
+                  key={level}
+                  onClick={() => updateThinkLevel(level)}
+                  className={`px-1 py-0.5 rounded-[2px] uppercase transition ${
+                    (activeSession.think || "medium") === level
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Right Header Actions */}
           <div className="flex items-center gap-2">
             {/* Live Balance Badge */}
@@ -1533,13 +1678,46 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             )}
 
             {/* Export Dropdown */}
-            <button
-              onClick={() => exportChat("markdown")}
-              className="p-1.5 rounded-[3px] bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white transition"
-              title="Export Markdown"
-            >
-              <Download className="w-3.5 h-3.5" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu((v) => !v)}
+                className="p-1.5 rounded-[3px] bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white transition"
+                title="Export chat"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-1 w-44 z-50 rounded-[3px] border border-slate-700 bg-[#080c14] shadow-2xl font-mono text-[10.5px]">
+                  <button
+                    onClick={() => {
+                      exportChat("markdown");
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-slate-300 hover:bg-blue-600/20 hover:text-white"
+                  >
+                    Markdown (.md)
+                  </button>
+                  <button
+                    onClick={() => {
+                      exportChat("json");
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-slate-300 hover:bg-blue-600/20 hover:text-white"
+                  >
+                    JSON (.json)
+                  </button>
+                  <button
+                    onClick={() => {
+                      copyTranscript();
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-slate-300 hover:bg-blue-600/20 hover:text-white"
+                  >
+                    Copy transcript
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Settings Button */}
             <button
@@ -1666,11 +1844,86 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       </div>
                     )}
 
-                    {/* Formatted Markdown Content */}
-                    <div
-                      className="terminal-markdown select-text"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
-                    />
+                    {/* Formatted Markdown Content, or inline prompt editor */}
+                    {editingMessageId === msg.id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          rows={3}
+                          autoFocus
+                          className="w-full bg-[#05070b] border border-blue-500/40 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-400 font-mono resize-none"
+                        />
+                        <div className="flex justify-end gap-2 text-[10px]">
+                          <button
+                            onClick={() => {
+                              setEditingMessageId(null);
+                              setEditingText("");
+                            }}
+                            className="px-2 py-1 text-slate-400 hover:text-white"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={saveEditedMessage}
+                            disabled={!editingText.trim()}
+                            className="px-2 py-1 rounded-[2px] bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-semibold"
+                          >
+                            Save & resend
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="terminal-markdown select-text"
+                        dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                      />
+                    )}
+
+                    {/* User message actions */}
+                    {msg.role === "user" && editingMessageId !== msg.id && (
+                      <div className="mt-2 pt-2 border-t border-blue-500/20 flex justify-end gap-3 text-[10px] text-slate-400">
+                        <button
+                          onClick={() => startEditMessage(msg)}
+                          className="flex items-center gap-1 hover:text-white transition"
+                          title="Edit and resend"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => copyMessage(msg.id, msg.content)}
+                          className="flex items-center gap-1 hover:text-white transition"
+                          title="Copy message"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Web search sources stored with the assistant turn */}
+                    {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                      <div className="mt-3 pt-2 border-t border-slate-800/80">
+                        <div className="text-[9px] uppercase tracking-wider text-slate-500 mb-1">
+                          Sources
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          {msg.sources.map((source, i) => (
+                            <a
+                              key={`${msg.id}_src_${i}`}
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-blue-400 hover:text-blue-300 truncate"
+                              title={source.url}
+                            >
+                              [{i + 1}] {source.title}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Assistant Telemetry Footer */}
                     {msg.role === "assistant" && msg.metrics && !msg.metrics.failed && (
@@ -1705,12 +1958,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                             )}
                           </button>
                           <button
-                            onClick={() => handleSendMessage(msg.content)}
+                            onClick={() => regenerateFrom(msg.id)}
                             className="flex items-center gap-1 hover:text-white transition"
                             title="Regenerate from this point"
                           >
                             <RefreshCw className="w-3 h-3" />
-                            <span>Retry</span>
+                            <span>Regenerate</span>
                           </button>
                         </div>
                       </div>
@@ -1755,7 +2008,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     ) : (
                       <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
                         <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                        <span>Awaiting first token chunk from Prague cluster...</span>
+                        <span>
+                          {isSearching
+                            ? "Searching the web for sources..."
+                            : "Awaiting first token chunk from Prague cluster..."}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1786,6 +2043,18 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 disabled={isStreaming}
                 className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none resize-none font-mono py-1 px-1.5 leading-relaxed max-h-44"
               />
+
+              <button
+                onClick={() => setSearchEnabled((v) => !v)}
+                className={`p-2 rounded-[3px] border transition shrink-0 ${
+                  searchEnabled
+                    ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
+                    : "bg-[#05070b] border-slate-800 text-slate-400 hover:text-white"
+                }`}
+                title="Search the web (Firecrawl)"
+              >
+                <Globe className="w-4 h-4" />
+              </button>
 
               {/* Action Button: Send or Stop */}
               {isStreaming ? (
@@ -1820,6 +2089,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <span>
                   Est. Cost: ~${((Math.max(1, inputPrompt.length / 4) / 1e6) * 0.15).toFixed(6)} USD
                 </span>
+                {isSearching && (
+                  <span className="text-emerald-400">Searching the web...</span>
+                )}
+                {searchError && (
+                  <span className="text-amber-400">{searchError}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span>Account: ${balanceUsd.toFixed(4)} USD</span>
