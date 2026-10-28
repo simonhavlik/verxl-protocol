@@ -33,6 +33,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   }
 
+  // Deduplicate rapid resend/double-submit requests: one email per 90 seconds.
+  const recent = await db
+    .prepare(
+      "SELECT id FROM auth_codes WHERE email = ? AND used = 0 AND created_at > NOW() - INTERVAL '90 seconds' ORDER BY created_at DESC LIMIT 1"
+    )
+    .bind(email)
+    .first<{ id: string }>();
+  if (recent) {
+    return new Response(
+      JSON.stringify({ success: true, message: `Verification code already sent to ${email}` }),
+      { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+
   const code = generateOtpCode();
   const id = `otp_${crypto.randomUUID()}`;
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes

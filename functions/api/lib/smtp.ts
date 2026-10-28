@@ -155,6 +155,8 @@ export async function sendEmailDirect({
       `To: <${to}>`,
       `Subject: ${subject}`,
       `Date: ${new Date().toUTCString()}`,
+      `Message-ID: <${crypto.randomUUID()}@verxl.com>`,
+      `Auto-Submitted: auto-generated`,
       `MIME-Version: 1.0`,
       `Content-Type: text/html; charset=UTF-8`,
       `Content-Transfer-Encoding: 8bit`,
