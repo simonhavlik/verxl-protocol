@@ -104,21 +104,26 @@ export const Header: React.FC<HeaderProps> = ({
               <ChevronDown className="h-3 w-3" />
             </button>
             {showMore && (
-              <div className="absolute right-0 top-full mt-2 w-44 border border-white/10 bg-[#0b1016] p-1 shadow-2xl">
-                {moreItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setShowMore(false);
-                    }}
-                    className={`block w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
-                      activeTab === item.id ? "text-[#b8f6dd]" : "text-[#9aa7ad] hover:text-white"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              <div
+                className="absolute right-0 top-full w-44 pt-2"
+                onMouseEnter={() => setShowMore(true)}
+              >
+                <div className="border border-white/10 bg-[#0b1016] p-1 shadow-2xl">
+                  {moreItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setShowMore(false);
+                      }}
+                      className={`block w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
+                        activeTab === item.id ? "text-[#b8f6dd]" : "text-[#9aa7ad] hover:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

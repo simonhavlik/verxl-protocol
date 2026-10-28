@@ -695,36 +695,42 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           Institutional Overview Dashboard (Modeled on Portfolio Optimizer)
           Compact tables, zero empty void, live clearinghouse telemetry
          ========================================================================= */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4 w-full font-mono">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
-            <h2 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
-              Verxl Protocol Clearinghouse · Live Clearing Telemetry
-            </h2>
-            <span className="hidden sm:inline px-1.5 py-0.2 rounded-[2px] bg-[#b8f6dd]/10 border border-[#b8f6dd]/20 text-[9px] text-[#b8f6dd]">
-              SEPOLIA PILOT
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 text-[10px] text-slate-400">
-            <span>Aragon Vault:</span>
-            <a
-              href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#b8f6dd] hover:text-white underline decoration-[#b8f6dd]/30"
-            >
-              0xf0e5...111a
-            </a>
-            <span className="text-slate-700">|</span>
-            <span className="text-emerald-400 font-semibold">Non-custodial</span>
-          </div>
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
+          <span className="w-1.5 h-1.5 bg-[#b8f6dd]" />
+          <span>Live clearing</span>
+          <span className="text-white/20">/ 03</span>
+        </div>
+        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
+            Measured,
+            <br />
+            <span className="text-[#8fa39b]">not promised.</span>
+          </h2>
+          <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
+            Sepolia telemetry sampled over the last 24 hours. Fees, latency and oracle fidelity; not a mainnet promise.
+          </p>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[9px] text-[#7d8a92]">
+          <span className="flex items-center gap-1">
+            <span className="w-1 h-1 bg-[#b8f6dd]" />
+            Live
+          </span>
+          <span>Non-custodial</span>
+          <span>·</span>
+          <span>USDC on Arbitrum</span>
+          <span>·</span>
+          <a
+            href="https://sepolia.etherscan.io/address/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-[#b8f6dd]/30 hover:text-white"
+          >
+            0xf0e5...111a
+          </a>
         </div>
 
-        {/* 2-Column High-Density Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-3.5 font-mono">
           {/* Left Column (lg:col-span-5): Protocol Key Metrics & Fee Calculator */}
           <div className="lg:col-span-5 space-y-3.5">
             {/* Key Metrics Table (styled like pr-table in Portfolio Optimizer) */}
@@ -1076,9 +1082,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       {/* Client-side encrypted chat storage: mechanism, stored fields, access boundary */}
       <section
         id="chat-privacy"
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full scroll-mt-14 font-mono"
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full scroll-mt-20 font-mono"
       >
-        <div className="border border-emerald-500/25 bg-[#080c14]/90 rounded-[3px]">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
+          <span className="w-1.5 h-1.5 bg-[#b8f6dd]" />
+          <span>Privacy</span>
+          <span className="text-white/20">/ 04</span>
+        </div>
+        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="font-sans text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
+            Ciphertext,
+            <br />
+            <span className="text-[#8fa39b]">by default.</span>
+          </h2>
+          <p className="max-w-sm font-sans text-[14px] leading-relaxed text-[#a9b6bd]">
+            Chats are encrypted in the browser with a wallet-derived key. Postgres stores ciphertext, a wallet key id and timestamps; no message text, titles or prompts.
+          </p>
+        </div>
+        <div className="mt-8 border border-white/10 bg-[#080c14]/90">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-emerald-500/20">
             <div className="flex items-center gap-2 min-w-0">
               <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
