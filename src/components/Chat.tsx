@@ -790,6 +790,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
   const [finishedSessionIds, setFinishedSessionIds] = useState<Set<string>>(new Set());
+  const [queuedPrompt, setQueuedPrompt] = useState<{ text: string; sessionId: string } | null>(null);
   const activeStreaming = isStreaming && streamingSessionId === activeSessionId;
   const [streamingContent, setStreamingContent] = useState("");
   const [streamingReasoning, setStreamingReasoning] = useState("");
@@ -1774,6 +1775,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     syncSessionToDb(updated);
   };
 
+  useEffect(() => {
+    if (isStreaming || !queuedPrompt) return;
+    const q = queuedPrompt;
+    setQueuedPrompt(null);
+    const target = sessions.find((s) => s.id === q.sessionId) || activeSession;
+    void handleSendMessage(q.text, { session: target });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreaming, queuedPrompt]);
+
   return (
     <div
       className="h-[calc(100vh-105px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
@@ -2659,6 +2669,20 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             )}
 
+            {queuedPrompt && (
+              <div className="flex items-center gap-2 px-1 text-[9px] font-mono text-slate-400">
+                <span className="text-blue-300">Queued:</span>
+                <span className="truncate max-w-[70%]">{queuedPrompt.text}</span>
+                <button
+                  onClick={() => setQueuedPrompt(null)}
+                  className="text-slate-500 hover:text-rose-400"
+                  title="Cancel queued message"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             {(attachments.length > 0 || isParsing || attachmentError) && (
               <div className="flex flex-wrap items-center gap-1.5 px-1 text-[9px] font-mono">
                 {attachments.map((a, i) => (
@@ -2688,12 +2712,19 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendMessage();
+                    if (isStreaming) {
+                      const text = inputPrompt.trim();
+                      if (text) {
+                        setQueuedPrompt({ text, sessionId: activeSessionId });
+                        setInputPrompt("");
+                      }
+                    } else {
+                      handleSendMessage();
+                    }
                   }
                 }}
                 placeholder="Ask Verxl compute anything... (Shift+Enter for newline, Enter to send)"
                 rows={1}
-                disabled={isStreaming}
                 className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none resize-none font-mono py-1 px-1.5 leading-relaxed max-h-44"
               />
 
