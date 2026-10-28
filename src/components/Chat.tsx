@@ -58,6 +58,19 @@ const renderMarkdown = (content: string): string => {
   }
 };
 
+interface ContextStats {
+  limit: number;
+  system: number;
+  tools: number;
+  history: number;
+  prompt: number;
+  format: number;
+  response: number;
+  used: number;
+  left: number;
+  compactionSaved: number;
+}
+
 interface MessageMetrics {
   promptTokens?: number;
   completionTokens?: number;
@@ -66,6 +79,7 @@ interface MessageMetrics {
   tps?: number;
   provider?: string;
   failed?: boolean;
+  context?: ContextStats;
 }
 
 interface SearchSource {
@@ -262,6 +276,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showContextDetails, setShowContextDetails] = useState(false);
 
   // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
   const createBlankSession = (): ChatSession => ({
@@ -281,6 +296,46 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
   const currentModelConfig =
     AVAILABLE_MODELS.find((m) => m.id === activeSession.model) || AVAILABLE_MODELS[0];
+  const fmtTokens = (n: number) =>
+    n >= 1000 ? `${(n / 1000).toFixed(1)}K` : `${Math.max(0, Math.round(n))}`;
+  const lastAssistantContext = [...activeSession.messages]
+    .reverse()
+    .find((m) => m.role === "assistant" && m.metrics?.context)?.metrics?.context;
+  const contextLimit = currentModelConfig.contextTokens;
+  const estimateContext = (): ContextStats => {
+    const compaction = activeSession.compaction;
+    const boundaryIdx = compaction
+      ? activeSession.messages.findIndex((m) => m.id === compaction.throughId)
+      : -1;
+    const recent =
+      boundaryIdx >= 0 ? activeSession.messages.slice(boundaryIdx + 1) : activeSession.messages;
+    const system = compaction ? Math.ceil(compaction.summary.length / 4) : 0;
+    const history = Math.ceil(recent.reduce((n, m) => n + m.content.length + 8, 0) / 4);
+    const used = system + history;
+    return {
+      limit: contextLimit,
+      system,
+      tools: 0,
+      history,
+      prompt: 0,
+      format: 0,
+      response: 0,
+      used,
+      left: Math.max(0, contextLimit - used),
+      compactionSaved: 0,
+    };
+  };
+  const contextStats: ContextStats = lastAssistantContext
+    ? {
+        ...lastAssistantContext,
+        limit: contextLimit,
+        left: Math.max(0, contextLimit - lastAssistantContext.used),
+      }
+    : estimateContext();
+  const contextPct = Math.min(100, (contextStats.used / contextLimit) * 100);
+  const compactAt = currentModelConfig.isOfficialBridge
+    ? null
+    : currentModelConfig.contextTokens - 4096 - 2048;
   const sessionsRef = useRef(sessions);
   sessionsRef.current = sessions;
 
@@ -1139,6 +1194,36 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       const hasContent =
         accumulatedContent.trim().length > 0 && !(protocolTemplate && sources.length > 0);
       if (!hasContent) requestFailed = true;
+
+      const tokenEst = (text: string) => Math.ceil(text.length / 4);
+      const systemText = systemParts.join("\n\n");
+      const historyText = contextMessages
+        .filter((_, i) => i !== lastUserPos)
+        .map((m) => `${m.role}: ${m.content}`)
+        .join("\n");
+      const promptText = contextMessages[lastUserPos]?.content || "";
+      const contextStats: ContextStats = {
+        limit: selectedModelConfig.contextTokens,
+        system: tokenEst(systemText),
+        tools: tokenEst(searchContext),
+        history: tokenEst(historyText),
+        prompt: tokenEst(promptText),
+        format: Math.max(
+          0,
+          estPromptTokens -
+            tokenEst(systemText) -
+            tokenEst(searchContext) -
+            tokenEst(historyText) -
+            tokenEst(promptText)
+        ),
+        response: estCompletionTokens,
+        used: estPromptTokens + estCompletionTokens,
+        left: Math.max(0, selectedModelConfig.contextTokens - estPromptTokens - estCompletionTokens),
+        compactionSaved: compaction
+          ? Math.max(0, tokenEst(JSON.stringify(updatedMessages)) - estPromptTokens)
+          : 0,
+      };
+
       const assistantMessage: ChatMessage = {
         id: `msg_asst_${Date.now()}`,
         role: "assistant",
@@ -1158,6 +1243,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           tps: Math.round((estCompletionTokens / (totalLatency / 1000)) * 10) / 10,
           provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
           failed: requestFailed || undefined,
+          context: contextStats,
         },
       };
 
@@ -2122,6 +2208,79 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {/* Input Box Footer Container */}
         <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#080c14]/90 shrink-0">
           <div className="max-w-4xl mx-auto space-y-2">
+            {/* Context usage: prompt, tools, history, response, headroom */}
+            <div className="border border-slate-800 bg-[#05070b] rounded-[3px]">
+              <button
+                onClick={() => setShowContextDetails((v) => !v)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 font-mono text-[9px] text-slate-400"
+              >
+                <span className="uppercase tracking-wider text-slate-500">Context</span>
+                <div className="relative flex-1 h-1 bg-slate-800 overflow-visible">
+                  <div
+                    className={`h-full ${
+                      contextPct > 90
+                        ? "bg-rose-400"
+                        : contextPct > 75
+                        ? "bg-amber-400"
+                        : "bg-emerald-400"
+                    }`}
+                    style={{ width: `${contextPct}%` }}
+                  />
+                  {compactAt !== null && (
+                    <div
+                      className="absolute -top-1 -bottom-1 w-px bg-amber-400/80"
+                      style={{ left: `${Math.min(100, (compactAt / contextLimit) * 100)}%` }}
+                      title={`Auto-compact at ${fmtTokens(compactAt)}`}
+                    />
+                  )}
+                </div>
+                <span className="text-slate-300">
+                  {fmtTokens(contextStats.used)} / {fmtTokens(contextLimit)}
+                </span>
+                <span className={contextStats.left < 4096 ? "text-amber-400" : "text-emerald-400"}>
+                  {fmtTokens(contextStats.left)} left
+                </span>
+                {showContextDetails ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )}
+              </button>
+              {showContextDetails && (
+                <div className="px-2 pb-2 pt-1 border-t border-slate-800 font-mono">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[9px]">
+                    {[
+                      ["System", contextStats.system],
+                      ["Tools · search", contextStats.tools],
+                      ["History", contextStats.history],
+                      ["Prompt", contextStats.prompt],
+                      ["Format", contextStats.format],
+                      ["Response", contextStats.response],
+                    ].map(([label, value]) => (
+                      <div key={String(label)} className="flex items-center justify-between gap-2">
+                        <span className="text-slate-500">{label}</span>
+                        <span className="text-slate-300">{fmtTokens(Number(value))}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1.5 mt-1.5 border-t border-slate-800 text-[8.5px] text-slate-500">
+                    <span>{lastAssistantContext ? "Last request" : "Current context"}</span>
+                    <span>Used = prompt + response</span>
+                    {contextStats.compactionSaved > 0 && (
+                      <span className="text-emerald-400">
+                        Compacted: {fmtTokens(contextStats.compactionSaved)} not sent
+                      </span>
+                    )}
+                    <span>
+                      {compactAt !== null
+                        ? `Auto-compact at ${fmtTokens(compactAt)}`
+                        : "Auto-compact off (1M context)"}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Input Form */}
             <div className="relative flex items-end gap-2 bg-[#05070b] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
               <textarea
