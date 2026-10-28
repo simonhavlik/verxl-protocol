@@ -91,6 +91,7 @@ interface ChatSession {
   title: string;
   model: string;
   think?: ThinkLevel;
+  compaction?: { summary: string; throughId: string; at: number };
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
@@ -848,6 +849,52 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   // Send Message & Stream Response
+  const maybeCompactSession = (
+    session: ChatSession,
+    messages: ChatMessage[],
+    model: ModelConfig
+  ): ChatSession => {
+    const outputReserve = model.isOfficialBridge ? 32768 : 4096;
+    const threshold = model.contextTokens - outputReserve - 2048;
+    const prior = session.compaction;
+    const priorIdx = prior ? messages.findIndex((m) => m.id === prior.throughId) : -1;
+    const recent = priorIdx >= 0 ? messages.slice(priorIdx + 1) : messages;
+    const estimate = (summary: string, msgs: ChatMessage[]) =>
+      Math.ceil((summary.length + msgs.reduce((n, m) => n + m.content.length + 8, 0)) / 4);
+
+    if (estimate(prior?.summary || "", recent) <= threshold || messages.length <= 4) {
+      return session;
+    }
+
+    let keep = 8;
+    let summary = prior?.summary || "";
+    let throughId = prior?.throughId || "";
+    while (keep >= 2) {
+      const cutoffIdx = messages.length - keep - 1;
+      if (cutoffIdx < 0) break;
+      const olderStart = priorIdx >= 0 ? priorIdx + 1 : 0;
+      const older = messages.slice(olderStart, cutoffIdx + 1);
+      const digest = older
+        .map(
+          (m) =>
+            `${m.role === "user" ? "User" : "Assistant"}: ${m.content
+              .replace(/\s+/g, " ")
+              .slice(0, 600)}`
+        )
+        .join("\n");
+      summary = [prior?.summary || "", digest].filter(Boolean).join("\n").slice(-7000);
+      throughId = messages[cutoffIdx].id;
+      if (estimate(summary, messages.slice(cutoffIdx + 1)) <= threshold) break;
+      keep -= 2;
+    }
+
+    return {
+      ...session,
+      compaction: { summary, throughId, at: Date.now() },
+      updatedAt: Date.now(),
+    };
+  };
+
   const handleSendMessage = async (
     promptOverride?: string,
     options?: { skipUserAppend?: boolean; session?: ChatSession }
@@ -885,8 +932,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       newTitle = textToSend.slice(0, 32) + (textToSend.length > 32 ? "..." : "");
     }
 
+    const currentModel = targetSession.model || "qwen3.5-4b-uncensored-32k";
+    const selectedModelConfig =
+      AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
+    const maxOutputTokens = selectedModelConfig.isOfficialBridge ? 32768 : 4096;
+    // Compact only near the model's input limit; the full history stays visible.
+    const compactedSession = maybeCompactSession(targetSession, updatedMessages, selectedModelConfig);
     const updatedUserSession: ChatSession = {
-      ...targetSession,
+      ...compactedSession,
       title: newTitle,
       messages: updatedMessages,
       updatedAt: Date.now(),
@@ -939,9 +992,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let accumulatedReasoning = "";
     let tokenCount = 0;
 
-    // No system turn. Search context is appended to the last user turn only.
-    const lastUserIndex = [...updatedMessages].reverse().findIndex((m) => m.role === "user");
-    const lastUserPos = lastUserIndex >= 0 ? updatedMessages.length - 1 - lastUserIndex : -1;
+    // Use the compaction boundary when present; the full history stays in the UI.
+    const compaction = compactedSession.compaction;
+    const boundaryIdx = compaction
+      ? updatedMessages.findIndex((m) => m.id === compaction.throughId)
+      : -1;
+    const contextMessages =
+      boundaryIdx >= 0 ? updatedMessages.slice(boundaryIdx + 1) : updatedMessages;
+    const lastUserIndex = [...contextMessages].reverse().findIndex((m) => m.role === "user");
+    const lastUserPos = lastUserIndex >= 0 ? contextMessages.length - 1 - lastUserIndex : -1;
     const searchContext =
       sources.length > 0
         ? `Web search results. Use them and cite [n] where relevant:\n${sources
@@ -951,16 +1010,23 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             )
             .join("\n\n")}`
         : "";
-    const apiMessages = updatedMessages.map((m, i) => ({
-      role: m.role,
-      content:
-        i === lastUserPos && searchContext
-          ? `${searchContext}\n\nQuestion: ${m.content}`
-          : m.content,
-    }));
-
-    const currentModel = targetSession.model || "qwen3.5-4b-uncensored-32k";
-    const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
+    const apiMessages = [
+      ...(compaction && boundaryIdx >= 0
+        ? [
+            {
+              role: "system",
+              content: `Summary of earlier conversation turns:\n${compaction.summary}`,
+            },
+          ]
+        : []),
+      ...contextMessages.map((m, i) => ({
+        role: m.role,
+        content:
+          i === lastUserPos && searchContext
+            ? `${searchContext}\n\nQuestion: ${m.content}`
+            : m.content,
+      })),
+    ];
     const thinkLevel = targetSession.think || "medium";
     let requestFailed = false;
 
@@ -976,7 +1042,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           messages: apiMessages,
           stream: true,
           temperature: 0.3,
-          max_tokens: selectedModelConfig.isOfficialBridge ? 32768 : 8192,
+          max_tokens: maxOutputTokens,
           reasoning_effort:
             selectedModelConfig.isOfficialBridge && thinkLevel !== "off" ? thinkLevel : "none",
         }),
@@ -1079,7 +1145,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       };
 
       const updatedWithAssistant: ChatSession = {
-        ...targetSession,
+        ...updatedUserSession,
         title: newTitle,
         messages: [...updatedMessages, assistantMessage],
         updatedAt: Date.now(),
@@ -1972,6 +2038,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                             <span>Regenerate</span>
                           </button>
                         </div>
+                      </div>
+                    )}
+
+                    {msg.id === activeSession.compaction?.throughId && (
+                      <div className="mt-3 pt-2 border-t border-slate-800/80 text-[8.5px] text-slate-500 font-mono">
+                        Earlier turns compacted for context · ~
+                        {Math.ceil(activeSession.compaction.summary.length / 4)} token summary
                       </div>
                     )}
                   </div>
