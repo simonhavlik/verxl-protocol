@@ -118,6 +118,7 @@ interface ChatSession {
   searchProvider?: string;
   searchBaseUrl?: string;
   searchKey?: string;
+  pdfOcrEnabled?: boolean;
   forcePdfOcr?: boolean;
   showForcePdfOcrToggle?: boolean;
   compaction?: { summary: string; throughId: string; at: number };
@@ -304,6 +305,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("vrxl_search_key") || "";
   });
+  const [pdfOcrEnabled, setPdfOcrEnabled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("vrxl_pdf_ocr") === "1";
+  });
   const [forcePdfOcr, setForcePdfOcr] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_force_pdf_ocr") === "1";
@@ -449,6 +454,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     );
     setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
     setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
+    setPdfOcrEnabled(activeSession.pdfOcrEnabled ?? localStorage.getItem("vrxl_pdf_ocr") === "1");
     setForcePdfOcr(activeSession.forcePdfOcr ?? localStorage.getItem("vrxl_force_pdf_ocr") === "1");
     setShowForcePdfOcrToggle(
       activeSession.showForcePdfOcrToggle ?? localStorage.getItem("vrxl_show_force_pdf_ocr") === "1"
@@ -1127,32 +1133,43 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
           const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
           let pdfTessWorker: any = null;
+          const pageErrors: string[] = [];
           try {
             for (let i = 1; i <= Math.min(doc.numPages, 25); i++) {
               const page = await doc.getPage(i);
               const content = await page.getTextContent();
               const pageText = content.items.map((x: any) => x.str).join(" ").trim();
+              if (!pdfOcrEnabled) {
+                if (pageText) text += pageText + "\n";
+                else pageErrors.push(`page ${i}: no text layer and PDF OCR is off`);
+                continue;
+              }
               if (!forcePdfOcr && pageText.length >= 80) {
                 text += pageText + "\n";
                 continue;
               }
-              // Suspiciously little text layer: rasterize the page and OCR it.
-              const viewport = page.getViewport({ scale: 2 });
-              const canvas = document.createElement("canvas");
-              canvas.width = Math.floor(viewport.width);
-              canvas.height = Math.floor(viewport.height);
-              const ctx = canvas.getContext("2d");
-              if (!ctx) continue;
-              await (page as any).render({ canvasContext: ctx, viewport }).promise;
-              const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-              if (!blob) continue;
-              if (!pdfTessWorker) {
-                const { createWorker } = await import("tesseract.js");
-                pdfTessWorker = await createWorker("eng");
+              try {
+                const viewport = page.getViewport({ scale: 2 });
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.floor(viewport.width);
+                canvas.height = Math.floor(viewport.height);
+                const ctx = canvas.getContext("2d");
+                if (!ctx) throw new Error("Canvas 2D unavailable");
+                await (page as any).render({ canvasContext: ctx, viewport, canvas }).promise;
+                const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+                if (!blob) throw new Error("Page render produced no image");
+                if (!pdfTessWorker) {
+                  const { createWorker } = await import("tesseract.js");
+                  pdfTessWorker = await createWorker("eng");
+                }
+                const { data } = await pdfTessWorker.recognize(blob);
+                text += data.text + "\n";
+              } catch (ocrErr: any) {
+                pageErrors.push(`page ${i}: ${ocrErr?.message || "OCR failed"}`);
+                if (pageText) text += pageText + "\n";
               }
-              const { data } = await pdfTessWorker.recognize(blob);
-              text += data.text + "\n";
             }
+            if (!text.trim() && pageErrors.length > 0) throw new Error(pageErrors[0]);
           } finally {
             if (pdfTessWorker) await pdfTessWorker.terminate();
           }
@@ -3136,6 +3153,32 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <p className="text-[8.5px] text-slate-500 leading-relaxed">
                   Keys stay in this browser. Custom expects POST {"{query, limit}"} and returns data.web or results.
                 </p>
+              </div>
+              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                    PDF OCR
+                  </div>
+                  <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
+                    OCR scanned or low-text PDF pages. Off by default; text-layer PDFs still parse.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const next = !pdfOcrEnabled;
+                    setPdfOcrEnabled(next);
+                    localStorage.setItem("vrxl_pdf_ocr", next ? "1" : "0");
+                    saveChatSettings({ pdfOcrEnabled: next });
+                  }}
+                  aria-pressed={pdfOcrEnabled}
+                  className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
+                    pdfOcrEnabled
+                      ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
+                      : "bg-[#05070b] border-slate-700 text-slate-500"
+                  }`}
+                >
+                  {pdfOcrEnabled ? "ON" : "OFF"}
+                </button>
               </div>
               <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
                 <div>
