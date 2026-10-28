@@ -328,6 +328,33 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     }
   };
 
+  const unlockChatSync = async () => {
+    const wallet = String((user as any)?.wallet_address || "");
+    if (!authToken || !user || !wallet) {
+      setCryptoStatus("unavailable");
+      setCryptoError("Link a wallet to enable encrypted cloud sync.");
+      return;
+    }
+    if (!hasWalletProvider()) {
+      setCryptoStatus("locked");
+      setCryptoError("MetaMask is not available. Enable it in this browser, then press Enable.");
+      return;
+    }
+
+    setCryptoStatus("unlocking");
+    setCryptoError(null);
+    try {
+      const key = await deriveChatKey(wallet, user.id);
+      setChatKey(key);
+      setCryptoStatus("ready");
+      await loadEncryptedConversations(key);
+    } catch (err: any) {
+      setChatKey(null);
+      setCryptoStatus("locked");
+      setCryptoError(err?.message || "Could not unlock encrypted chat sync.");
+    }
+  };
+
   useEffect(() => {
     if (!authToken || !user) {
       clearChatKeyCache();
@@ -355,7 +382,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (!hasWalletProvider()) {
       setChatKey(null);
       setCryptoStatus("locked");
-      setCryptoError("MetaMask is not available. Enable it in this browser, then unlock.");
+      setCryptoError("MetaMask is not available. Enable it in this browser, then press Enable.");
       return;
     }
 
@@ -366,39 +393,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       setCryptoError(null);
       void loadEncryptedConversations(cached);
     } else {
-      setChatKey(null);
-      setCryptoStatus("locked");
-      setCryptoError(null);
+      // Login authenticates the account; the chat key is a separate wallet
+      // signature. Request it immediately instead of presenting a dead lock.
+      void unlockChatSync();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken, user?.id, (user as any)?.wallet_address]);
-
-  const unlockChatSync = async () => {
-    const wallet = String((user as any)?.wallet_address || "");
-    if (!authToken || !user || !wallet) {
-      setCryptoStatus("unavailable");
-      setCryptoError("Link a wallet to enable encrypted cloud sync.");
-      return;
-    }
-    if (!hasWalletProvider()) {
-      setCryptoStatus("locked");
-      setCryptoError("MetaMask is not available. Enable it in this browser, then unlock.");
-      return;
-    }
-
-    setCryptoStatus("unlocking");
-    setCryptoError(null);
-    try {
-      const key = await deriveChatKey(wallet, user.id);
-      setChatKey(key);
-      setCryptoStatus("ready");
-      await loadEncryptedConversations(key);
-    } catch (err: any) {
-      setChatKey(null);
-      setCryptoStatus("locked");
-      setCryptoError(err?.message || "Could not unlock encrypted chat sync.");
-    }
-  };
 
   const syncSessionToDb = async (sess: ChatSession) => {
     if (!authToken || !user || !chatKey) return;
@@ -1173,7 +1173,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         ? "Confirm in MetaMask"
                         : cryptoStatus === "unavailable"
                         ? "Local only · no wallet"
-                        : "Cloud sync locked"}
+                        : "Encrypted sync off"}
                     </div>
                   </div>
                 </div>
@@ -1182,12 +1182,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     onClick={unlockChatSync}
                     className="px-2 py-1 rounded-[2px] bg-emerald-600/80 hover:bg-emerald-500 text-white text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
                   >
-                    Unlock
+                    Enable
                   </button>
                 )}
               </div>
               {cryptoError && (
                 <div className="text-[8.5px] text-rose-300 mt-1 leading-snug">{cryptoError}</div>
+              )}
+              {cryptoStatus === "locked" && !cryptoError && (
+                <div className="text-[8px] text-slate-500 mt-1 leading-snug">
+                  Login authorizes the account. The chat key comes from a separate wallet signature.
+                </div>
               )}
             </div>
           )}
