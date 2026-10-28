@@ -61,9 +61,9 @@ const MODEL_CATALOG: CatalogEntry[] = [
   {
     id: "qwen3.5-4b-uncensored-32k",
     short: "Qwen 3.5 4B",
-    tag: "BARE-METAL HOST",
+    tag: "UNCENSORED · BARE-METAL",
     route: "Prague bare-metal",
-    detail: "32k resident context · Bulbasaur Vulkan host",
+    detail: "32k resident context · uncensored Qwen 3.5 4B · Vulkan host",
     prompt: 0.05,
     completion: 0.1,
     cached: 0.01,
@@ -115,17 +115,17 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
   const [copiedSnippet, setCopiedSnippet] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [hasRun, setHasRun] = useState(false);
-  const [runMode, setRunMode] = useState<"live" | "reference" | "notice">("reference");
+  const [runMode, setRunMode] = useState<"pending" | "live" | "notice" | "error">("pending");
 
   // Telemetry metrics
   const [metrics, setMetrics] = useState({
-    ttft: 38,
-    totalLatency: 520,
-    tps: 52.4,
+    ttft: 0,
+    totalLatency: 0,
+    tps: 0,
     promptTokens: 0,
     completionTokens: 0,
-    protocolFeeUsd: 0.00005,
-    traditionalSaaSUsd: 0.00095,
+    protocolFeeUsd: 0,
+    traditionalSaaSUsd: 0,
     provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 32k)",
   });
 
@@ -170,7 +170,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
 
     setIsStreaming(true);
     setHasRun(true);
-    setRunMode("reference");
+    setRunMode("pending");
     setOutput("");
     setReasoningOutput("");
     setMetrics((prev) => ({ ...prev, ttft: 0, completionTokens: 0, totalLatency: 0 }));
@@ -361,164 +361,22 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
         setIsStreaming(false);
         return;
       }
+      setRunMode("error");
+      setOutput(
+        `**Upstream inference failed.** ${
+          err?.message || "The clearing node did not complete the request."
+        }\n\nNo recorded answer is substituted.`
+      );
+      setIsStreaming(false);
+      return;
     }
 
-    // High fidelity streaming fallback matched to prompt
-    setRunMode("reference");
-    let targetReasoning = "";
-    let targetText = "";
-    const promptLower = userPrompt.toLowerCase();
-
-    if (promptLower.includes("fee") || promptLower.includes("savings") || promptLower.includes("500 million") || promptLower.includes("fintech")) {
-      targetReasoning =
-        `[Phase 1 · Payload Analysis] Ingesting client request: 500,000,000 monthly inference tokens. Baseline protocol invariant: 50 bps non-custodial take-rate.\n` +
-        `[Phase 2 · Spread Decomposition] Centralized provider extracted rent = 950 bps (9.50%). Verxl decentralized switch = 50 bps (0.50%). Differential: 950 - 50 = 900 bps (9.0% raw token compression).\n` +
-        `[Phase 3 · Volume Quantification] 500,000,000 * 0.090 = 45,000,000 tokens preserved monthly. Computing annualized runway retention at current compute price curve.\n` +
-        `[Phase 4 · Settlement Verification] Confirming atomic smart contract clearance on Arbitrum One with zero unsegregated balance risk.`;
-
-      targetText =
-        `**Parameters:**\n` +
-        `*   **Volume:** 500,000,000 Tokens (Monthly)\n` +
-        `*   **Verxl Fee:** 50 bps (0.50% non-custodial clearing)\n` +
-        `*   **Aggregator Fee:** 950 bps (9.50% centralized float)\n\n` +
-        `**Calculation:**\n` +
-        `1.  **Fee Differential:** 950 bps - 50 bps = **900 bps (9.0%)**\n` +
-        `2.  **Savings:** 500,000,000 Tokens × 0.090\n\n` +
-        `**Result:**\n` +
-        `*   **Net Protocol Fee Savings:** **45,000,000 Tokens** (Monthly)\n` +
-        `*   **Cost Efficiency:** **95x reduction** in fee per transaction compared to centralization.\n` +
-        `*   **Annualized Preserved Runway:** **$32,400 USD** retained directly by startup.\n` +
-        `*   **Non-Custodial Settlement:** Cleared atomically on Arbitrum One via smart contract.`;
-    } else if (promptLower.includes("nash") || promptLower.includes("slashing") || promptLower.includes("fp16")) {
-      targetReasoning =
-        `[Phase 1 · Game Theoretic Formalization] Modeling independent compute node payoff matrix under binary strategy space {Honest FP16, Adulterated Int4}.\n` +
-        `[Phase 2 · Invariant Canary Probing] Quality oracle dispatches deterministic seed=42 challenge prompts at random intervals. Oracle detection probability p = 0.998.\n` +
-        `[Phase 3 · Penalty Evaluation] Slashing penalty = 10% of 1,000 $VRXL collateral + total ejection from registry. Comparing marginal cost saving ΔC against expected slash loss.\n` +
-        `[Phase 4 · Subgame Perfection] 0.10 * S >> ΔC holds globally. Expected utility of defection is strictly negative (E[U] < 0). Unique subgame-perfect Nash equilibrium verified.`;
-
-      targetText =
-        `**Nash Equilibrium & 10% Collateral Slashing Invariant:**\n\n` +
-        `Let $S$ be the staked provider collateral ($1,000 \\text{ \\$VRXL}$), $R$ be the per-token revenue at 50 bps, and $C_{\\text{adulterate}}$ be the marginal compute cost savings from serving 4-bit quantized weights instead of FP16.\n\n` +
-        `**Payoff Matrix Analysis:**\n` +
-        `1.  **Honest FP16 Serving:** Node receives expected stream $\\mathbb{E}[\\Pi] = \\sum_{t=0}^\\infty \\delta^t R_t$ with zero slashing risk.\n` +
-        `2.  **Adulterated Weight Serving:** Node gains marginal cost saving $\\Delta C$, but faces detection probability $p_{\\text{oracle}} = 0.998$ under deterministic seed=42 canary verification.\n` +
-        `3.  **Expected Penalty:** $p_{\\text{oracle}} \\times 0.10 \\cdot S + \\text{ejection from registry}$.\n\n` +
-        `**Equilibrium Condition:**\n` +
-        `Since $0.10 \\cdot S \\gg \\Delta C$ for all inference volumes, defecting produces a strictly negative expected utility ($\\mathbb{E}[U_{\\text{defect}}] < 0$). Honest FP16 serving is the unique subgame-perfect Nash equilibrium.`;
-    } else if (promptLower.includes("rust") || promptLower.includes("tokio")) {
-      targetReasoning =
-        `[Phase 1 · Client Architecture] Designing zero-allocation asynchronous HTTP pipeline utilizing reqwest and Tokio runtime.\n` +
-        `[Phase 2 · Pooling & Keep-Alive] Configuring TCP pool max_idle_per_host=32 with tcp_nodelay enabled for sub-5ms socket reuse.\n` +
-        `[Phase 3 · SSE Stream Demuxing] Constructing bytes_stream iterator to parse Server-Sent Events with zero copy buffers.\n` +
-        `[Phase 4 · Error Handling] Implementing exponential backoff on HTTP 429/503 status codes with automated retry budget.`;
-
-      targetText =
-        `**High-Concurrency Rust Tokio Client for Verxl /v1/chat/completions:**\n\n` +
-        `\`\`\`rust\n` +
-        `use reqwest::Client;\n` +
-        `use futures_util::StreamExt;\n` +
-        `use serde_json::json;\n` +
-        `use std::time::Duration;\n\n` +
-        `#[tokio::main]\n` +
-        `async fn main() -> Result<(), Box<dyn std::error::Error>> {\n` +
-        `    let client = Client::builder()\n` +
-        `        .pool_max_idle_per_host(32)\n` +
-        `        .tcp_nodelay(true)\n` +
-        `        .timeout(Duration::from_secs(30))\n` +
-        `        .build()?;\n\n` +
-        `    let mut stream = client.post("https://verxl.com/v1/chat/completions")\n` +
-        `        .header("Authorization", "Bearer vrxl_testnet_demo_key")\n` +
-        `        .header("Content-Type", "application/json")\n` +
-        `        .json(&json!({\n` +
-        `            "model": "qwen3.5-4b-uncensored-32k",\n` +
-        `            "messages": [{"role": "user", "content": "Compute optimal route"}],\n` +
-        `            "stream": true\n` +
-        `        }))\n` +
-        `        .send()\n` +
-        `        .await?\n` +
-        `        .bytes_stream();\n\n` +
-        `    while let Some(chunk) = stream.next().await {\n` +
-        `        let bytes = chunk?;\n` +
-        `        print!("{}", String::from_utf8_lossy(&bytes));\n` +
-        `    }\n` +
-        `    Ok(())\n` +
-        `}\n` +
-        `\`\`\`\n\n` +
-        `*   **Throughput:** Zero-overhead TCP connection reuse with connection pooling.\n` +
-        `*   **Protocol Fee:** 50 bps hardcoded clearing rate.`;
-    } else {
-      const routedNode = model.includes("qwen") || model.includes("uncensored")
-        ? "bulbasaur-prague-01 (Prague Bare-Metal Vulkan Host)"
-        : model.includes("deepseek")
-        ? "deepseek-v4-bridge-01 (Official DeepSeek Bridge · Tokyo Edge)"
-        : "xiao-mimo-bridge-01 (Official Xiaomi MiMo Bridge · Frankfurt Edge)";
-
-      targetReasoning =
-        `[Phase 1 · Stateless Dispatch] Evaluating lowest latency cluster route across Tier-3 network.\n` +
-        `[Phase 2 · Routing Selection] Selecting node '${routedNode}'.\n` +
-        `[Phase 3 · Invariant Verification] Checking deterministic seed=42 oracle attestation on Sepolia.\n` +
-        `[Phase 4 · Stream Initialization] Streaming FP16 linear tensor weights directly to client socket.`;
-
-      targetText =
-        `**Verxl Protocol Inference Stream Response:**\n\n` +
-        `*   **Routed Node:** \`${routedNode}\`\n` +
-        `*   **Model:** \`${model}\`\n` +
-        `*   **Protocol Fee:** 50 bps (0.50% non-custodial take)\n` +
-        `*   **Verification:** Deterministic SLA seed=42 invariant validated on Ethereum Sepolia.\n\n` +
-        `Your prompt has been processed through the decentralized edge router with sub-4ms proxy latency and zero custodial capital lock-up.`;
-    }
-
-    const startSimTime = performance.now();
-
-    // Stream thinking trace first
-    if (targetReasoning) {
-      const reasoningWords = targetReasoning.split(" ");
-      let currReasoning = "";
-      for (let i = 0; i < reasoningWords.length; i++) {
-        if (abortControllerRef.current?.signal.aborted) {
-          setIsStreaming(false);
-          return;
-        }
-        currReasoning += (i === 0 ? "" : " ") + reasoningWords[i];
-        setReasoningOutput(currReasoning);
-        if (i === 0) {
-          const ttftMs = Math.round(performance.now() - startSimTime);
-          setMetrics((prev) => ({ ...prev, ttft: Math.max(ttftMs, 38) }));
-        }
-        if (outputContainerRef.current) {
-          outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
-        }
-        await new Promise((r) => setTimeout(r, 12));
-      }
-    }
-
-    // Stream output response
-    const words = targetText.split(" ");
-    let currentText = "";
-
-    for (let i = 0; i < words.length; i++) {
-      if (abortControllerRef.current?.signal.aborted) {
-        setIsStreaming(false);
-        return;
-      }
-
-      currentText += (i === 0 ? "" : " ") + words[i];
-      setOutput(currentText);
-
-      if (outputContainerRef.current) {
-        outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
-      }
-
-      await new Promise((r) => setTimeout(r, 16));
-    }
-
-    const simTotalLatency = Math.round(performance.now() - startSimTime);
-    setMetrics((prev) => ({
-      ...prev,
-      totalLatency: simTotalLatency,
-      tps: 52.4,
-      completionTokens: words.length * 2,
-    }));
+    // No fallback. If the upstream closes without content, surface the failure
+    // instead of substituting a recorded answer.
+    setRunMode("error");
+    setOutput(
+      "**Upstream returned no completion.** The clearing node closed the stream without content. Retry the request or raise the token budget. No recorded answer is substituted."
+    );
     setIsStreaming(false);
   };
 
@@ -620,15 +478,23 @@ main();`,
       (promptTokens * activeModel.prompt + metrics.completionTokens * activeModel.completion) / 1_000_000;
     const feeUsd = computeUsd * 0.005;
     const netUsd = computeUsd - feeUsd;
-    const billable = hasRun && runMode !== "notice";
+    const billable = hasRun && runMode === "live";
     const money = (value: number) => (billable ? `$${value.toFixed(8)}` : "n/a");
     const modeLabel =
-      runMode === "live" ? "LIVE NODE" : runMode === "notice" ? "TIER NOTICE" : "REFERENCE TRACE";
+      runMode === "live"
+        ? "LIVE NODE"
+        : runMode === "notice"
+        ? "TIER NOTICE"
+        : runMode === "error"
+        ? "UPSTREAM ERROR"
+        : "PENDING";
     const modeTone =
       runMode === "live"
         ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
         : runMode === "notice"
         ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+        : runMode === "error"
+        ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
         : "text-slate-400 border-slate-700 bg-slate-800/40";
 
     return (
@@ -769,7 +635,7 @@ main();`,
                 <span className="text-[9px] uppercase tracking-wider text-slate-300 truncate">
                   {isStreaming ? "Streaming" : "Terminal"} · {activeModel.short}
                 </span>
-                {hasRun && (
+                {hasRun && runMode !== "pending" && (
                   <span className={`text-[7.5px] px-1 py-0.5 border tracking-widest ${modeTone}`}>{modeLabel}</span>
                 )}
               </div>
@@ -835,10 +701,10 @@ main();`,
 
             <div className="px-2.5 py-1.5 bg-[#05070b] border-t border-slate-800 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[9px] text-slate-400">
               <span>
-                TTFT <strong className="text-white">{billable ? metrics.ttft || "···" : "38"}</strong> ms
+                TTFT <strong className="text-white">{!hasRun ? "—" : runMode === "live" ? metrics.ttft || "···" : "—"}</strong> ms
               </span>
               <span>
-                TPS <strong className="text-white">{billable ? (metrics.totalLatency ? metrics.tps : "···") : "52.4"}</strong>
+                TPS <strong className="text-white">{!hasRun ? "—" : runMode === "live" ? (metrics.totalLatency ? metrics.tps : "···") : "—"}</strong>
               </span>
               <span>
                 TOKENS <strong className="text-white">{hasRun ? metrics.completionTokens : "0"}</strong>
@@ -853,7 +719,7 @@ main();`,
             <div className="flex items-center justify-between px-2.5 py-1 border-b border-slate-800 text-[8.5px] uppercase tracking-widest text-slate-400">
               <span>Execution receipt</span>
               <span className={hasRun ? "text-slate-300" : "text-slate-500"}>
-                {hasRun ? "50 bps on compute" : "awaiting run"}
+                {hasRun ? (runMode === "live" ? "50 bps on compute" : runMode === "error" ? "not billed" : "tier notice") : "awaiting run"}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate-800/60">
@@ -1276,13 +1142,13 @@ main();`,
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-blue-400" />
                   <span>TTFT:</span>
-                  <span className="text-white font-semibold">{metrics.ttft} ms</span>
+                  <span className="text-white font-semibold">{metrics.ttft > 0 ? `${metrics.ttft} ms` : "—"}</span>
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Zap className="w-3 h-3 text-emerald-400" />
                   <span>Speed:</span>
-                  <span className="text-white font-semibold">{metrics.tps} TPS</span>
+                  <span className="text-white font-semibold">{metrics.tps > 0 ? `${metrics.tps} TPS` : "—"}</span>
                 </span>
                 <span>•</span>
                 <span className="hidden sm:inline">

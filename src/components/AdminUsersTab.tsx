@@ -10,6 +10,8 @@ import {
   Activity,
   CheckCircle2,
   ExternalLink,
+  AlertTriangle,
+  ShieldCheck,
 } from "lucide-react";
 
 export const AdminUsersTab: React.FC = () => {
@@ -28,6 +30,7 @@ export const AdminUsersTab: React.FC = () => {
   const [newBalanceInput, setNewBalanceInput] = useState("");
   const [savingBalance, setSavingBalance] = useState(false);
   const [userAdminFeedback, setUserAdminFeedback] = useState<string | null>(null);
+  const [inspectError, setInspectError] = useState<string | null>(null);
 
   const fetchAdminUsers = async () => {
     if (!token) return;
@@ -52,16 +55,19 @@ export const AdminUsersTab: React.FC = () => {
   const handleInspectUser = async (userId: string) => {
     if (!token) return;
     setLoadingUserDetail(true);
+    setInspectError(null);
     try {
       const res = await fetch(`/api/admin/users?user_id=${encodeURIComponent(userId)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        const data = (await res.json()) as any;
+      const data = (await res.json().catch(() => ({}))) as any;
+      if (res.ok && data.user) {
         setSelectedUserDetail(data);
+      } else {
+        setInspectError(data.error || `Inspect failed with HTTP ${res.status}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setInspectError(err?.message || "Inspect request failed");
     } finally {
       setLoadingUserDetail(false);
     }
@@ -157,6 +163,13 @@ export const AdminUsersTab: React.FC = () => {
         <div className="p-3 rounded-[3px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{userAdminFeedback}</span>
+        </div>
+      )}
+
+      {inspectError && (
+        <div className="p-3 rounded-[3px] bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          <span>Inspector failed: {inspectError}</span>
         </div>
       )}
 
@@ -426,6 +439,14 @@ export const AdminUsersTab: React.FC = () => {
                 <div className="text-[9.5px] text-slate-400">Status</div>
                 <div className="font-bold text-white mt-0.5">{selectedUserDetail.user.status}</div>
               </div>
+            </div>
+
+            <div className="flex items-start gap-2 p-2 bg-emerald-500/5 border border-emerald-500/20 text-[10px] text-emerald-200/80 leading-relaxed">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+              <span>
+                Activity only. Chat messages are encrypted client-side with the user's wallet-derived key
+                before they reach PostgreSQL, so no readable conversation exists here or in the database.
+              </span>
             </div>
 
             {/* API Keys */}

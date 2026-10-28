@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { marked } from "marked";
 import {
+  deriveChatKey,
+  encryptChatPayload,
+  decryptChatPayload,
+  hasWalletProvider,
+  getCachedChatKey,
+  clearChatKeyCache,
+  type ChatPlaintext,
+} from "../lib/chatCrypto";
+import {
   Plus,
   MessageSquare,
   Trash2,
@@ -30,6 +39,7 @@ import {
   Clock,
   Sparkles,
   Server,
+  Lock,
 } from "lucide-react";
 
 marked.setOptions({
@@ -70,7 +80,6 @@ interface ChatSession {
   id: string;
   title: string;
   model: string;
-  systemPrompt: string;
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
@@ -98,7 +107,7 @@ export interface ModelConfig {
 export const AVAILABLE_MODELS: ModelConfig[] = [
   {
     id: "qwen3.5-4b-uncensored-32k",
-    name: "Bulbasaur Qwen 3.5 4B Uncensored (1M)",
+    name: "Bulbasaur Qwen 3.5 4B Uncensored (32K)",
     tag: "Bare-Metal Resident Node",
     category: "bare-metal",
     promptRate: 0.05,
@@ -107,8 +116,8 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     specialHoursPromptRate: null,
     specialHoursCompletionRate: null,
     specialHoursDesc: null,
-    context: "1,000,000 tokens (1M)",
-    contextTokens: 1000000,
+    context: "32,768 tokens (32K)",
+    contextTokens: 32768,
     speed: "~52 TPS",
     provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
     isOfficialBridge: false,
@@ -151,9 +160,6 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     description: "Official Xiaomi MiMo v2.6 Flash with 1M resident context, sub-85ms TTFT, and 99% prompt cache discount.",
   },
 ];
-
-const DEFAULT_SYSTEM_PROMPT =
-  "Answer directly and concisely.";
 
 const STARTER_PROMPTS = [
   {
@@ -214,13 +220,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
+  const [chatKey, setChatKey] = useState<CryptoKey | null>(null);
+  const [cryptoStatus, setCryptoStatus] = useState<"locked" | "unlocking" | "ready" | "unavailable">("locked");
+  const [cryptoError, setCryptoError] = useState<string | null>(null);
 
   // Session State - Stored in PostgreSQL, bound to user account, cleared on logout
   const createBlankSession = (): ChatSession => ({
     id: `chat_${Date.now()}`,
     title: "New Chat",
     model: "qwen3.5-4b-uncensored-32k",
-    systemPrompt: DEFAULT_SYSTEM_PROMPT,
     messages: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -283,10 +291,49 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     return matchesCategory && matchesSearch;
   });
 
-  // Fetch PostgreSQL-backed conversations when authenticated user changes
+  const loadEncryptedConversations = async (key: CryptoKey) => {
+    if (!authToken || !user) return;
+    try {
+      const res = await fetch("/api/chat/conversations", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as any;
+      const wallet = String((user as any)?.wallet_address || "").toLowerCase();
+      const decrypted: ChatSession[] = [];
+
+      for (const row of data.conversations || []) {
+        if (!row.ciphertext || !row.keyId || String(row.keyId).toLowerCase() !== wallet) continue;
+        try {
+          const payload = await decryptChatPayload<ChatPlaintext>(row.ciphertext, key);
+          decrypted.push({
+            id: row.id,
+            title: payload.title || "Encrypted chat",
+            model: payload.model || "qwen3.5-4b-uncensored-32k",
+            messages: Array.isArray(payload.messages) ? (payload.messages as ChatMessage[]) : [],
+            createdAt: row.createdAt || Date.now(),
+            updatedAt: row.updatedAt || Date.now(),
+          });
+        } catch {
+          console.warn("Unable to decrypt conversation", row.id);
+        }
+      }
+
+      if (decrypted.length > 0) {
+        setSessions(decrypted);
+        setActiveSessionId(decrypted[0].id);
+      }
+    } catch (err) {
+      console.warn("Failed to load encrypted conversations:", err);
+    }
+  };
+
   useEffect(() => {
     if (!authToken || !user) {
-      // With logout, conversations disappear from device and memory!
+      clearChatKeyCache();
+      setChatKey(null);
+      setCryptoStatus("locked");
+      setCryptoError(null);
       if (typeof window !== "undefined") {
         try {
           localStorage.removeItem("vrxl_chat_sessions_v2");
@@ -298,50 +345,80 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       return;
     }
 
-    let isMounted = true;
-    const fetchDbConversations = async () => {
-      try {
-        const res = await fetch("/api/chat/conversations", {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (res.ok) {
-          const data = (await res.json()) as any;
-          if (isMounted && data.conversations && data.conversations.length > 0) {
-            setSessions(data.conversations);
-            setActiveSessionId(data.conversations[0].id);
-          }
-        }
-      } catch (err) {
-        console.warn("Error fetching PostgreSQL conversations:", err);
-      }
-    };
+    const wallet = String((user as any)?.wallet_address || "");
+    if (!wallet) {
+      setChatKey(null);
+      setCryptoStatus("unavailable");
+      setCryptoError("Link a wallet to enable encrypted cloud sync.");
+      return;
+    }
+    if (!hasWalletProvider()) {
+      setChatKey(null);
+      setCryptoStatus("locked");
+      setCryptoError("MetaMask is not available. Enable it in this browser, then unlock.");
+      return;
+    }
 
-    fetchDbConversations();
-    return () => {
-      isMounted = false;
-    };
-  }, [authToken, user?.id]);
+    const cached = getCachedChatKey(wallet, user.id);
+    if (cached) {
+      setChatKey(cached);
+      setCryptoStatus("ready");
+      setCryptoError(null);
+      void loadEncryptedConversations(cached);
+    } else {
+      setChatKey(null);
+      setCryptoStatus("locked");
+      setCryptoError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken, user?.id, (user as any)?.wallet_address]);
 
-  // Sync conversation to PostgreSQL
-  const syncSessionToDb = async (sess: ChatSession) => {
-    if (!authToken || !user) return;
+  const unlockChatSync = async () => {
+    const wallet = String((user as any)?.wallet_address || "");
+    if (!authToken || !user || !wallet) {
+      setCryptoStatus("unavailable");
+      setCryptoError("Link a wallet to enable encrypted cloud sync.");
+      return;
+    }
+    if (!hasWalletProvider()) {
+      setCryptoStatus("locked");
+      setCryptoError("MetaMask is not available. Enable it in this browser, then unlock.");
+      return;
+    }
+
+    setCryptoStatus("unlocking");
+    setCryptoError(null);
     try {
+      const key = await deriveChatKey(wallet, user.id);
+      setChatKey(key);
+      setCryptoStatus("ready");
+      await loadEncryptedConversations(key);
+    } catch (err: any) {
+      setChatKey(null);
+      setCryptoStatus("locked");
+      setCryptoError(err?.message || "Could not unlock encrypted chat sync.");
+    }
+  };
+
+  const syncSessionToDb = async (sess: ChatSession) => {
+    if (!authToken || !user || !chatKey) return;
+    const wallet = String((user as any)?.wallet_address || "");
+    if (!wallet) return;
+    try {
+      const ciphertext = await encryptChatPayload(
+        { title: sess.title, model: sess.model, messages: sess.messages },
+        chatKey
+      );
       await fetch("/api/chat/conversations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          id: sess.id,
-          title: sess.title,
-          model: sess.model,
-          systemPrompt: sess.systemPrompt,
-          messages: sess.messages,
-        }),
+        body: JSON.stringify({ id: sess.id, ciphertext, keyId: wallet.toLowerCase() }),
       });
     } catch (err) {
-      console.warn("Failed to sync conversation to PostgreSQL:", err);
+      console.warn("Failed to sync encrypted conversation:", err);
     }
   };
 
@@ -489,7 +566,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const createNewSession = () => {
     const newSession = createBlankSession();
     newSession.model = activeSession?.model || "qwen3.5-4b-uncensored-32k";
-    newSession.systemPrompt = activeSession?.systemPrompt || DEFAULT_SYSTEM_PROMPT;
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInputPrompt("");
@@ -773,12 +849,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let accumulatedReasoning = "";
     let tokenCount = 0;
 
-    // Prepare OpenAI formatted messages payload. Keep the system turn light for small models.
-    const systemContent = (activeSession.systemPrompt || DEFAULT_SYSTEM_PROMPT).trim();
-    const apiMessages = [
-      ...(systemContent ? [{ role: "system", content: systemContent }] : []),
-      ...updatedMessages.map((m) => ({ role: m.role, content: m.content })),
-    ];
+    // No system turn. Chat sends the conversation exactly as the user wrote it.
+    const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
     const currentModel = activeSession.model || "qwen3.5-4b-uncensored-32k";
     const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
@@ -1073,6 +1145,53 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
         {/* User Account & Real-Time Balance Footer */}
         <div className="p-3 border-t border-slate-800 bg-[#05070b]/90 space-y-2">
+          {user && (
+            <div className="px-2.5 py-1.5 rounded-[3px] bg-[#080c14] border border-slate-800">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {cryptoStatus === "ready" ? (
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-[8.5px] uppercase tracking-wider text-slate-500 font-mono">
+                      Chat storage
+                    </div>
+                    <div
+                      className={`text-[9.5px] font-mono truncate ${
+                        cryptoStatus === "ready"
+                          ? "text-emerald-300"
+                          : cryptoStatus === "unavailable"
+                          ? "text-slate-400"
+                          : "text-amber-300"
+                      }`}
+                    >
+                      {cryptoStatus === "ready"
+                        ? "E2E encrypted · wallet key"
+                        : cryptoStatus === "unlocking"
+                        ? "Confirm in MetaMask"
+                        : cryptoStatus === "unavailable"
+                        ? "Local only · no wallet"
+                        : "Cloud sync locked"}
+                    </div>
+                  </div>
+                </div>
+                {cryptoStatus === "locked" && (
+                  <button
+                    onClick={unlockChatSync}
+                    className="px-2 py-1 rounded-[2px] bg-emerald-600/80 hover:bg-emerald-500 text-white text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
+                  >
+                    Unlock
+                  </button>
+                )}
+              </div>
+              {cryptoError && (
+                <div className="text-[8.5px] text-rose-300 mt-1 leading-snug">{cryptoError}</div>
+              )}
+            </div>
+          )}
+
           {/* Balance Pill */}
           <div className="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] bg-[#0c1220] border border-blue-500/20">
             <div className="flex items-center gap-2">
@@ -1386,11 +1505,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               <Download className="w-3.5 h-3.5" />
             </button>
 
-            {/* Persona / Settings Button */}
+            {/* Settings Button */}
             <button
               onClick={() => setShowSettingsModal(true)}
               className="p-1.5 rounded-[3px] bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white transition"
-              title="Configure System Prompt"
+              title="Chat Settings"
             >
               <Settings className="w-3.5 h-3.5" />
             </button>
@@ -1899,26 +2018,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             <div className="flex items-center gap-2 text-white">
               <Settings className="w-4 h-4 text-blue-400" />
               <h3 className="text-sm font-bold uppercase tracking-wider">
-                System Persona & API Configuration
+                API Configuration
               </h3>
-            </div>
-
-            {/* System Prompt Customizer */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-wider text-slate-400">
-                System Prompt (Persona Definition):
-              </label>
-              <textarea
-                value={activeSession?.systemPrompt || DEFAULT_SYSTEM_PROMPT}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSessions((prev) =>
-                    prev.map((s) => (s.id === activeSession.id ? { ...s, systemPrompt: val } : s))
-                  );
-                }}
-                rows={4}
-                className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono resize-none"
-              />
             </div>
 
             {/* Custom API Key Override */}

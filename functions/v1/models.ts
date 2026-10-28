@@ -25,9 +25,9 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       owned_by: "verxl-team-bulbasaur",
       permission: [],
       root: "qwen3.5-4b-uncensored-32k",
-      context_window: 1000000,
-      context_display: "1,000,000 tokens (1M)",
-      tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 1M Context Resident)",
+      context_window: 32768,
+      context_display: "32,768 tokens (32K)",
+      tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 32K Context Resident)",
       is_official_bridge: false,
       pricing: {
         prompt_usd_per_1m: 0.05,

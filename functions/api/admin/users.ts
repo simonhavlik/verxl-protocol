@@ -47,7 +47,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         .all();
 
       const { results: deposits } = await db
-        .prepare("SELECT id, tx_hash, amount_usd, block_number, status, created_at FROM deposits WHERE user_id = ? ORDER BY created_at DESC")
+        .prepare("SELECT id, tx_hash, amount_usd, status, created_at FROM deposits WHERE user_id = ? ORDER BY created_at DESC")
         .bind(userId)
         .all();
 

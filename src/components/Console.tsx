@@ -849,7 +849,7 @@ export const Console: React.FC = () => {
               ? "mimo-v2.6-flash"
               : "qwen3.5-4b-uncensored-32k",
             name: nodeForm.name,
-            context_window: 1000000,
+            context_window: nodeForm.name.toLowerCase().includes("deepseek") || nodeForm.name.toLowerCase().includes("mimo") ? 1000000 : 32768,
             price_prompt_usd: nodeForm.name.toLowerCase().includes("deepseek")
               ? 0.30
               : nodeForm.name.toLowerCase().includes("mimo")
@@ -2213,8 +2213,8 @@ main();`,
                     models_config_str: JSON.stringify([
                       {
                         id: "qwen-3.5-4b-uncensored-32k",
-                        name: "Qwen 3.5 4B Uncensored (1M Context)",
-                        context_window: 1000000,
+                        name: "Qwen 3.5 4B Uncensored (32K Context)",
+                        context_window: 32768,
                         price_prompt_usd: 0.05,
                         price_completion_usd: 0.10,
                         price_cached_prompt_usd: 0.010,
@@ -3045,8 +3045,8 @@ main();`,
                         models_config_str: JSON.stringify([
                           {
                             id: "qwen3.5-4b-uncensored-32k",
-                            name: "Bulbasaur Qwen 3.5 4B Uncensored (1M)",
-                            context_window: 1000000,
+                            name: "Bulbasaur Qwen 3.5 4B Uncensored (32K)",
+                            context_window: 32768,
                             price_prompt_usd: 0.05,
                             price_completion_usd: 0.10,
                             price_cached_prompt_usd: 0.010,

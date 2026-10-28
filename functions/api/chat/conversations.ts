@@ -3,22 +3,23 @@ import { db } from "../lib/db";
 
 interface Env {}
 
+const MAX_CIPHERTEXT_BYTES = 4_000_000;
+
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 };
 
-// Helper: Authenticate user via session token (Bearer vtok_...) or live key (Bearer vrxl_live_...)
+// Authenticate via session token (Bearer vtok_...) or live API key.
 async function authenticateUser(request: Request): Promise<{ id: string; email: string } | null> {
   const authHeader = request.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7).trim();
 
   if (token.startsWith("vtok_")) {
     const payload = await verifySessionToken(token);
     if (!payload || !payload.sub) return null;
-    const user = await db.prepare("SELECT id, email FROM users WHERE id = ?")
+    const user = await db
+      .prepare("SELECT id, email FROM users WHERE id = ?")
       .bind(payload.sub)
       .first<{ id: string; email: string }>();
     return user || null;
@@ -26,9 +27,10 @@ async function authenticateUser(request: Request): Promise<{ id: string; email: 
 
   if (token.startsWith("vrxl_live_") || token.startsWith("vrxl_grant_")) {
     const keyHash = await hashSha256(token);
-    const keyRecord = await db.prepare(
-      "SELECT u.id, u.email FROM api_keys k JOIN users u ON k.user_id = u.id WHERE k.key_hash = ? AND k.is_active = 1"
-    )
+    const keyRecord = await db
+      .prepare(
+        "SELECT u.id, u.email FROM api_keys k JOIN users u ON k.user_id = u.id WHERE k.key_hash = ? AND k.is_active = 1"
+      )
       .bind(keyHash)
       .first<{ id: string; email: string }>();
     return keyRecord || null;
@@ -37,11 +39,9 @@ async function authenticateUser(request: Request): Promise<{ id: string; email: 
   return null;
 }
 
-// GET /api/chat/conversations - Load all conversations for authenticated user from PostgreSQL
+// GET /api/chat/conversations - Return ciphertext envelopes only.
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const { request } = context;
-  const user = await authenticateUser(request);
-
+  const user = await authenticateUser(context.request);
   if (!user) {
     return new Response(JSON.stringify({ error: "Authentication required", conversations: [] }), {
       status: 401,
@@ -49,18 +49,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const { results: rows } = await db.prepare(
-    "SELECT id, title, model, system_prompt, messages, created_at, updated_at FROM chat_conversations WHERE user_id = ? ORDER BY updated_at DESC"
-  )
+  const { results: rows } = await db
+    .prepare(
+      "SELECT id, ciphertext, key_id, created_at, updated_at FROM chat_conversations WHERE user_id = ? ORDER BY updated_at DESC"
+    )
     .bind(user.id)
     .all();
 
   const conversations = (rows || []).map((r: any) => ({
     id: r.id,
-    title: r.title,
-    model: r.model,
-    systemPrompt: r.system_prompt,
-    messages: typeof r.messages === "string" ? JSON.parse(r.messages) : r.messages,
+    ciphertext: r.ciphertext,
+    keyId: r.key_id,
     createdAt: new Date(r.created_at).getTime(),
     updatedAt: new Date(r.updated_at).getTime(),
   }));
@@ -71,11 +70,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   });
 };
 
-// POST /api/chat/conversations - Upsert/save conversation to PostgreSQL bound to user account
+// POST /api/chat/conversations - Upsert a client-encrypted conversation.
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request } = context;
-  const user = await authenticateUser(request);
-
+  const user = await authenticateUser(context.request);
   if (!user) {
     return new Response(JSON.stringify({ error: "Authentication required" }), {
       status: 401,
@@ -85,7 +82,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   let body: any;
   try {
-    body = await request.json();
+    body = await context.request.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON payload" }), {
       status: 400,
@@ -93,21 +90,34 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const { id, title, model, systemPrompt, messages } = body;
-  if (!id || typeof id !== "string") {
+  const { id, ciphertext, keyId } = body;
+  if (typeof id !== "string" || id.length < 4 || id.length > 128) {
     return new Response(JSON.stringify({ error: "Valid conversation id is required" }), {
       status: 400,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
+  if (
+    typeof ciphertext !== "string" ||
+    ciphertext.length < 24 ||
+    ciphertext.length > MAX_CIPHERTEXT_BYTES ||
+    !ciphertext.startsWith("v1.")
+  ) {
+    return new Response(JSON.stringify({ error: "Encrypted conversation payload is required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+  if (typeof keyId !== "string" || !/^0x[a-fA-F0-9]{40}$/.test(keyId)) {
+    return new Response(JSON.stringify({ error: "Valid wallet key id is required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
 
-  const conversationTitle = (title && typeof title === "string" ? title.trim() : "New Chat").slice(0, 255);
-  const conversationModel = model && typeof model === "string" ? model.trim() : "qwen3.5-4b-uncensored-32k";
-  const conversationSystemPrompt = typeof systemPrompt === "string" ? systemPrompt : null;
-  const messagesJson = JSON.stringify(Array.isArray(messages) ? messages : []);
-
-  // Check if conversation exists
-  const existing = await db.prepare("SELECT id, user_id FROM chat_conversations WHERE id = ?")
+  const normalizedKeyId = keyId.toLowerCase();
+  const existing = await db
+    .prepare("SELECT id, user_id FROM chat_conversations WHERE id = ?")
     .bind(id)
     .first<{ id: string; user_id: string }>();
 
@@ -119,37 +129,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    await db.prepare(`
-      UPDATE chat_conversations
-      SET title = ?,
-          model = ?,
-          system_prompt = ?,
-          messages = ?::jsonb,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ? AND user_id = ?
-    `).bind(
-      conversationTitle,
-      conversationModel,
-      conversationSystemPrompt,
-      messagesJson,
-      id,
-      user.id
-    ).run();
-  } else {
-    await db.prepare(`
-      INSERT INTO chat_conversations (
-        id, user_id, title, model, system_prompt, messages, created_at, updated_at
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    await db
+      .prepare(
+        `UPDATE chat_conversations
+         SET ciphertext = ?, key_id = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND user_id = ?`
       )
-    `).bind(
-      id,
-      user.id,
-      conversationTitle,
-      conversationModel,
-      conversationSystemPrompt,
-      messagesJson
-    ).run();
+      .bind(ciphertext, normalizedKeyId, id, user.id)
+      .run();
+  } else {
+    await db
+      .prepare(
+        `INSERT INTO chat_conversations (id, user_id, ciphertext, key_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+      )
+      .bind(id, user.id, ciphertext, normalizedKeyId)
+      .run();
   }
 
   return new Response(JSON.stringify({ success: true, id }), {
@@ -158,11 +153,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   });
 };
 
-// DELETE /api/chat/conversations - Delete conversation or clear all for user
+// DELETE /api/chat/conversations - Delete conversation or clear all for the user.
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
-  const { request } = context;
-  const user = await authenticateUser(request);
-
+  const user = await authenticateUser(context.request);
   if (!user) {
     return new Response(JSON.stringify({ error: "Authentication required" }), {
       status: 401,
@@ -170,9 +163,8 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const url = new URL(request.url);
+  const url = new URL(context.request.url);
   const convId = url.searchParams.get("id");
-
   if (!convId) {
     return new Response(JSON.stringify({ error: "Missing conversation id" }), {
       status: 400,
@@ -183,7 +175,10 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
   if (convId === "all") {
     await db.prepare("DELETE FROM chat_conversations WHERE user_id = ?").bind(user.id).run();
   } else {
-    await db.prepare("DELETE FROM chat_conversations WHERE id = ? AND user_id = ?").bind(convId, user.id).run();
+    await db
+      .prepare("DELETE FROM chat_conversations WHERE id = ? AND user_id = ?")
+      .bind(convId, user.id)
+      .run();
   }
 
   return new Response(JSON.stringify({ success: true }), {
