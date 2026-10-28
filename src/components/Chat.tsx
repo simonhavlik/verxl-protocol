@@ -1030,29 +1030,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setStreamingContent("");
     setStreamingReasoning("");
 
-    // Max fills the prompt headroom left after compaction, question and output reserve.
-    let searchBudgetTokens = Infinity;
-    if (isSmallContext) {
-      const compact = compactedSession.compaction;
-      const cut = compact ? updatedMessages.findIndex((m) => m.id === compact.throughId) : -1;
-      const recent = cut >= 0 ? updatedMessages.slice(cut + 1) : updatedMessages;
-      const base = [
-        ...(compact ? [{ role: "user", content: compact.summary }] : []),
-        ...recent.map((m) => ({ role: m.role, content: m.content })),
-      ];
-      const baseTokens = Math.ceil(JSON.stringify(base).length / 4);
-      const available = Math.max(
-        256,
-        selectedModelConfig.contextTokens - maxOutputTokens - 2048 - baseTokens
-      );
-      searchBudgetTokens = (targetSession.searchBudget || 512) === -1
-        ? available
-        : targetSession.searchBudget || 512;
-      searchBudgetTokens = Math.min(searchBudgetTokens, 2048);
-    }
+    // Small-context models get an LLM-compacted search digest, never truncated snippets.
+    let searchDigest = "";
+    let sources: SearchSource[] = [];
 
     // Search from the browser IP, so the keyless Firecrawl limit applies per user.
-    let sources: SearchSource[] = [];
     if (searchEnabled) {
       setIsSearching(true);
       setSearchError(null);
@@ -1073,19 +1055,30 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           url: String(r.url || ""),
           description: String(r.description || "").replace(/\s+/g, " "),
         }));
-        if (isSmallContext) {
-          const budgetChars = searchBudgetTokens * 4;
-          const fixed = raw.reduce((n, r) => n + r.title.length + r.url.length + 16, 0);
-          const per = Math.max(60, Math.floor(Math.max(0, budgetChars - fixed) / Math.max(1, raw.length)));
-          sources = raw
-            .map((r) => ({
-              ...r,
-              title: r.title.slice(0, 160),
-              description: (r.description || "").slice(0, per),
-            }))
-            .filter((r) => r.url);
-        } else {
-          sources = raw.filter((r) => r.url);
+        sources = raw.filter((r) => r.url);
+        if (isSmallContext && sources.length > 0) {
+          const compactPrompt = `Compact these web search results for the user's question. Preserve facts, names, dates, numbers, and source numbers. Remove navigation, cookie text, and boilerplate. Keep [n] citations. Be dense.
+
+Question: ${textToSend}
+
+${sources
+  .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.description}`)
+  .join("\n\n")}`;
+          try {
+            const compactRes = await fetch("/v1/chat/completions", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: authorizationHeader },
+              body: JSON.stringify({
+                model: "deepseek-v4.1-flash",
+                messages: [{ role: "user", content: compactPrompt }],
+                stream: false,
+                max_tokens: 2048,
+                temperature: 0.1,
+              }),
+            });
+            const compactData = (await compactRes.json()) as any;
+            searchDigest = compactData?.choices?.[0]?.message?.content || "";
+          } catch {}
         }
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
       } catch {
@@ -1113,15 +1106,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       boundaryIdx >= 0 ? updatedMessages.slice(boundaryIdx + 1) : updatedMessages;
     const lastUserIndex = [...contextMessages].reverse().findIndex((m) => m.role === "user");
     const lastUserPos = lastUserIndex >= 0 ? contextMessages.length - 1 - lastUserIndex : -1;
-    const searchContext =
-      sources.length > 0
-        ? `Web search results. Use them and cite [n] where relevant:\n${sources
-            .map(
-              (r, i) =>
-                `[${i + 1}] ${r.title}\n${r.url}${r.description ? `\n${r.description}` : ""}`
-            )
-            .join("\n\n")}`
-        : "";
+    const searchContext = searchDigest
+      ? `Web search digest compacted from ${sources.length} sources. Use it and cite [n]:\n${searchDigest}`
+      : sources.length > 0
+      ? `Web search results. Use them and cite [n] where relevant:\n${sources
+          .map(
+            (r, i) =>
+              `[${i + 1}] ${r.title}\n${r.url}${r.description ? `\n${r.description}` : ""}`
+          )
+          .join("\n\n")}`
+      : "";
     // No system turn. Compaction context is a user-level summary, never a system prompt.
     const apiMessages = [
       ...(compaction && boundaryIdx >= 0
