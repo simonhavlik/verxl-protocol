@@ -331,10 +331,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("vrxl_search_key") || "";
   });
-  const [pdfOcrEnabled, setPdfOcrEnabled] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("vrxl_pdf_ocr") === "1";
-  });
   const [forcePdfOcr, setForcePdfOcr] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("vrxl_force_pdf_ocr") === "1";
@@ -488,7 +484,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
     setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
     setChartToolEnabled(activeSession.chartTool ?? localStorage.getItem("vrxl_chart_tool") === "1");
-    setPdfOcrEnabled(activeSession.pdfOcrEnabled ?? localStorage.getItem("vrxl_pdf_ocr") === "1");
     setForcePdfOcr(activeSession.forcePdfOcr ?? localStorage.getItem("vrxl_force_pdf_ocr") === "1");
     setShowForcePdfOcrToggle(
       activeSession.showForcePdfOcrToggle ?? localStorage.getItem("vrxl_show_force_pdf_ocr") === "1"
@@ -1173,11 +1168,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               const page = await doc.getPage(i);
               const content = await page.getTextContent();
               const pageText = content.items.map((x: any) => x.str).join(" ").trim();
-              if (!pdfOcrEnabled) {
-                if (pageText) text += pageText + "\n";
-                else pageErrors.push(`page ${i}: no text layer and PDF OCR is off`);
-                continue;
-              }
               if (!forcePdfOcr && pageText.length >= 80) {
                 text += pageText + "\n";
                 continue;
@@ -2705,28 +2695,19 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <Paperclip className="w-4 h-4" />
               </button>
 
-              <button
-                onClick={() => {
-                  const next = !forcePdfOcr;
-                  setForcePdfOcr(next);
-                  localStorage.setItem("vrxl_force_pdf_ocr", next ? "1" : "0");
-                  if (next && !pdfOcrEnabled) {
-                    setPdfOcrEnabled(true);
-                    localStorage.setItem("vrxl_pdf_ocr", "1");
-                    saveChatSettings({ pdfOcrEnabled: true, forcePdfOcr: true });
-                  } else {
-                    saveChatSettings({ forcePdfOcr: next });
-                  }
-                }}
-                className={`px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition ${
-                  forcePdfOcr
-                    ? "bg-amber-600/20 border-amber-500/50 text-amber-300"
-                    : "bg-[#05070b] border-slate-800 text-slate-400 hover:text-white"
-                }`}
-                title="Force PDF OCR on every page"
-              >
-                PDF OCR
-              </button>
+              {forcePdfOcr && (
+                <button
+                  onClick={() => {
+                    setForcePdfOcr(false);
+                    localStorage.setItem("vrxl_force_pdf_ocr", "0");
+                    saveChatSettings({ forcePdfOcr: false });
+                  }}
+                  className="px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition bg-amber-600/20 border-amber-500/50 text-amber-300"
+                  title="Force PDF OCR is on; click to disable"
+                >
+                  Force PDF OCR
+                </button>
+              )}
 
               <button
                 onClick={() => setSearchEnabled((v) => !v)}
@@ -3258,38 +3239,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <p className="text-[8.5px] text-slate-500 leading-relaxed">
                   Keys stay in this browser. Custom expects POST {"{query, limit}"} and returns data.web or results.
                 </p>
-              </div>
-              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                    PDF OCR
-                  </div>
-                  <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
-                    OCR scanned or low-text PDF pages. Off by default; text-layer PDFs still parse.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    const next = !pdfOcrEnabled;
-                    setPdfOcrEnabled(next);
-                    localStorage.setItem("vrxl_pdf_ocr", next ? "1" : "0");
-                    if (!next) {
-                      setForcePdfOcr(false);
-                      localStorage.setItem("vrxl_force_pdf_ocr", "0");
-                      saveChatSettings({ pdfOcrEnabled: false, forcePdfOcr: false });
-                    } else {
-                      saveChatSettings({ pdfOcrEnabled: true });
-                    }
-                  }}
-                  aria-pressed={pdfOcrEnabled}
-                  className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
-                    pdfOcrEnabled
-                      ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
-                      : "bg-[#05070b] border-slate-700 text-slate-500"
-                  }`}
-                >
-                  {pdfOcrEnabled ? "ON" : "OFF"}
-                </button>
               </div>
               <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
                 <div>
