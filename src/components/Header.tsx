@@ -58,6 +58,8 @@ export const Header: React.FC<HeaderProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const isUserLoggedIn = Boolean(user || walletAddress);
+
   const navItems = [
     { id: "overview", label: "Overview" },
     { id: "playground", label: "Playground" },
@@ -65,7 +67,9 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "console", label: "API" },
     { id: "registry", label: "Registry" },
     { id: "oracle", label: "Oracle" },
-    { id: "whitepaper", label: "Whitepaper" },
+    ...(!isUserLoggedIn || activeTab === "whitepaper"
+      ? [{ id: "whitepaper", label: "Whitepaper" }]
+      : []),
     { id: "governance", label: "Governance" },
     { id: "vision", label: "Vision" },
   ];
@@ -92,18 +96,18 @@ export const Header: React.FC<HeaderProps> = ({
         </a>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo & Name */}
         <div
-          className="flex items-center gap-2.5 cursor-pointer py-1"
+          className="flex items-center gap-2 cursor-pointer py-1 shrink-0"
           onClick={() => setActiveTab("overview")}
         >
           <img
             src="/logo-square.jpg"
             alt="Verxl Logo"
-            className="w-7 h-7 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20"
+            className="w-7 h-7 rounded-[3px] border border-blue-500/40 object-cover shadow-sm shadow-blue-500/20 shrink-0"
           />
-          <span className="font-bold text-sm tracking-wider text-white font-mono">
+          <span className="font-bold text-sm tracking-wider text-white font-mono hidden sm:inline">
             VERXL<span className="text-blue-500">.COM</span>
           </span>
         </div>
@@ -114,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`px-2.5 py-1 rounded-[2px] transition-all text-[10.5px] uppercase tracking-wider font-medium ${
+              className={`px-1.5 lg:px-2.5 py-1 rounded-[2px] transition-all text-[10px] lg:text-[10.5px] uppercase tracking-wider font-medium whitespace-nowrap ${
                 activeTab === item.id
                   ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25 border border-blue-400/40"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -126,23 +130,23 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {user && (
             <div
               onClick={() => setActiveTab("console")}
-              className="cursor-pointer hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-blue-500/40 text-blue-300 hover:border-blue-400 transition"
+              className="cursor-pointer flex items-center gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-blue-500/40 text-blue-300 hover:border-blue-400 transition"
               title={`Logged in as ${user.email} · Click to manage API & balance`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-bold text-white">${Number(user.balance_usd || 0).toFixed(2)}</span>
-              <span className="text-[10px] text-slate-400">USD</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="font-bold text-white tracking-tight">${Number(user.balance_usd || 0).toFixed(2)}</span>
+              <span className="text-[9.5px] text-slate-400 hidden xs:inline">USD</span>
             </div>
           )}
-          {/* DAO Address Copy Badge */}
+          {/* DAO Address Copy Badge - Shown on wide screens when logged out, ultra-wide when logged in */}
           <button
             onClick={copyAddress}
             title="Copy Aragon DAO Vault Address"
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition"
+            className={`${isUserLoggedIn ? "hidden 2xl:flex" : "hidden xl:flex"} items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-300 hover:border-blue-500/50 transition`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>DAO: 0xf0e5...111a</span>
@@ -155,9 +159,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Web3 Wallet Connect Button — Strictly Square */}
           {(walletAddress || user?.wallet_address) ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-[#090d16] border border-blue-500/40 text-xs font-mono text-blue-300">
-              <span className="w-2 h-2 status-dot bg-emerald-400 animate-pulse" />
-              <span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#090d16] border border-blue-500/40 text-xs font-mono text-blue-300">
+              <span className="w-1.5 h-1.5 status-dot bg-emerald-400 animate-pulse shrink-0" />
+              <span className="text-[11px] font-medium">
                 {(() => {
                   const raw = user?.wallet_address || walletAddress;
                   if (typeof raw === "string" && raw.length >= 10) {
@@ -171,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleConnectWalletClick}
               disabled={connectingWallet}
-              className="hero-btn hero-btn--primary !py-1.5 !px-3 !text-[11px] disabled:opacity-50"
+              className="hero-btn hero-btn--primary !py-1 !px-2.5 !text-[10.5px] disabled:opacity-50"
               title="Connect MetaMask to instantly authenticate or restore your account"
             >
               <Wallet className="w-3.5 h-3.5" />
@@ -184,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-400 hover:text-white hover:border-blue-500/40 transition"
+            className="p-1.5 rounded-[3px] bg-[#090d16] border border-slate-800 text-slate-400 hover:text-white hover:border-blue-500/40 transition shrink-0"
             title="View Live DAO on Aragon OSx"
           >
             <ExternalLink className="w-3.5 h-3.5" />

@@ -34,6 +34,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <a
+              href="/whitepaper"
+              onClick={(e) => handleLegalClick(e, "whitepaper")}
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[#080c14] border border-slate-800 text-slate-300 hover:text-white hover:border-blue-500/40 text-[10.5px] transition"
+            >
+              <FileText className="w-3 h-3 text-blue-400" />
+              <span>Whitepaper</span>
+            </a>
+
+            <a
               href="https://github.com/simonhavlik/verxl-protocol"
               target="_blank"
               rel="noopener noreferrer"
