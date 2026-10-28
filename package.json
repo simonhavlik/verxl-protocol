@@ -26,6 +26,9 @@
     "tailwind-merge": "^2.5.2",
     "tesseract.js": "^7.0.0",
     "three": "^0.186.1",
+    "vega": "^6.4.0",
+    "vega-embed": "^7.3.0",
+    "vega-lite": "^6.5.0",
     "viem": "^2.57.12"
   },
   "devDependencies": {

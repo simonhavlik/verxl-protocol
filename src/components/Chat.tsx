@@ -55,6 +55,26 @@ marked.setOptions({
   breaks: true,
 });
 
+const VegaChart = ({ spec }: { spec: any }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const mod = await import("vega-embed");
+        if (!cancelled && ref.current) {
+          await mod.default(ref.current, spec, { actions: false, renderer: "svg" });
+        }
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+      if (ref.current) ref.current.innerHTML = "";
+    };
+  }, [spec]);
+  return <div ref={ref} className="mt-3 w-full overflow-x-auto bg-[#05070b] border border-slate-800 p-2" />;
+};
+
 const renderMarkdown = (content: string): string => {
   if (!content) return "";
   try {
@@ -101,6 +121,7 @@ interface ChatMessage {
   content: string;
   reasoning?: string;
   sources?: SearchSource[];
+  charts?: any[];
   createdAt: number;
   metrics?: MessageMetrics;
 }
@@ -118,6 +139,7 @@ interface ChatSession {
   searchProvider?: string;
   searchBaseUrl?: string;
   searchKey?: string;
+  chartTool?: boolean;
   pdfOcrEnabled?: boolean;
   forcePdfOcr?: boolean;
   showForcePdfOcrToggle?: boolean;
@@ -287,6 +309,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [cryptoError, setCryptoError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [chartToolEnabled, setChartToolEnabled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("vrxl_chart_tool") === "1";
+  });
   const [attachments, setAttachments] = useState<{ name: string; text: string; kind: string }[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
@@ -461,6 +487,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     );
     setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
     setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
+    setChartToolEnabled(activeSession.chartTool ?? localStorage.getItem("vrxl_chart_tool") === "1");
     setPdfOcrEnabled(activeSession.pdfOcrEnabled ?? localStorage.getItem("vrxl_pdf_ocr") === "1");
     setForcePdfOcr(activeSession.forcePdfOcr ?? localStorage.getItem("vrxl_force_pdf_ocr") === "1");
     setShowForcePdfOcrToggle(
@@ -1270,10 +1297,46 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     let searchDigest = "";
     let sources: SearchSource[] = [];
 
-    // Model-callable search tool, only for >40K models and only when the user enabled it.
-    if (searchToolEnabled && currentModelConfig.contextTokens >= 40_000 && !searchEnabled) {
+    let charts: any[] = [];
+    // Model-callable tools; >40K models only, each behind its own setting.
+    if (
+      currentModelConfig.contextTokens >= 40_000 &&
+      (searchToolEnabled || chartToolEnabled)
+    ) {
       setIsSearching(true);
       try {
+        const tools: any[] = [];
+        if (searchToolEnabled) {
+          tools.push({
+            type: "function",
+            function: {
+              name: "web_search",
+              description: "Search the web for current information. Use only when the answer depends on recent events or facts that need live sources.",
+              parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+            },
+          });
+        }
+        if (chartToolEnabled) {
+          tools.push({
+            type: "function",
+            function: {
+              name: "render_chart",
+              description:
+                "Render a Vega-Lite v5 chart inline in the chat. Provide a complete spec object with inline data. The tool returns usage information and also renders the chart for the user.",
+              parameters: {
+                type: "object",
+                properties: {
+                  spec: {
+                    type: "object",
+                    description:
+                      "Complete Vega-Lite v5 JSON spec, including $schema, mark, encoding and inline data.values.",
+                  },
+                },
+                required: ["spec"],
+              },
+            },
+          });
+        }
         const planRes = await fetch("/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: authorizationHeader },
@@ -1281,33 +1344,27 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             model: currentModel,
             messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
             stream: false,
-            max_tokens: 256,
-            tools: [
-              {
-                type: "function",
-                function: {
-                  name: "web_search",
-                  description:
-                    "Search the web for current information. Use only when the answer depends on recent events or facts that need live sources.",
-                  parameters: {
-                    type: "object",
-                    properties: { query: { type: "string", description: "Search query" } },
-                    required: ["query"],
-                  },
-                },
-              },
-            ],
+            max_tokens: 1024,
+            tools,
             tool_choice: "auto",
           }),
         });
         const planData = (await planRes.json()) as any;
-        const call = planData?.choices?.[0]?.message?.tool_calls?.[0];
-        if (call?.function?.name === "web_search") {
-          let query = textToSend;
-          try {
-            query = JSON.parse(call.function.arguments || "{}").query || textToSend;
-          } catch {}
-          sources = await runSearch(String(query));
+        const calls = planData?.choices?.[0]?.message?.tool_calls || [];
+        for (const call of calls) {
+          if (call?.function?.name === "web_search") {
+            let query = textToSend;
+            try {
+              query = JSON.parse(call.function.arguments || "{}").query || textToSend;
+            } catch {}
+            sources = await runSearch(String(query));
+          }
+          if (call?.function?.name === "render_chart") {
+            try {
+              const args = JSON.parse(call.function.arguments || "{}");
+              if (args?.spec && typeof args.spec === "object") charts.push(args.spec);
+            } catch {}
+          }
         }
       } catch {}
       setIsSearching(false);
@@ -1400,6 +1457,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             ? `${searchContext}\n\nAnswer the question below using these results.\nQuestion: ${m.content}`
             : m.content,
       })),
+      ...(charts.length > 0
+        ? [
+            {
+              role: "user",
+              content: `render_chart tool result: ${charts.length} Vega-Lite chart(s) rendered successfully in the chat. Refer to the rendered chart in your answer; do not paste the raw spec.`,
+            },
+          ]
+        : []),
     ];
     const thinkLevel = targetSession.think || "medium";
     let requestFailed = false;
@@ -1549,6 +1614,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           : "**No response was returned.** The upstream stream ended without content. Retry.",
         reasoning: accumulatedReasoning || undefined,
         sources: sources.length > 0 ? sources : undefined,
+        charts: charts.length > 0 ? charts : undefined,
         createdAt: Date.now(),
         metrics: {
           promptTokens: estPromptTokens,
@@ -2425,6 +2491,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       </div>
                     )}
 
+                    {msg.role === "assistant" && msg.charts && msg.charts.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {msg.charts.map((spec, i) => (
+                          <VegaChart key={`${msg.id}_chart_${i}`} spec={spec} />
+                        ))}
+                      </div>
+                    )}
+
                     {/* Web search sources stored with the assistant turn */}
                     {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
                       <div className="mt-3 pt-2 border-t border-slate-800/80">
@@ -3268,6 +3342,34 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     }`}
                   >
                     {forcePdfOcr ? "ON" : "OFF"}
+                  </button>
+                </div>
+              )}
+              {currentModelConfig.contextTokens >= 40_000 && (
+                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
+                      Vega-Lite charts
+                    </div>
+                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
+                      Lets the model render charts inline. Tool returns usage info and renders the spec. Off by default.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !chartToolEnabled;
+                      setChartToolEnabled(next);
+                      localStorage.setItem("vrxl_chart_tool", next ? "1" : "0");
+                      saveChatSettings({ chartTool: next });
+                    }}
+                    aria-pressed={chartToolEnabled}
+                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
+                      chartToolEnabled
+                        ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
+                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                    }`}
+                  >
+                    {chartToolEnabled ? "ON" : "OFF"}
                   </button>
                 </div>
               )}
