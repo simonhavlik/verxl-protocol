@@ -917,8 +917,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const maybeCompactSession = (
     session: ChatSession,
     messages: ChatMessage[],
-    model: ModelConfig,
-    forSearch = false
+    model: ModelConfig
   ): ChatSession => {
     // Large-context bridges (1M) keep full history; compaction is for the 32K Qwen.
     if (model.contextTokens >= 40_000) return session;
@@ -926,9 +925,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const safety = Math.max(2048, (session.searchBudget || 512) + 512);
     const normalThreshold = model.contextTokens - outputReserve - safety;
     // Max splits the window: conversation gets half, search fills the rest.
-    const threshold = forSearch
-      ? Math.min(normalThreshold, 8192)
-      : normalThreshold;
+    const threshold = normalThreshold;
     const prior = session.compaction;
     const priorIdx = prior ? messages.findIndex((m) => m.id === prior.throughId) : -1;
     const recent = priorIdx >= 0 ? messages.slice(priorIdx + 1) : messages;
@@ -1014,8 +1011,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     const compactedSession = maybeCompactSession(
       targetSession,
       updatedMessages,
-      selectedModelConfig,
-      searchEnabled
+      selectedModelConfig
     );
     const updatedUserSession: ChatSession = {
       ...compactedSession,
