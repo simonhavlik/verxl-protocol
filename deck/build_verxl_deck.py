@@ -7,6 +7,7 @@ from pptx.enum.dml import MSO_LINE_DASH_STYLE
 from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_TICK_MARK
 from pptx.chart.data import CategoryChartData
 import os
+import math
 
 INK = RGBColor(0x07, 0x0A, 0x0F)
 CARD = RGBColor(0x0B, 0x11, 0x17)
@@ -27,7 +28,7 @@ MONO = "Menlo"
 SW, SH = 13.333, 7.5
 BASE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(BASE, "assets")
-TOTAL = 12
+TOTAL = 14
 
 prs = Presentation()
 prs.slide_width = Inches(SW)
@@ -167,7 +168,7 @@ txt(s, 2.05, 0.44, 3.0, 0.2, "PROTOCOL", 7, MUTED, MONO, caps=True)
 txt(s, 8.6, 0.42, 4.08, 0.22, "VŠE PRAHA  ·  APPLIED BLOCKCHAIN  ·  2026", 7.2, MUTED, MONO, align=PP_ALIGN.RIGHT, caps=True)
 hline(s, 0.65, 7.02, 12.03, LINE)
 txt(s, 0.65, 7.12, 5.0, 0.16, "SEPOLIA TEST RUN  /  NOT MAINNET", 6.8, MINT_DIM, MONO, caps=True)
-txt(s, 9.6, 7.12, 3.08, 0.16, "01  /  12", 7, MUTED, MONO, align=PP_ALIGN.RIGHT)
+txt(s, 9.6, 7.12, 3.08, 0.16, "01  /  14", 7, MUTED, MONO, align=PP_ALIGN.RIGHT)
 
 txt(s, 0.65, 1.95, 9.1, 0.25, "PRIVATE  ·  FAST  ·  AFFORDABLE INFERENCE CLEARING", 8, MINT, MONO, caps=True)
 txt(s, 0.65, 2.35, 9.4, 1.25, "Inference", 66, WHITE, TITLE, spacing=0.9)
@@ -305,14 +306,137 @@ for i, item in enumerate(["Message text", "Conversation titles", "System prompt"
     hline(s, 6.62, 4.16 + i * 0.36, 3.55, LINE)
 txt(s, 10.55, 2.10, 2.2, 0.85, "0", 72, MINT, TITLE, spacing=0.8)
 txt(s, 10.55, 3.00, 2.1, 0.35, "PLAINTEXT\nAT REST", 7, MUTED, MONO, spacing=1.2, caps=True)
-hline(s, 0.65, 5.40, 5.45, LINE)
-txt(s, 0.65, 5.56, 5.45, 0.55, "The operator can still see the account, wallet address, usage records and envelope size.", 10.5, MUTED, BODY, spacing=1.3)
-hline(s, 6.62, 5.40, 3.55, LINE)
-txt(s, 6.62, 5.56, 3.55, 0.55, "Another wallet cannot decrypt the envelopes.", 10.5, MUTED, BODY, spacing=1.3)
-notes(s, """The privacy claim is architectural. The browser signs a message with the wallet, derives a key with HKDF-SHA256 and encrypts the chat with AES-256-GCM before any request leaves the tab. The API only receives a ciphertext envelope. Postgres stores the envelope, a wallet key id, timestamps and usage records; it does not receive message text, titles or a system prompt. The honest limit is on the slide: the operator still sees the account, the wallet address, usage and envelope sizes. Another wallet cannot decrypt the envelopes. This is encryption at rest and in transit, not a claim that the operator learns nothing. The source is the public chatCrypto.ts and conversations API in the repository.""")
+hline(s, 0.65, 5.05, 12.03, LINE)
+privacy_points = [
+    ("NO PLAINTEXT LOGS", "Ciphertext at rest; no message text or titles."),
+    ("NO API-KEY HISTORY", "A Verxl key opens usage, not past chats."),
+    ("ANONYMOUS UPSTREAM", "Verxl-held credentials; the provider gets the request, not your key."),
+]
+for i, (a, b) in enumerate(privacy_points):
+    x = 0.65 + i * 4.08
+    txt(s, x, 5.20, 3.7, 0.18, f"0{i+1}  /  {a}", 7, MINT_DIM, MONO)
+    txt(s, x, 5.42, 3.55, 0.55, b, 8.8, SOFT, BODY, spacing=1.3)
+txt(s, 0.65, 6.35, 12.0, 0.35, "The operator still sees account metadata, wallet address and usage. Bridge providers log per policy. Another wallet cannot decrypt the envelopes.", 8.5, MUTED, BODY, spacing=1.3)
+notes(s, """The privacy claim is architectural, and it has three parts. First, no plaintext logs: the browser signs with the wallet, derives a key with HKDF-SHA256, encrypts the chat with AES-256-GCM before it leaves the tab, and Postgres stores only the ciphertext envelope, a wallet key id, timestamps and usage records. It does not receive message text, titles or a system prompt. Second, no API-key history: a Verxl API key opens usage and billing; it cannot decrypt a chat or read past conversations, because the chat key never leaves the browser. Third, anonymous upstream: the model provider receives the request under Verxl's credential, not the user's Verxl account key. The honest boundary is on the slide: the operator still sees account metadata, wallet address, usage and envelope size; bridge providers log according to their own policy. Chat is ciphertext-only. The source is the public chatCrypto.ts and conversations API.""")
 
+# ---------------------------------------------------------------- 06 CHAT VS DEFAULTS
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "05  /  CHAT VS DEFAULTS", 6)
+eyebrow(s, "The alternative")
+title(s, "Chat vs the defaults.", "The Pareto alternative.", y=1.12, size=42)
+claims = [
+    ("01", "NO PLAINTEXT LOGS", "Ciphertext in the browser; no message text in the database. A Verxl API key cannot open history. Upstream calls use Verxl-held credentials."),
+    ("02", "PARETO PRICING", "DeepSeek V4.1 Flash: 74.0 at $0.181 per successful task — the value frontier. Gemini 4 Argon is 11.5× the cost."),
+    ("03", "ONE KEY", "One Verxl API. Today: three routes. The approved registry and official bridges per roadmap expand the catalogue."),
+    ("04", "MUCH CHEAPER", "Claude Fable 5.1: $6.904; GPT-6 Astra: $4.548; Gemini 4 Argon: $2.073; the Verxl route: $0.181. 50 bps included."),
+]
+for i, (n, h, b) in enumerate(claims):
+    x = 0.65 + i * 3.08
+    txt(s, x, 2.55, 0.25, 0.18, n, 7, MUTED, MONO)
+    txt(s, x + 0.31, 2.55, 2.6, 0.18, h, 7, MINT_DIM, MONO)
+    txt(s, x, 2.78, 2.85, 0.75, b, 8.4, SOFT, BODY, spacing=1.28)
+
+tcols = [0.65, 3.20, 5.15, 6.45, 8.15, 10.35]
+theaders = ["MODEL", "ROUTE", "LIVEBENCH", "COST / SUCCESS", "CHAT LOGS", "FRONTIER"]
+for x, h in zip(tcols, theaders):
+    txt(s, x, 3.65, 2.1, 0.18, h, 6.5, MUTED, MONO, caps=True)
+hline(s, 0.65, 3.85, 12.03, LINE2)
+rows = [
+    ("Claude Fable 5.1", "Anthropic", "85.7", "$6.904", "Provider policy", "Top", False),
+    ("GPT-6 Astra", "OpenAI", "85.6", "$4.548", "Provider policy", "—", False),
+    ("Gemini 4 Argon", "Google", "79.3", "$2.073", "Provider policy", "—", False),
+    ("GPT-6.1 Sol", "OpenAI", "84.1", "$0.761", "Provider policy", "Value", False),
+    ("DeepSeek V4.1 Flash", "Verxl bridge", "74.0", "$0.181", "Ciphertext only", "Value", True),
+    ("MiMo V2.6 Pro", "Verxl bridge", "68.5", "$0.183", "Ciphertext only", "—", True),
+]
+for i, (model, route, score, cost, logs, frontier, verxl) in enumerate(rows):
+    yy = 3.98 + i * 0.32
+    if verxl:
+        txt(s, 0.49, yy + 0.08, 0.07, 0.12, "•", 8, MINT, BODY)
+    txt(s, 0.65, yy, 2.45, 0.22, model, 8.8, MINT if verxl else WHITE, BODY)
+    txt(s, 3.20, yy, 1.8, 0.22, route, 8.2, MINT if verxl else SOFT, BODY)
+    txt(s, 5.15, yy, 0.9, 0.22, score, 8.8, MINT if verxl else SOFT, MONO)
+    txt(s, 6.45, yy, 1.4, 0.22, cost, 8.8, MINT if verxl else SOFT, MONO)
+    txt(s, 8.15, yy, 1.95, 0.22, logs, 7.6, MINT if verxl else MUTED, MONO)
+    txt(s, 10.35, yy, 1.6, 0.22, frontier, 7.4, MINT if frontier != "—" else MUTED, MONO)
+    hline(s, 0.65, yy + 0.24, 12.03, LINE)
+txt(s, 0.65, 6.08, 12.0, 0.55, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task, not a Verxl price guarantee. Verxl adds 50 bps. API bridge requests follow upstream policy; Chat is ciphertext-only. Qwen 3.5 4B is the resident host and is not in this table.", 7, MUTED, BODY, spacing=1.35)
+notes(s, """This is the comparison slide, and it has to be read with its boundaries. The four claims: one, no plaintext logs — Verxl Chat is ciphertext in the browser, the database has no message text, and a Verxl API key cannot open history; upstream calls use Verxl-held credentials, so the model provider receives the request, not the user's Verxl account key. Two, Pareto pricing: on LiveBench 2.0, DeepSeek V4.1 Flash scores 74.0 at $0.181 per successful task and sits on the value frontier; Gemini 4 Argon scores 79.3 at $2.073, 11.5 times the cost; Claude Fable 5.1 scores 85.7 at $6.904, 38 times. Three, one key: the current demo routes three models; the approved provider registry and official bridges per the roadmap expand the catalogue; this is not a claim that every mainstream model is live today. Four, much cheaper: the flagship costs are on the table; the Verxl route is $0.181; the protocol fee is 50 bps. The table is LiveBench 2.0 data, cost per successful task, not a Verxl quote. API bridge requests follow upstream provider policy; only Chat is ciphertext-only. Qwen 3.5 4B is the resident host and is not in this LiveBench table.""")
+# ---------------------------------------------------------------- 06 EFFICIENCY FRONTIER
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "06  /  EFFICIENCY FRONTIER", 7)
+eyebrow(s, "The frontier")
+title(s, "Cheap is not worse.", "The efficiency frontier.", y=1.10, size=40)
+
+chart_x, chart_y, chart_w, chart_h = 0.65, 2.45, 7.7, 4.05
+rect(s, chart_x, chart_y, chart_w, chart_h, CARD, LINE)
+txt(s, 0.82, 2.59, 4.9, 0.18, "LIVEBENCH OVERALL vs COST PER SUCCESSFUL TASK", 6.5, MUTED, MONO)
+px0, px1 = 1.35, 8.00
+py0, py1 = 2.95, 6.15
+def cx(c): return px0 + (math.log10(c) + 1) / 2 * (px1 - px0)
+def cy(v): return py1 - (v - 60) / 28 * (py1 - py0)
+
+# grid + axes
+for v in [60, 65, 70, 75, 80, 85]:
+    yy = cy(v)
+    hline(s, px0, yy, px1 - px0, LINE)
+    txt(s, px0 - 0.34, yy - 0.06, 0.30, 0.16, str(v), 6.3, MUTED, MONO, align=PP_ALIGN.RIGHT)
+for c in [0.1, 0.2, 0.5, 1, 2, 5, 10]:
+    xx = cx(c)
+    vline(s, xx, py0, py1 - py0, LINE)
+    label = f"${c:g}"
+    txt(s, xx - 0.27, py1 + 0.08, 0.54, 0.16, label, 6.2, MUTED, MONO, align=PP_ALIGN.CENTER)
+txt(s, px0, py1 + 0.28, 5.0, 0.18, "COST PER SUCCESSFUL TASK (LOG)", 6.2, MUTED, MONO)
+txt(s, 0.82, py0 - 0.28, 1.2, 0.16, "QUALITY", 6.2, MUTED, MONO)
+
+points = [
+    ("GPT-6 Luna", 0.133, 64.6, True, False, -0.62, 0.10, PP_ALIGN.LEFT),
+    ("MiniMax M3.1 Flash", 0.153, 66.9, True, False, -0.10, 0.16, PP_ALIGN.LEFT),
+    ("DeepSeek V4.1 Flash", 0.181, 74.0, True, True, 0.10, -0.30, PP_ALIGN.LEFT),
+    ("MiMo V2.6 Pro", 0.183, 68.5, False, True, 0.10, 0.13, PP_ALIGN.LEFT),
+    ("GPT-6.1 Terra", 0.665, 77.8, True, False, 0.10, 0.12, PP_ALIGN.LEFT),
+    ("GPT-6.1 Sol", 0.761, 84.1, True, False, 0.10, -0.27, PP_ALIGN.LEFT),
+    ("Gemini 4 Argon", 2.073, 79.3, False, False, 0.10, -0.24, PP_ALIGN.LEFT),
+    ("Claude Opus 5.5", 4.291, 85.1, True, False, -1.28, -0.22, PP_ALIGN.LEFT),
+    ("GPT-6 Astra", 4.548, 85.6, True, False, 0.10, 0.11, PP_ALIGN.LEFT),
+    ("Claude Fable 5.1", 6.904, 85.7, True, False, -1.30, -0.30, PP_ALIGN.LEFT),
+]
+# frontier line through the non-dominated points, ordered by cost
+frontier = sorted([p for p in points if p[3]], key=lambda p: p[1])
+for a, b in zip(frontier, frontier[1:]):
+    line(s, cx(a[1]), cy(a[2]), cx(b[1]), cy(b[2]), MINT, 1.1, MSO_LINE_DASH_STYLE.DASH)
+for name, cost, score, is_frontier, is_verxl, dx, dy, al in points:
+    xx, yy = cx(cost), cy(score)
+    if is_verxl:
+        dot(s, xx - 0.045, yy - 0.045, 0.09, MINT if is_frontier else INK, None if is_frontier else MINT)
+        color = MINT
+    elif is_frontier:
+        dot(s, xx - 0.04, yy - 0.04, 0.08, STEEL)
+        color = STEEL
+    else:
+        dot(s, xx - 0.035, yy - 0.035, 0.07, INK, STEEL)
+        color = MUTED
+    txt(s, xx + dx, yy + dy, 2.1, 0.16, name, 6.3, color, MONO)
+txt(s, 3.55, 3.42, 2.0, 0.18, "VALUE FRONTIER", 6.3, MINT_DIM, MONO)
+
+# right callout
+hline(s, 8.75, 2.62, 3.92, LINE)
+txt(s, 8.75, 2.76, 3.92, 0.18, "THE EFFICIENT POINT", 7, MINT_DIM, MONO)
+txt(s, 8.75, 3.00, 2.4, 0.55, "74.0", 34, MINT, TITLE, spacing=0.9)
+txt(s, 8.75, 3.53, 3.85, 0.2, "DEEPSEEK V4.1 FLASH  ·  $0.181 / TASK", 7, WHITE, MONO)
+hline(s, 8.75, 3.80, 3.92, LINE)
+for i, (a, b) in enumerate([
+    ("11.5×", "the cost of Gemini 4 Argon"),
+    ("38×", "the cost of Claude Fable 5.1"),
+    ("4.2×", "cheaper than GPT-6.1 Sol"),
+]):
+    yy = 3.96 + i * 0.42
+    txt(s, 8.75, yy, 0.8, 0.2, a, 11, MINT, MONO)
+    txt(s, 9.55, yy + 0.01, 3.05, 0.18, b, 7.8, SOFT, BODY)
+txt(s, 8.75, 5.36, 3.9, 0.7, "At the efficient point, cheap is not a compromise. The frontier is the best score at each cost.", 9.2, SOFT, BODY, spacing=1.3)
+txt(s, 8.75, 6.15, 3.9, 0.4, "Verxl adds 50 bps. Cost per successful task is a benchmark unit, not a quote.", 6.8, MUTED, BODY, spacing=1.3)
+txt(s, 0.65, 6.72, 12.0, 0.4, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Log cost axis. Not an SLA. Qwen 3.5 4B is the resident host and is not in this benchmark table.", 6.8, MUTED, MONO)
+notes(s, """This is the efficiency frontier from the LiveBench 2.0 Overall data, plotted on a log cost axis. The frontier is the best overall score at each cost. The filled points are the non-dominated frontier; the hollow points are dominated — they cost more for the same or lower score. The Verxl route is DeepSeek V4.1 Flash at 74.0 and $0.181 per successful task, on the frontier; MiMo V2.6 Pro is also a Verxl route, at 68.5 and $0.183, but it is dominated by DeepSeek. The mainstream flagships sit at the top right: Gemini 4 Argon 79.3/$2.073, GPT-6 Astra 85.6/$4.548, Claude Fable 5.1 85.7/$6.904. The efficient point is not the highest score; it is the best score per cost, and the deck says that plainly. The ratios are cost ratios from the table: Gemini is 11.5 times the Verxl route; Claude Fable is 38 times; GPT-6.1 Sol is 4.2 times. The chart uses the Overall LiveBench data, not a Verxl benchmark; the Verxl 50 bps is additional; the table and source are on the previous slide and this footer. Qwen 3.5 4B is the resident host and is not in this LiveBench table.""")
 # ---------------------------------------------------------------- 06 ROUTING
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "05  /  ROUTING", 6)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "07  /  ROUTING", 8)
 eyebrow(s, "The catalogue")
 title(s, "Three models. One contract.", None, y=1.20, size=42)
 cols = [0.65, 4.15, 7.10, 8.75]
@@ -350,7 +474,7 @@ txt(s, 0.65, 6.35, 8.75, 0.2, "TTFT measured on the Sepolia demonstration. Not a
 notes(s, """The catalogue is intentionally small. Qwen 3.5 4B Uncensored is the resident model on the Prague bare-metal host: 32K context, the lowest measured TTFT, and the only host Verxl operates. DeepSeek V4.1 Flash and MiMo 2.6 Flash are reached through official bridges: 1M context each, higher TTFT, no GPU fleet. The canary is the quality control: a deterministic probe with seed 42 runs every 30 minutes, checks fidelity and falls back automatically. The 99.8% figure is the oracle fidelity on the demo telemetry. The caveat matters: these are Sepolia numbers, not an SLA, and the bridge paths are not the same as the bare-metal host.""")
 
 # ---------------------------------------------------------------- 07 ECONOMICS
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "06  /  UNIT ECONOMICS", 7)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "08  /  UNIT ECONOMICS", 9)
 eyebrow(s, "The fee")
 title(s, "50 bps. Not 950.", None, y=1.20, size=44)
 txt(s, 0.65, 1.95, 6.6, 0.18, "PROTOCOL TAKE  /  BASIS POINTS", 7, MUTED, MONO)
@@ -392,7 +516,7 @@ txt(s, 0.65, 6.30, 9.8, 0.35, "Protocol parameters, not a price promise. Fees ar
 notes(s, """The fee is the simplest part of the pitch and the easiest to misread. Verxl takes 50 bps, or 0.50%, of the compute bill. For every $1,000 of compute, the protocol fee is $0.50; an incumbent at 950 bps would take $9.50, so the fee is 94.7% lower. The provider keeps 99.5% of compute. The chart compares the take rates, not a total cost of ownership: models, bridges and infrastructure are separate. The 840–1,040 bps range is the project's market sample; 950 is the midpoint. These are protocol parameters on Sepolia, not a public price list and not a forecast. The deck deliberately avoids inventing a monthly token bill; the unit is $1,000 of compute.""")
 
 # ---------------------------------------------------------------- 08 PRODUCT
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "07  /  PRODUCT", 8)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "09  /  PRODUCT", 10)
 eyebrow(s, "The surfaces")
 title(s, "An API, a chat, a receipt.", None, y=1.20, size=42)
 blocks = [
@@ -420,7 +544,7 @@ txt(s, 0.65, 6.05, 11.9, 0.2, "Demo surfaces: Playground, Chat, API key console 
 notes(s, """There are three surfaces and one contract. The API is OpenAI-compatible: the same request shape, Bearer auth and SSE streaming; the models are Qwen, DeepSeek and MiMo. Chat is the consumer surface: encrypted in the browser, with search, chart rendering and file attachments. The receipt is the accounting surface: TTFT, tokens, route, protocol fee and provider payout. The product claim is not the UI; it is that the same path produces the same receipt. The caveat is that the demo surfaces are Sepolia; search and charts are model-dependent; MCP registry browsing is present, execution is next.""")
 
 # ---------------------------------------------------------------- 09 EVIDENCE
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "08  /  EVIDENCE", 9)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "10  /  EVIDENCE", 11)
 eyebrow(s, "The telemetry")
 title(s, "Measured, not promised.", None, y=1.20, size=42)
 metrics = [("38", " ms", "P50 TTFT"), ("99.8", "%", "Oracle fidelity"), ("3", "", "Models"), ("50", " bps", "Protocol take")]
@@ -453,7 +577,7 @@ txt(s, 9.65, 5.85, 2.9, 0.55, "Run a request. Read the receipt.", 11, WHITE, TIT
 notes(s, """The evidence slide is the counterweight to the vision. The four numbers come from the live console and the oracle: 38 ms P50 TTFT on the Prague host, 99.8% oracle fidelity, three models and 50 bps. The probe table is representative of the canary output: seed 42, a deterministic probe every 30 minutes, a verdict per target. The canary checks quality and falls back automatically; it is not a guarantee. Everything is Sepolia, sampled over the demonstration window. The slide deliberately puts the method and the limits next to the numbers. The product can be inspected at the live Playground; the same data appears in the console and the public repository.""")
 
 # ---------------------------------------------------------------- 10 HORIZON
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "09  /  HORIZON", 10)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "11  /  HORIZON", 12)
 eyebrow(s, "The scope")
 title(s, "A horizon you can audit.", None, y=1.20, size=42)
 columns = [
@@ -476,7 +600,7 @@ txt(s, 0.65, 5.95, 8.0, 0.45, "Dates are not promises. The left column is deploy
 notes(s, """The horizon is a boundary, not a roadmap theatre. The left column is live on Sepolia: the API, the encrypted Chat, the Playground, the three-model catalogue and clearing. The middle column is the work in progress: MCP connections, an external contract audit, more providers and a mobile pass. The right column is explicitly out of scope: mainnet settlement, an enterprise SLA, global coverage and a token. The right column is as important as the left one: it says what the project will not pretend to be. No dates are attached; the test is what is deployed, not what is announced. The site's Vision page carries the same horizon with the caveats.""")
 
 # ---------------------------------------------------------------- 11 TEAM
-s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "10  /  TEAM", 11)
+s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "12  /  TEAM", 13)
 eyebrow(s, "The creators")
 title(s, "Small team. Narrow thesis.", None, y=1.20, size=40)
 team = [
@@ -502,7 +626,7 @@ txt(s, 2.05, 0.44, 3.0, 0.2, "PROTOCOL", 7, MUTED, MONO, caps=True)
 txt(s, 8.6, 0.42, 4.08, 0.22, "VŠE PRAHA  ·  APPLIED BLOCKCHAIN  ·  2026", 7.2, MUTED, MONO, align=PP_ALIGN.RIGHT, caps=True)
 hline(s, 0.65, 7.02, 12.03, LINE)
 txt(s, 0.65, 7.12, 5.0, 0.16, "SEPOLIA TEST RUN  /  NOT MAINNET", 6.8, MINT_DIM, MONO, caps=True)
-txt(s, 9.6, 7.12, 3.08, 0.16, "12  /  12", 7, MUTED, MONO, align=PP_ALIGN.RIGHT)
+txt(s, 9.6, 7.12, 3.08, 0.16, "14  /  14", 7, MUTED, MONO, align=PP_ALIGN.RIGHT)
 txt(s, 0.65, 1.45, 12.0, 0.25, "THE NEXT REQUEST", 8, MINT, MONO, caps=True)
 txt(s, 0.65, 1.90, 12.0, 0.8, "Build on what clears.", 58, WHITE, TITLE, spacing=0.95)
 txt(s, 0.65, 3.10, 5.9, 0.7, "Start with one request. Read the receipt, the latency and the settlement path before you commit to anything larger.", 14, SOFT, BODY, spacing=1.4)

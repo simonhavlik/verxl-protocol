@@ -116,10 +116,12 @@ TTFT is measured on the Sepolia demonstration. It is not an SLA.
 ## Privacy boundary
 
 - Chats: encrypted in the browser with a wallet-derived key; AES-256-GCM; ciphertext envelope stored.
+- No plaintext logs: message text, conversation titles and system prompts are never stored.
+- No API-key history: a Verxl API key opens usage and billing; it cannot decrypt chats or read past conversations.
+- Anonymous upstream: Verxl holds the model-provider credential; the provider receives the request, not your Verxl account key.
 - Stored: ciphertext, wallet key id, timestamps, usage records.
-- Not stored: message text, conversation titles, system prompt.
 - Still visible to the operator: account, wallet address, usage records and envelope size.
-- Another wallet cannot decrypt the envelopes.
+- Bridge providers log according to their own policy; Chat is ciphertext-only.
 
 ---
 

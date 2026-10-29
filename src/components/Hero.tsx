@@ -1118,17 +1118,33 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <span className="text-[#8fa39b]">by default.</span>
           </h2>
           <p className="max-w-sm font-sans text-[14px] leading-relaxed text-[#a9b6bd]">
-            Chats are encrypted in the browser with a wallet-derived key. Postgres stores ciphertext, a wallet key id and timestamps; no message text, titles or prompts.
+            Chats are encrypted in the browser with a wallet-derived key. Postgres stores ciphertext, a wallet key id and timestamps; no message text, titles or prompts. A Verxl API key opens usage and billing, never chat history. Upstream calls use Verxl-held credentials; the provider receives the request, not your account key.
           </p>
         </div>
+
+        <div className="mt-8 grid grid-cols-1 border-t border-white/10 sm:grid-cols-3">
+          {[
+            ["No plaintext logs", "Ciphertext only. Message text, titles and prompts are never stored."],
+            ["No API-key history", "A Verxl key opens usage and billing; it cannot read chats or past conversations."],
+            ["Anonymous upstream", "Verxl holds the provider credential; the model receives the request, not your account key."],
+          ].map(([title, body], i) => (
+            <div key={title} className={`py-5 ${i > 0 ? "sm:border-l sm:border-white/10 sm:pl-6" : ""} ${i < 2 ? "border-b border-white/10 sm:border-b-0" : ""}`}>
+              <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">
+                0{i + 1} / {title}
+              </div>
+              <p className="mt-2 max-w-[310px] font-sans text-[12px] leading-relaxed text-[#8b989e]">{body}</p>
+            </div>
+          ))}
+        </div>
+
         <div className="mt-8 border border-white/10 bg-[#080c14]/90">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-emerald-500/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b border-[#b8f6dd]/20">
             <div className="flex items-center gap-2 min-w-0">
-              <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <Lock className="w-3.5 h-3.5 text-[#b8f6dd] shrink-0" />
               <h2 className="text-[11px] sm:text-xs font-bold text-white uppercase tracking-wider">
                 Chat privacy boundary
               </h2>
-              <span className="px-1.5 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-[8.5px] uppercase tracking-wider">
+              <span className="px-1.5 py-0.5 border border-[#b8f6dd]/20 bg-[#b8f6dd]/10 text-[#dff8ef] text-[8.5px] uppercase tracking-wider">
                 Client-side encryption
               </span>
             </div>
@@ -1138,7 +1154,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 href="https://github.com/simonhavlik/verxl-protocol/blob/main/src/lib/chatCrypto.ts"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1"
+                className="text-[#dff8ef] hover:text-white inline-flex items-center gap-1"
               >
                 crypto source <ExternalLink className="w-2.5 h-2.5" />
               </a>
@@ -1146,7 +1162,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 href="https://github.com/simonhavlik/verxl-protocol/blob/main/functions/api/chat/conversations.ts"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1"
+                className="text-[#dff8ef] hover:text-white inline-flex items-center gap-1"
               >
                 API source <ExternalLink className="w-2.5 h-2.5" />
               </a>
@@ -1168,7 +1184,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     <div className="text-[10.5px] text-white font-semibold mt-0.5">{step.v}</div>
                     <div className="text-[8.5px] text-slate-500 leading-snug mt-0.5">{step.d}</div>
                     {i < 2 && (
-                      <ArrowRight className="hidden sm:block absolute -right-[9px] top-1/2 -translate-y-1/2 w-3 h-3 text-emerald-500/60" />
+                      <ArrowRight className="hidden sm:block absolute -right-[9px] top-1/2 -translate-y-1/2 w-3 h-3 text-[#b8f6dd]/50" />
                     )}
                   </div>
                 ))}
@@ -1221,7 +1237,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                   </tr>
                   <tr>
                     <th>Not stored</th>
-                    <td className="text-right text-emerald-300">message text · titles · system prompt</td>
+                    <td className="text-right text-[#dff8ef]">message text · titles · system prompt</td>
                   </tr>
                   <tr>
                     <th>Admin visibility</th>

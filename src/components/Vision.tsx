@@ -340,6 +340,32 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Privacy & anonymity */}
+      <section className="py-16">
+        <SectionIntro
+          index="03"
+          kicker="Privacy & anonymity"
+          title={<>Private by architecture.<br /><span className="text-[#8fa39b]">Anonymous by default.</span></>}
+          copy="Chats are ciphertext in the browser. The database stores no message text; an API key opens usage, not history; upstream calls use Verxl-held credentials."
+        />
+
+        <div className="mt-10 grid grid-cols-1 border-t border-white/10 md:grid-cols-3 md:divide-x md:divide-white/10">
+          {[
+            ["01 / NO PLAINTEXT LOGS", "A wallet-derived key encrypts the chat before it leaves the tab. Postgres stores ciphertext, a key id and timestamps; no message text, titles or prompts."],
+            ["02 / NO API-KEY HISTORY", "A Verxl API key opens usage and billing. It cannot decrypt a chat or read past conversations; the chat key never leaves the browser."],
+            ["03 / ANONYMOUS UPSTREAM", "The model provider receives the request under Verxl's credential; it does not receive your Verxl account key. Bridge providers log according to their policy."],
+          ].map(([label, body]) => (
+            <div key={label} className="py-7 md:px-6 md:first:pl-0 md:last:pr-0">
+              <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">{label}</div>
+              <p className="mt-3 max-w-[320px] text-[13px] leading-relaxed text-[#9aa7ad]">{body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 max-w-2xl font-mono text-[8.5px] leading-relaxed text-[#65737b]">
+          The operator still sees account metadata, wallet address, usage records and envelope size. The claim is about plaintext, not about vanishing. Bridge providers log according to their own policy.
+        </p>
+      </section>
+
       {/* Founder */}
       <section className="py-16">
         <div className="grid grid-cols-1 gap-8 border-t border-white/10 pt-8 lg:grid-cols-12">
@@ -359,7 +385,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
               <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
               <span>From the founder</span>
-              <span className="text-white/20">/ 03</span>
+              <span className="text-white/20">/ 04</span>
             </div>
             <h2 className="mt-3 text-[clamp(1.9rem,3.6vw,3.2rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#f3f6f5]">
               The model is not
@@ -382,7 +408,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       {/* Scope */}
       <section className="py-16">
         <SectionIntro
-          index="04"
+          index="05"
           kicker="Scope"
           title={<>A short list.<br /><span className="text-[#8fa39b]">Of what this is not.</span></>}
           copy="The fastest way to lose trust is to be everything to everyone. These are deliberate exclusions, not missing features."
@@ -406,7 +432,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       {/* Horizon */}
       <section className="py-16">
         <SectionIntro
-          index="05"
+          index="06"
           kicker="Horizon"
           title={<>A horizon<br /><span className="text-[#8fa39b]">you can audit.</span></>}
           copy="What is deployed, what is being built and what is explicitly out of scope. Dates are not promises; the left column is live."
@@ -456,7 +482,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       {/* Principles */}
       <section className="py-16">
         <SectionIntro
-          index="06"
+          index="07"
           kicker="Principles"
           title={<>Principles.<br /><span className="text-[#8fa39b]">Hold us to them.</span></>}
           copy="Not values on a wall. These are constraints on how the product is allowed to behave."
