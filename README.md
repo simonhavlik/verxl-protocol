@@ -155,7 +155,7 @@ The `contracts/` directory retains the academic Sepolia DAO artefacts. The web p
 
 ## Academic context
 
-Verxl is an applied blockchain project at the **Prague University of Economics and Business (VŠE Praha)**, Faculty of International Relations (FIR / FMV), Course 4KE404 / 4KE505 Crypto. The on-chain work is a Sepolia demonstration.
+Verxl is an applied blockchain project at the **Prague University of Economics and Business (VŠE Praha)**, Faculty of International Relations (FIR / FMV), Course 2SE307 Bitcoin and blockchain. The on-chain work is a Sepolia demonstration.
 
 Lead architect: **Šimon Havlík**. Team: Daniel Kolárovský (verification / SLA), Miroslava Valová (compliance / research). Contact: [me@simonhavlik.com](mailto:me@simonhavlik.com).
 
