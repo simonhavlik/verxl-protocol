@@ -1,6 +1,7 @@
 import { CORS_HEADERS, generateOtpCode } from "../lib/auth";
 import { db } from "../lib/db";
 import { sendEmailDirect } from "../lib/smtp";
+import { renderVerxlEmail } from "../lib/email";
 
 interface Env {
   SMTP_USER?: string;
@@ -66,42 +67,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   // Format email HTML
-  const emailHtml = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #080c14; color: #e2e8f0; padding: 24px; margin: 0; }
-          .container { max-width: 520px; margin: 0 auto; background-color: #0e1526; border: 1px solid #1e293b; border-radius: 4px; padding: 32px; }
-          .logo { font-size: 16px; font-weight: 800; color: #3b82f6; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; }
-          .title { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 12px; }
-          .desc { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; }
-          .code-box { background-color: #05070b; border: 1px solid #3b82f6; border-radius: 3px; padding: 18px; text-align: center; margin-bottom: 24px; }
-          .otp-code { font-family: 'Courier New', monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #60a5fa; }
-          .footer { font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; padding-top: 16px; margin-top: 24px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="logo">VERXL PROTOCOL</div>
-          <div class="title">Verification Code</div>
-          <div class="desc">Use the one-time code below to authenticate into the Verxl Protocol Console and access decentralized inference clearing.</div>
-          <div class="code-box">
-            <div class="otp-code">${code}</div>
-          </div>
-          <div class="desc">This code expires in <strong>10 minutes</strong>. If you did not request this verification, you can safely ignore this email.</div>
-          <div class="footer">
-            Verxl Protocol · Non-Custodial Machine Intelligence Clearing · automated@verxl.com
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  const emailHtml = renderVerxlEmail({
+    preheader: `Your Verxl sign-in code is ${code}. Valid for 10 minutes.`,
+    eyebrow: "AUTHENTICATION / 01",
+    title1: "Your sign-in",
+    title2: "code.",
+    intro: "Use this one-time code to sign in to Verxl. It expires in 10 minutes.",
+    code,
+    footerNote: "If you did not request this code, ignore this email; no change will be made.",
+  });
 
   const emailRes = await sendEmailDirect({
     to: email,
-    subject: `Your Verxl Authentication Code: ${code}`,
+    subject: `Verxl sign-in code: ${code}`,
     html: emailHtml,
     smtpUser: env.SMTP_USER || "automated@verxl.com",
     smtpPass: env.SMTP_PASS,

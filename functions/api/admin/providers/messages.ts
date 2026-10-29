@@ -1,6 +1,7 @@
 import { CORS_HEADERS } from "../../lib/auth";
 import { db } from "../../lib/db";
 import { sendEmailDirect } from "../../lib/smtp";
+import { renderVerxlEmail } from "../../lib/email";
 import { fetchRecentEmailsFromSeznam } from "../../lib/imap";
 import { verifyAdminUser } from "../lib";
 
@@ -128,32 +129,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const msgId = `msg_out_${crypto.randomUUID()}`;
   const mailSubject = subject?.trim() || "Message from Verxl Protocol Operator";
 
-  // Build clean HTML email
-  const htmlBody = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8" />
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #05070b; color: #e2e8f0; margin: 0; padding: 24px; }
-        .card { max-width: 600px; margin: 0 auto; background: #0a0e17; border: 1px solid #1e293b; border-radius: 4px; padding: 24px; }
-        .header { border-bottom: 1px solid #1e293b; padding-bottom: 12px; margin-bottom: 16px; font-weight: bold; color: #3b82f6; font-size: 13px; text-transform: uppercase; }
-        .content { font-size: 13px; line-height: 1.6; color: #cbd5e1; white-space: pre-wrap; }
-        .footer { border-top: 1px solid #1e293b; margin-top: 24px; padding-top: 12px; font-size: 10px; color: #64748b; font-family: monospace; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <div class="header">Verxl Protocol — Infrastructure Operations</div>
-        <div class="content">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
-        <div class="footer">
-          Sent by Verxl Protocol Lead Operator via automated@verxl.com.<br/>
-          To reply directly, respond to this email address.
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  // Build Verxl email shell
+  const escapedMessage = message
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const htmlBody = renderVerxlEmail({
+    preheader: mailSubject,
+    eyebrow: "PROVIDER OPERATIONS / 01",
+    title1: "A message",
+    title2: "from Verxl.",
+    intro: "The Verxl operator sent you a direct message.",
+    bodyHtml: `<div style="white-space:pre-wrap;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:1.65;color:#8B989E;">${escapedMessage}</div>`,
+    footerNote: "Sent by the Verxl Protocol lead operator. Reply to this address.",
+  });
 
   // 1. Send via Seznam SMTP
   const sendRes = await sendEmailDirect({

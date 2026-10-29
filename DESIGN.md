@@ -107,6 +107,9 @@ Signature hierarchy
 **Deck**
 - 16:9, same ink/mint system; huge type, map, editable bars, speaker notes; only map and portraits are images.
 
+**Transactional email**
+- 560px dark report card; V mark; mint one-time code; hairlines; no images, no rounded corners. The OTP, provider-operator and render-check messages share the same shell.
+
 ---
 
 ## 7. Copy
