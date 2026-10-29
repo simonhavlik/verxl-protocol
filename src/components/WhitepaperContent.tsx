@@ -3,6 +3,7 @@ import { Download, Copy, Check, Printer, FileText } from "lucide-react";
 
 export const WhitepaperContent: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const handleCopyMarkdown = async () => {
     try {
@@ -22,7 +23,7 @@ export const WhitepaperContent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl w-full min-w-0 mx-auto space-y-4 overflow-x-hidden">
+    <div className="mobile-compact max-w-4xl w-full min-w-0 mx-auto space-y-4 overflow-x-hidden">
       {/* Minimal Utility Bar — Satoshi Cleanliness */}
       <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono shadow-sm">
         <div className="flex items-center gap-2 text-slate-300">
@@ -71,6 +72,16 @@ export const WhitepaperContent: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setMobileExpanded((v) => !v)}
+        className="lg:hidden flex w-full items-center justify-between border border-[#b8f6dd]/25 bg-[#0b1117] px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#b8f6dd]"
+      >
+        <span>{mobileExpanded ? "Collapse specification" : "Read the full specification"}</span>
+        <span className="text-base leading-none">{mobileExpanded ? "−" : "+"}</span>
+      </button>
+      <div className={mobileExpanded ? "space-y-4" : "max-lg:hidden space-y-4"}>
 
       {/* Main Document Body — Pure Whitepaper Article */}
       <article className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-6 sm:p-12 shadow-2xl space-y-7 text-slate-200 leading-[1.8] font-sans">
@@ -580,6 +591,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
           <div>Project Verxl Protocol • October 2026 • Published to <code className="text-blue-400">verxl.com/whitepaper</code></div>
         </div>
       </article>
+      </div>
     </div>
   );
 };

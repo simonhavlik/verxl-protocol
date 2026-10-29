@@ -20,6 +20,7 @@ export const Oracle: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditRun[]>(INITIAL_AUDIT_LOGS);
   const [selectedCluster, setSelectedCluster] = useState(INITIAL_PROVIDERS[0].id);
   const [isExecutingProbe, setIsExecutingProbe] = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
   const [probeResult, setProbeResult] = useState<{
     success: boolean;
     clusterName: string;
@@ -91,7 +92,7 @@ export const Oracle: React.FC = () => {
   };
 
   return (
-    <div className="space-y-2.5 sm:space-y-3.5 min-w-0 max-w-full overflow-x-hidden">
+    <div className="mobile-compact space-y-2.5 sm:space-y-3.5 min-w-0 max-w-full overflow-x-hidden">
       {/* Header */}
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
@@ -256,7 +257,16 @@ export const Oracle: React.FC = () => {
       </div>
 
       {/* Live Audit Log Feed */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden shadow-xl font-mono">
+            <button
+        type="button"
+        onClick={() => setShowAudit((v) => !v)}
+        className="lg:hidden flex w-full items-center justify-between border border-[#b8f6dd]/25 bg-[#0b1117] px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#b8f6dd]"
+      >
+        <span>{showAudit ? "Hide audit history" : "Show audit history"} ({auditLogs.length})</span>
+        <span className="text-base leading-none">{showAudit ? "−" : "+"}</span>
+      </button>
+      <div className={showAudit ? "" : "max-lg:hidden"}>
+<div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden shadow-xl font-mono">
         <div className="px-3 py-2 bg-[#05070b] border-b border-slate-800 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 text-slate-300 uppercase tracking-wider text-[11px]">
             <ShieldAlert className="w-3.5 h-3.5 text-blue-400" />
@@ -306,6 +316,7 @@ export const Oracle: React.FC = () => {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ArrowRight, ArrowUpRight, Github, Mail } from "lucide-react";
 // @ts-ignore
 import countries110m from "world-atlas/countries-110m.json";
@@ -153,8 +153,10 @@ const MapPanel: React.FC = () => {
 };
 
 export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+
   return (
-    <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mobile-compact relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       {/* Hero */}
       <section className="grid min-h-[calc(100svh-92px)] grid-cols-1 items-center gap-10 py-12 lg:grid-cols-12 lg:gap-8 lg:py-16">
         <div className="space-y-6 lg:col-span-5">
@@ -212,6 +214,16 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </p>
         </div>
       </section>
+
+      <button
+        type="button"
+        onClick={() => setMobileExpanded((v) => !v)}
+        className="lg:hidden my-3 flex w-full items-center justify-between border border-[#b8f6dd]/25 bg-[#0b1117] px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#b8f6dd]"
+      >
+        <span>{mobileExpanded ? "Collapse page" : "Read the full page"}</span>
+        <span className="text-base leading-none">{mobileExpanded ? "−" : "+"}</span>
+      </button>
+      <div className={mobileExpanded ? "" : "max-lg:hidden"}>
 
       {/* Team */}
       <section className="py-16">
@@ -576,6 +588,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           <span>Private · Fast · Affordable · One small step at a time.</span>
         </div>
       </section>
+      </div>
     </div>
   );
 };
