@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 const Hero = lazy(() => import("./components/Hero").then((m) => ({ default: m.Hero })));
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
-import { preloadCoreRoutes, preloadRoute } from "./lib/routePreload";
+import { preloadRoute } from "./lib/routePreload";
 
 // Code-split interior tabs for instant mobile initial page loads & sub-200ms TTI
 const Chat = lazy(() => import("./components/Chat").then((m) => ({ default: m.Chat })));
@@ -216,17 +216,10 @@ export default function App() {
     }
   };
 
-  // Warm the heavy tab chunks during idle, and always warm Playground first.
+  // Warm only the two interactive routes users jump into first.
   useEffect(() => {
     preloadRoute("playground");
     preloadRoute("chat");
-    const w = window as any;
-    if (typeof w.requestIdleCallback === "function") {
-      const id = w.requestIdleCallback(() => preloadCoreRoutes(), { timeout: 1500 });
-      return () => w.cancelIdleCallback?.(id);
-    }
-    const id = window.setTimeout(preloadCoreRoutes, 900);
-    return () => window.clearTimeout(id);
   }, []);
 
   // Listen to browser Back / Forward navigation
