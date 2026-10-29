@@ -31,7 +31,7 @@ const MODELS = [
     n: "01",
     name: "Qwen 3.5 4B Uncensored",
     role: "Resident / uncensored",
-    body: "Uncensored, but deliberately small: 4B parameters, under the 20B ceiling. It can answer any question; it is not a frontier-scale model.",
+    body: "Uncensored and deliberately small: 4B parameters, under the 20B ceiling. It answers every question within that limit; frontier-scale work routes to DeepSeek and MiMo.",
     data: "4B · 32K · Prague",
   },
   {
@@ -45,7 +45,7 @@ const MODELS = [
     n: "03",
     name: "MiMo 2.6 Flash",
     role: "Daily driver / half price",
-    body: "Half the listed token price of DeepSeek and good enough for daily tasks. On LiveBench its verbosity narrows the per-successful-task gap.",
+    body: "Half the listed token price of DeepSeek and built for daily tasks. On LiveBench its verbosity narrows the per-successful-task gap.",
     data: "68.5 · $0.183",
   },
 ];
@@ -105,7 +105,7 @@ export const EfficiencyFrontier: React.FC = () => {
             <text x={X(1.65)} y={Y(77.9)} fill="#7fae9d" fontFamily="Menlo, monospace" fontSize="7" letterSpacing="0.12em">VALUE FRONTIER</text>
           </svg>
           <div className="border-t border-white/10 px-3 py-2 font-mono text-[8px] leading-relaxed text-[#65737b]">
-            Source: LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task; not a Verxl price guarantee. Verxl adds 50 bps. Qwen 3.5 4B is the resident uncensored host and is not in this LiveBench release.
+            Source: LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task; benchmark data. Verxl adds 50 bps. Qwen 3.5 4B is the resident uncensored host; this table covers the LiveBench routes.
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export const EfficiencyFrontier: React.FC = () => {
           </div>
         ))}
         <div className="border-t border-white/10 pt-3 font-mono text-[8.5px] leading-relaxed text-[#65737b]">
-          Three to start, not a cap. Approved providers can add models to the registry; the same API and the same 50 bps apply.
+          Three to start. Approved providers can add models to the registry; the same API and the same 50 bps apply.
         </div>
       </div>
     </div>

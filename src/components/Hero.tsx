@@ -803,7 +803,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <span className="text-[#8fa39b]">not promised.</span>
           </h2>
           <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
-            Sepolia telemetry sampled over the last 24 hours. Fees, latency and oracle fidelity; not a mainnet promise.
+            Sepolia telemetry sampled over the last 24 hours. Fees, latency and oracle fidelity; demonstration measurement.
           </p>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[9px] text-[#7d8a92]">
@@ -1188,7 +1188,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <span className="text-[#8fa39b]">One frontier.</span>
           </h2>
           <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
-            The catalogue starts with three models, not a cap. The approved provider registry adds routes; the frontier is the mix, not the badge.
+            The catalogue starts with three models. The approved provider registry adds routes; the frontier is the mix.
           </p>
         </div>
         <EfficiencyFrontier />

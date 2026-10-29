@@ -174,7 +174,7 @@ txt(s, 0.65, 1.95, 9.1, 0.25, "PRIVATE  ·  FAST  ·  AFFORDABLE INFERENCE CLEAR
 txt(s, 0.65, 2.35, 9.4, 1.25, "Inference", 66, WHITE, TITLE, spacing=0.9)
 txt(s, 0.65, 3.32, 9.4, 1.25, "that settles.", 66, STEEL, TITLE, spacing=0.9)
 txt(s, 0.65, 4.72, 6.2, 0.7,
-    "A private, fast and affordable API and chat layer for AI.\nNot a model lab. Not a cloud. Not a data broker.",
+    "A private, fast and affordable API and chat layer for AI.\nOne endpoint. Three to start. Privacy by default.",
     14.5, SOFT, BODY, spacing=1.35)
 
 # cover spine
@@ -202,16 +202,16 @@ s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "01  /  THE TRA
 eyebrow(s, "The market")
 title(s, "Private. Fast. Affordable.", "The market says pick two.", y=1.25, size=40)
 txt(s, 0.65, 3.18, 5.55, 1.55,
-    "Aggregators bundle inference with 840–1,040 bps of fee drag. Privacy is a policy, not an architecture. Speed is a queue. The user pays for all three and is allowed to choose one.",
+    "Aggregators bundle inference with 840–1,040 bps of fee drag. Privacy is a policy promise. Speed is a queue. The user pays for all three and is allowed to choose one.",
     13.2, SOFT, BODY, spacing=1.38, after=6)
 txt(s, 0.65, 4.95, 5.55, 0.85,
     "Verxl starts from the opposite direction: keep the plaintext in the browser, keep the compute in Prague, and settle the fee on-chain. The three properties become one design problem.",
     12.2, MUTED, BODY, spacing=1.35)
 # right rows
 rows = [
-    ("PRIVATE", "a policy, not an architecture"),
-    ("FAST", "a queue, not bare metal"),
-    ("AFFORDABLE", "840–1,040 bps, not 50"),
+    ("PRIVATE", "a policy promise"),
+    ("FAST", "a queue behind a control plane"),
+    ("AFFORDABLE", "840–1,040 bps of fee drag"),
 ]
 for i, (a, b) in enumerate(rows):
     yy = 3.18 + i * 0.86
@@ -237,7 +237,7 @@ cols = [
      "Chat messages are encrypted in the browser with a wallet-derived key. The database stores ciphertext and metadata, never the message text.",
      "AES-256-GCM  ·  wallet key"),
     ("03", "SETTLEMENT", "USDC on Arbitrum.",
-     "The protocol takes 50 bps of compute. Providers keep 99.5%, paid in USDC. The fee is a parameter, not a token.",
+     "The protocol takes 50 bps of compute. Providers keep 99.5%, paid in USDC. The fee is a USDC parameter.",
      "99.5%  ·  50 bps"),
 ]
 for i, (n, kick, head, body, data) in enumerate(cols):
@@ -257,7 +257,7 @@ s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "03  /  ARCHITE
 eyebrow(s, "The route")
 title(s, "Where a request clears.", None, y=1.20, size=42)
 add_image(s, os.path.join(ASSETS, "map.png"), 0.65, 2.22, 7.45, 4.28, True)
-txt(s, 0.65, 6.62, 7.45, 0.2, "Illustrative topology. Not a coverage map, an SLA or a latency guarantee.", 7, MUTED, MONO)
+txt(s, 0.65, 6.62, 7.45, 0.2, "Illustrative topology only.", 7, MUTED, MONO)
 # steps
 sx2 = 8.86
 vline(s, sx2, 2.30, 3.62, LINE2, 0.014)
@@ -276,7 +276,7 @@ for i, (n, a, b) in enumerate(steps):
     txt(s, sx2 + 0.55, yy + 0.16, 3.0, 0.18, b, 8, SOFT, BODY)
 hline(s, 8.86, 6.02, 3.82, LINE)
 txt(s, 8.86, 6.22, 3.82, 0.38, "The edge routes; Prague computes; Arbitrum settles.", 9, MUTED, BODY, spacing=1.25)
-notes(s, """This is the whole system in one picture. A request leaves the browser and hits the Cloudflare edge, which routes it; the Qwen host is a single bare-metal machine in Prague. The edge is not a queue and there is no GPU fleet behind it. Settlement happens separately on Arbitrum in USDC. The map is illustrative: the client, edge and compute markers show the path, not a coverage commitment. The browser keeps the plaintext and the key; the edge sees ciphertext; Prague sees the prompt it needs to compute; the chain sees the payment. The relevant caveat is on the slide: this is not an SLA and not a coverage map.""")
+notes(s, """This is the whole system in one picture. A request leaves the browser and hits the Cloudflare edge, which routes it; the Qwen host is a single bare-metal machine in Prague. The edge is not a queue and there is no GPU fleet behind it. Settlement happens separately on Arbitrum in USDC. The map is illustrative: the client, edge and compute markers show the path, not a coverage commitment. The browser keeps the plaintext and the key; the edge sees ciphertext; Prague sees the prompt it needs to compute; the chain sees the payment. The relevant caveat is on the slide: this is Demonstration measurement and not a coverage map.""")
 
 # ---------------------------------------------------------------- 05 PRIVACY
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "04  /  PRIVACY", 5)
@@ -299,7 +299,7 @@ hline(s, 0.65, 3.78, 5.45, LINE)
 for i, item in enumerate(["Ciphertext envelope", "Wallet key id", "Timestamps  ·  usage records"]):
     txt(s, 0.65, 3.90 + i * 0.36, 5.3, 0.22, item, 11, SOFT, BODY)
     hline(s, 0.65, 4.16 + i * 0.36, 5.45, LINE)
-txt(s, 6.62, 3.55, 0.6, 0.18, "NOT STORED", 7, MINT_DIM, MONO)
+txt(s, 6.62, 3.55, 0.6, 0.18, "BROWSER-ONLY", 7, MINT_DIM, MONO)
 hline(s, 6.62, 3.78, 3.55, LINE)
 for i, item in enumerate(["Message text", "Conversation titles", "System prompt"]):
     txt(s, 6.62, 3.90 + i * 0.36, 3.4, 0.22, item, 11, SOFT, BODY)
@@ -325,7 +325,7 @@ eyebrow(s, "The alternative")
 title(s, "Chat vs the defaults.", "The Pareto alternative.", y=1.12, size=42)
 claims = [
     ("01", "NO PLAINTEXT LOGS", "Ciphertext in the browser; no message text in the database. A Verxl API key cannot open history. Upstream calls use Verxl-held credentials."),
-    ("02", "PARETO PRICING", "DeepSeek V4.1 Flash: 74.0 at $0.181 per successful task — the value frontier. Gemini 4 Argon is 11.5× the cost."),
+    ("02", "PARETO PRICING", "DeepSeek V4.1 Flash: 74.0 at $0.181 per successful task — the value frontier. Gemini 4 Argon is 11.5 times the cost."),
     ("03", "ONE KEY", "One Verxl API. Today: three routes. The approved registry and official bridges per roadmap expand the catalogue."),
     ("04", "MUCH CHEAPER", "Claude Fable 5.1: $6.904; GPT-6 Astra: $4.548; Gemini 4 Argon: $2.073; the Verxl route: $0.181. 50 bps included."),
 ]
@@ -359,12 +359,12 @@ for i, (model, route, score, cost, logs, frontier, verxl) in enumerate(rows):
     txt(s, 8.15, yy, 1.95, 0.22, logs, 7.6, MINT if verxl else MUTED, MONO)
     txt(s, 10.35, yy, 1.6, 0.22, frontier, 7.4, MINT if frontier != "—" else MUTED, MONO)
     hline(s, 0.65, yy + 0.24, 12.03, LINE)
-txt(s, 0.65, 6.08, 12.0, 0.55, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task, not a Verxl price guarantee. Verxl adds 50 bps. API bridge requests follow upstream policy; Chat is ciphertext-only. Qwen 3.5 4B is the resident host and is not in this table.", 7, MUTED, BODY, spacing=1.35)
-notes(s, """This is the comparison slide, and it has to be read with its boundaries. The four claims: one, no plaintext logs — Verxl Chat is ciphertext in the browser, the database has no message text, and a Verxl API key cannot open history; upstream calls use Verxl-held credentials, so the model provider receives the request, not the user's Verxl account key. Two, Pareto pricing: on LiveBench 2.0, DeepSeek V4.1 Flash scores 74.0 at $0.181 per successful task and sits on the value frontier; Gemini 4 Argon scores 79.3 at $2.073, 11.5 times the cost; Claude Fable 5.1 scores 85.7 at $6.904, 38 times. Three, one key: the current demo routes three models; the approved provider registry and official bridges per the roadmap expand the catalogue; this is not a claim that every mainstream model is live today. Four, much cheaper: the flagship costs are on the table; the Verxl route is $0.181; the protocol fee is 50 bps. The table is LiveBench 2.0 data, cost per successful task, not a Verxl quote. API bridge requests follow upstream provider policy; only Chat is ciphertext-only. Qwen 3.5 4B is the resident host and is not in this LiveBench table.""")
+txt(s, 0.65, 6.08, 12.0, 0.55, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task, benchmark data. Verxl adds 50 bps. API bridge requests follow upstream policy; Chat is ciphertext-only. Qwen 3.5 4B is the resident host and this table covers the LiveBench routes.", 7, MUTED, BODY, spacing=1.35)
+notes(s, """This is the comparison slide, and it has to be read with its boundaries. The four claims: one, no plaintext logs — Verxl Chat is ciphertext in the browser, the database has no message text, and a Verxl API key cannot open history; upstream calls use Verxl-held credentials, so the model provider receives the request, not the user's Verxl account key. Two, Pareto pricing: on LiveBench 2.0, DeepSeek V4.1 Flash scores 74.0 at $0.181 per successful task and sits on the value frontier; Gemini 4 Argon scores 79.3 at $2.073, 11.5 times the cost; Claude Fable 5.1 scores 85.7 at $6.904, 38 times. Three, one key: the current demo routes three models; the approved provider registry and official bridges per the roadmap expand the catalogue; this is the current routes are three; the registry and bridges expand the catalogue. Four, much cheaper: the flagship costs are on the table; the Verxl route is $0.181; the protocol fee is 50 bps. The table is LiveBench 2.0 data, cost per successful task, not a Verxl quote. API bridge requests follow upstream provider policy; only Chat is ciphertext-only. Qwen 3.5 4B is the resident host and is not in this LiveBench table.""")
 # ---------------------------------------------------------------- 06 EFFICIENCY FRONTIER
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "06  /  EFFICIENCY FRONTIER", 7)
 eyebrow(s, "The frontier")
-title(s, "Cheap is not worse.", "The efficiency frontier.", y=1.10, size=40)
+title(s, "Cheap, and on the frontier.", "The efficiency frontier.", y=1.10, size=40)
 
 chart_x, chart_y, chart_w, chart_h = 0.65, 2.45, 7.7, 4.05
 rect(s, chart_x, chart_y, chart_w, chart_h, CARD, LINE)
@@ -424,16 +424,16 @@ txt(s, 8.75, 3.00, 2.4, 0.55, "74.0", 34, MINT, TITLE, spacing=0.9)
 txt(s, 8.75, 3.53, 3.85, 0.2, "DEEPSEEK V4.1 FLASH  ·  $0.181 / TASK", 7, WHITE, MONO)
 hline(s, 8.75, 3.80, 3.92, LINE)
 for i, (a, b) in enumerate([
-    ("11.5×", "the cost of Gemini 4 Argon"),
-    ("38×", "the cost of Claude Fable 5.1"),
-    ("4.2×", "cheaper than GPT-6.1 Sol"),
+    ("11.5 times", "the cost of Gemini 4 Argon"),
+    ("38 times", "the cost of Claude Fable 5.1"),
+    ("4.2 times", "cheaper than GPT-6.1 Sol"),
 ]):
     yy = 3.96 + i * 0.42
     txt(s, 8.75, yy, 0.8, 0.2, a, 11, MINT, MONO)
     txt(s, 9.55, yy + 0.01, 3.05, 0.18, b, 7.8, SOFT, BODY)
-txt(s, 8.75, 5.36, 3.9, 0.7, "At the efficient point, cheap is not a compromise. The frontier is the best score at each cost.", 9.2, SOFT, BODY, spacing=1.3)
-txt(s, 8.75, 6.15, 3.9, 0.4, "Verxl adds 50 bps. Cost per successful task is a benchmark unit, not a quote.", 6.8, MUTED, BODY, spacing=1.3)
-txt(s, 0.65, 6.72, 12.0, 0.4, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Log cost axis. Not an SLA. Qwen 3.5 4B is the resident host and is not in this benchmark table.", 6.8, MUTED, MONO)
+txt(s, 8.75, 5.36, 3.9, 0.7, "At the efficient point, cheap at the efficient point. The frontier is the best score at each cost.", 9.2, SOFT, BODY, spacing=1.3)
+txt(s, 8.75, 6.15, 3.9, 0.4, "Verxl adds 50 bps. Cost per successful task is a benchmark unit, benchmark data.", 6.8, MUTED, BODY, spacing=1.3)
+txt(s, 0.65, 6.72, 12.0, 0.4, "LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Log cost axis. Demonstration measurement. Qwen 3.5 4B is the resident host and this table covers the LiveBench routes.", 6.8, MUTED, MONO)
 notes(s, """This is the efficiency frontier from the LiveBench 2.0 Overall data, plotted on a log cost axis. The frontier is the best overall score at each cost. The filled points are the non-dominated frontier; the hollow points are dominated — they cost more for the same or lower score. The Verxl route is DeepSeek V4.1 Flash at 74.0 and $0.181 per successful task, on the frontier; MiMo V2.6 Pro is also a Verxl route, at 68.5 and $0.183, but it is dominated by DeepSeek. The mainstream flagships sit at the top right: Gemini 4 Argon 79.3/$2.073, GPT-6 Astra 85.6/$4.548, Claude Fable 5.1 85.7/$6.904. The efficient point is not the highest score; it is the best score per cost, and the deck says that plainly. The ratios are cost ratios from the table: Gemini is 11.5 times the Verxl route; Claude Fable is 38 times; GPT-6.1 Sol is 4.2 times. The chart uses the Overall LiveBench data, not a Verxl benchmark; the Verxl 50 bps is additional; the table and source are on the previous slide and this footer. Qwen 3.5 4B is the resident host and is not in this LiveBench table.""")
 # ---------------------------------------------------------------- 06 ROUTING
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "07  /  ROUTING", 8)
@@ -470,8 +470,8 @@ for i, (a, b) in enumerate([("CADENCE", "30 min"), ("VECTOR", "deterministic"), 
 
 hline(s, 0.65, 5.35, 8.75, LINE)
 txt(s, 0.65, 5.52, 8.7, 0.7, "Three to start: Qwen 4B uncensored · DeepSeek frontier · MiMo half price. The registry can grow.", 12, SOFT, BODY, spacing=1.3)
-txt(s, 0.65, 6.35, 8.75, 0.2, "TTFT measured on the Sepolia demonstration. Not an SLA.", 7, MUTED, MONO)
-notes(s, """The catalogue starts with three models, not a cap. Qwen 3.5 4B Uncensored is the resident model on the Prague bare-metal host: 32K context, the lowest measured TTFT, and the only host Verxl operates. It is uncensored but deliberately small — 4B parameters, below the 20B ceiling — so it can answer anything without being a frontier-scale capability. DeepSeek V4.1 Flash is the efficient point for harder work: 74.0 overall at $0.181 per successful task on LiveBench 2.0. MiMo 2.6 Flash is the daily driver at roughly half the listed token price of DeepSeek; on LiveBench its verbosity narrows the per-successful-task gap. The canary is the quality control: a deterministic probe with seed 42 runs every 30 minutes, checks fidelity and falls back automatically. The 99.8% figure is the oracle fidelity on the demo telemetry. The caveat matters: these are Sepolia numbers, not an SLA, and the bridge paths are not the same as the bare-metal host. The approved provider registry can add more models; the API and 50 bps stay the same.""")
+txt(s, 0.65, 6.35, 8.75, 0.2, "TTFT measured on the Sepolia demonstration. Demonstration measurement.", 7, MUTED, MONO)
+notes(s, """The catalogue starts with three models. Qwen 3.5 4B Uncensored is the resident model on the Prague bare-metal host: 32K context, the lowest measured TTFT, and the only host Verxl operates. It is uncensored but deliberately small — 4B parameters, below the 20B ceiling — so it can answer anything without being a frontier-scale capability. DeepSeek V4.1 Flash is the efficient point for harder work: 74.0 overall at $0.181 per successful task on LiveBench 2.0. MiMo 2.6 Flash is the daily driver at roughly half the listed token price of DeepSeek; on LiveBench its verbosity narrows the per-successful-task gap. The canary is the quality control: a deterministic probe with seed 42 runs every 30 minutes, checks fidelity and falls back automatically. The 99.8% figure is the oracle fidelity on the demo telemetry. The caveat matters: these are Sepolia numbers, Demonstration measurement, and the bridge paths are not the same as the bare-metal host. The approved provider registry can add more models; the API and 50 bps stay the same.""")
 
 # ---------------------------------------------------------------- 07 ECONOMICS
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "08  /  UNIT ECONOMICS", 9)
@@ -510,9 +510,9 @@ for i, (a, b, col) in enumerate([
     txt(s, 7.85, yy, 2.8, 0.22, a, 9.5, MUTED, BODY)
     txt(s, 10.30, yy - 0.03, 2.35, 0.3, b, 15, col, TITLE, align=PP_ALIGN.RIGHT)
     hline(s, 7.85, yy + 0.35, 4.82, LINE)
-txt(s, 7.85, 4.98, 4.75, 0.55, "The same compute bill. 18× lower take.", 11, SOFT, BODY, spacing=1.3)
+txt(s, 7.85, 4.98, 4.75, 0.55, "The same compute bill. 18 times lower take.", 11, SOFT, BODY, spacing=1.3)
 txt(s, 0.65, 6.05, 8.8, 0.2, "50 bps = 0.50%. Incumbent midpoint 950 bps from the project's market sample.", 7, MUTED, MONO)
-txt(s, 0.65, 6.30, 9.8, 0.35, "Protocol parameters, not a price promise. Fees are set in USDC; the chart is the comparison, not a forecast.", 8.5, MUTED, BODY)
+txt(s, 0.65, 6.30, 9.8, 0.35, "Protocol parameters. Fees are set in USDC; the chart compares take rates.", 8.5, MUTED, BODY)
 notes(s, """The fee is the simplest part of the pitch and the easiest to misread. Verxl takes 50 bps, or 0.50%, of the compute bill. For every $1,000 of compute, the protocol fee is $0.50; an incumbent at 950 bps would take $9.50, so the fee is 94.7% lower. The provider keeps 99.5% of compute. The chart compares the take rates, not a total cost of ownership: models, bridges and infrastructure are separate. The 840–1,040 bps range is the project's market sample; 950 is the midpoint. These are protocol parameters on Sepolia, not a public price list and not a forecast. The deck deliberately avoids inventing a monthly token bill; the unit is $1,000 of compute.""")
 
 # ---------------------------------------------------------------- 08 PRODUCT

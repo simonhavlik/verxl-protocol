@@ -173,7 +173,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </h1>
 
           <p className="max-w-[430px] text-[15px] leading-[1.65] text-[#a9b6bd]">
-            A private, fast and affordable API and chat layer for AI. Not a model lab, not a cloud, not a data broker.
+            A private, fast and affordable API and chat layer for AI, built on independent providers.
             Affordable by architecture: 50 bps on compute, 99.5% to providers.
           </p>
 
@@ -208,7 +208,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           <MapPanel />
           <p className="mt-3 max-w-xl font-mono text-[8.5px] leading-relaxed text-[#65737b]">
             Plaintext stays in the browser. The edge sees ciphertext. Prague computes. Settlement is on Arbitrum.
-            Routing is illustrative; it is not a coverage map, an SLA or a latency guarantee.
+            Routing is illustrative; coverage, SLA and latency are separate commitments.
           </p>
         </div>
       </section>
@@ -235,7 +235,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             {
               name: "Daniel Kolárovský",
               role: "Head of Verification / SLA & Process",
-              bio: "Daniel runs the empirical side: canary probes, SLA measurement and the process checks behind each release. The verification loop is part of the product, not a postscript.",
+              bio: "Daniel runs the empirical side: canary probes, SLA measurement and the process checks behind each release. The verification loop ships with every release.",
               image: "/team/daniel-kolarovsky.jpg",
               meta: "VERIFICATION · PROCESS · EVIDENCE",
               links: false,
@@ -317,14 +317,14 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               title: "Bare metal, one hop.",
               body: "The Qwen host is resident in Prague. The edge routes the request; it does not queue it behind a control plane.",
               data: "38 ms P50 TTFT",
-              caveat: "Sepolia measurement. An idle model still cold-starts. Not an SLA.",
+              caveat: "Sepolia measurement. An idle model still cold-starts. Demonstration only.",
             },
             {
               n: "03 / AFFORDABLE",
               title: "50 bps, not 950.",
               body: "The protocol takes 50 bps of compute. Providers keep 99.5%, paid in USDC on Arbitrum.",
               data: "99.5% to providers",
-              caveat: "Protocol parameters, not a price promise or a market forecast.",
+              caveat: "Protocol parameters; the market can reprice.",
             },
           ].map((item) => (
             <div key={item.n} className="py-7 md:px-6 md:first:pl-0 md:last:pr-0">
@@ -362,7 +362,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           ))}
         </div>
         <p className="mt-6 max-w-2xl font-mono text-[8.5px] leading-relaxed text-[#65737b]">
-          The operator still sees account metadata, wallet address, usage records and envelope size. The claim is about plaintext, not about vanishing. Bridge providers log according to their own policy.
+          The operator still sees account metadata, wallet address, usage records and envelope size. The claim is about plaintext; the metadata boundary is above. Bridge providers log according to their own policy.
         </p>
       </section>
 
@@ -410,16 +410,16 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <SectionIntro
           index="05"
           kicker="Scope"
-          title={<>A short list.<br /><span className="text-[#8fa39b]">Of what this is not.</span></>}
-          copy="The fastest way to lose trust is to be everything to everyone. These are deliberate exclusions, not missing features."
+          title={<>The boundary.<br /><span className="text-[#8fa39b]">What we leave out.</span></>}
+          copy="These are deliberate exclusions. A smaller surface is easier to inspect."
         />
 
         <div className="mt-10 grid grid-cols-1 border-t border-white/10 sm:grid-cols-2">
           {[
-            ["Not a model lab.", "We do not train foundation models. We route and clear access to a small set of them."],
-            ["Not a cloud.", "No regions, no GPU rental, no control plane. One initial host, three starting models, an OpenAI-compatible API; the registry can grow."],
-            ["Not a data broker.", "The operator sees usage records, not plaintext. Chats are not a training corpus."],
-            ["Not a token.", "The fee is USDC on Arbitrum. No governance token, no points, no emissions."],
+            ["A clearing layer.", "We route inference across approved providers. Training stays with the model labs."],
+            ["A lean edge.", "One initial host, three starting models, an OpenAI-compatible API; the registry can grow."],
+            ["A privacy boundary.", "The operator sees usage records; plaintext stays in the browser. Chats stay out of training."],
+            ["A USDC fee.", "The fee is USDC on Arbitrum. Token, points and emissions are out of scope."],
           ].map(([title, body], i) => (
             <div key={title} className={`py-7 ${i % 2 === 0 ? "sm:pr-8" : "sm:border-l sm:border-white/10 sm:pl-8"} ${i > 1 ? "border-t border-white/10" : ""}`}>
               <h3 className="text-[24px] font-medium tracking-[-0.025em] text-[#f3f6f5]">{title}</h3>
@@ -490,7 +490,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
 
         <div className="mt-10 border-t border-white/10">
           {[
-            ["Default private.", "Ciphertext is the default, not a setting you have to discover."],
+            ["Default private.", "Ciphertext is the default."],
             ["No lock-in.", "OpenAI-compatible inputs and outputs. Your client should not need a rewrite."],
             ["Measured, not promised.", "Every number carries its method and its limit. Unmeasured claims do not ship."],
             ["No dark patterns.", "No fake scarcity, no hidden fees, no invented benchmarks."],
@@ -509,14 +509,14 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <SectionIntro
           index="08"
           kicker="Accountability"
-          title={<>Access with a gate.<br /><span className="text-[#8fa39b]">Not a shield.</span></>}
+          title={<>Access with a gate.<br /><span className="text-[#8fa39b]">A process you can inspect.</span></>}
           copy="We can be precise about who gets access, what the uncensored model can do, and what happens when a provider tolerates abuse."
         />
         <div className="mt-10 grid grid-cols-1 border-t border-white/10 md:grid-cols-3 md:divide-x md:divide-white/10">
           {[
-            ["01 / REPUTABLE PROVIDERS ONLY", "Every provider is reviewed and approved before listing. We look for abuse handling, a clear logging policy and operational accountability; approval is not automatic."],
-            ["02 / UNCENSORED, DELIBERATELY SMALL", "Qwen 3.5 4B is uncensored but 4B parameters, below our 20B ceiling. Frontier models run 500B to 4T. A small model can answer anything; it cannot do frontier-scale harm."],
-            ["03 / FRONTIER WORK STAYS SAFETY-ALIGNED", "Harder, frontier-grade work routes to DeepSeek V4.1 Flash and MiMo 2.6 Flash. Abuse reports lead to provider removal; the platform is not a shield."],
+            ["01 / REPUTABLE PROVIDERS ONLY", "Every provider is reviewed and approved before listing. We look for abuse handling, a clear logging policy and operational accountability; Approval is a review decision."],
+            ["02 / UNCENSORED, DELIBERATELY SMALL", "Qwen 3.5 4B is uncensored and 4B parameters, below our 20B ceiling. Frontier models run 500B to 4T. The smaller model keeps the uncensored surface below frontier-scale risk; the harder routes go to DeepSeek and MiMo."],
+            ["03 / FRONTIER WORK STAYS SAFETY-ALIGNED", "Harder, frontier-grade work routes to DeepSeek V4.1 Flash and MiMo 2.6 Flash. Abuse reports lead to provider removal; the platform is a gate, with a process."],
           ].map(([label, body]) => (
             <div key={label} className="py-7 md:px-6 md:first:pl-0 md:last:pr-0">
               <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">{label}</div>
@@ -525,7 +525,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           ))}
         </div>
         <p className="mt-6 max-w-2xl font-mono text-[8.5px] leading-relaxed text-[#65737b]">
-          No system is abuse-proof. The guarantee is a process: approval, model limits, reporting and removal. We publish the boundary rather than pretend it away.
+          Abuse prevention is a process: approval, model limits, reporting and removal. We publish the boundary and the route.
         </p>
       </section>
 
@@ -572,7 +572,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           </div>
         </div>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-2 font-mono text-[9px] text-[#65737b]">
-          <span>Sepolia demonstration. Not a mainnet production system.</span>
+          <span>Sepolia demonstration. Mainnet production is out of scope.</span>
           <span>Private · Fast · Affordable · One small step at a time.</span>
         </div>
       </section>

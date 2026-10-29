@@ -97,7 +97,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div className="mt-2 flex flex-col justify-between gap-1 text-[9.5px] text-[#65737b] sm:flex-row">
-          <span>Demonstration deployment on Ethereum Sepolia. Not a mainnet production system.</span>
+          <span>Sepolia demonstration deployment. Mainnet production is out of scope.</span>
           <span>Cloudflare Workers edge · PostgreSQL telemetry · Aragon OSx vault</span>
         </div>
       </div>
