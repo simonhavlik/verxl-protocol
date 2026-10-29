@@ -28,6 +28,7 @@ import {
   Server,
   ArrowRight,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 export interface ProviderModelConfig {
   id: string;
@@ -130,6 +131,7 @@ export const Console: React.FC = () => {
   // 2FA Setup States
   const [totpStep, setTotpStep] = useState<"view" | "setup" | "codes">("view");
   const [totpSecret, setTotpSecret] = useState("");
+  const [totpSetupMode, setTotpSetupMode] = useState<"qr" | "manual">("qr");
   const [totpFormattedSecret, setTotpFormattedSecret] = useState("");
   const [totpOtpAuthUrl, setTotpOtpAuthUrl] = useState("");
   const [totpRecoveryCodes, setTotpRecoveryCodes] = useState<string[]>([]);
@@ -645,6 +647,7 @@ export const Console: React.FC = () => {
       setTotpFormattedSecret(data.formatted_secret);
       setTotpOtpAuthUrl(data.otpauth_url);
       setTotpRecoveryCodes(data.recovery_codes || []);
+      setTotpSetupMode("qr");
       setTotpStep("setup");
     } catch (err: any) {
       setTotpError("Error initializing 2FA: " + err.message);
@@ -1681,7 +1684,7 @@ main();`,
             <button
               onClick={() => {
                 setShowSecurityModal(true);
-                setTotpStep(user.two_factor_enabled ? "view" : "setup");
+                setTotpStep("view");
               }}
               className={`px-2.5 py-1.5 rounded-[2px] bg-[#05070b] border ${
                 user.two_factor_enabled && user.has_password
@@ -3239,7 +3242,7 @@ main();`,
               <button
                 onClick={() => {
                   setShowSecurityModal(false);
-                  setTotpStep(user.two_factor_enabled ? "view" : "setup");
+                  setTotpStep("view");
                   setTotpError(null);
                   setTotpSuccess(null);
                   setPasswordError(null);
@@ -3409,44 +3412,110 @@ main();`,
 
                 {totpStep === "setup" && (
                   <div className="space-y-4">
-                    <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-2">
-                      <div className="text-xs font-bold text-white uppercase tracking-wider">
-                        Step 1: Add to Your Authenticator App
-                      </div>
-                      <p className="text-[11px] text-slate-300">
-                        In Google Authenticator, 1Password, or Bitwarden, add a new account manually with this secret key:
-                      </p>
-                      <div className="flex items-center gap-2 bg-[#0a0e17] border border-slate-700 p-2.5 rounded-[2px]">
-                        <span className="font-mono text-xs sm:text-sm text-emerald-400 font-bold tracking-widest break-all select-all flex-1">
-                          {totpFormattedSecret || totpSecret}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(totpSecret);
-                            setCopiedTotpSecret(true);
-                            setTimeout(() => setCopiedTotpSecret(false), 2000);
-                          }}
-                          className="px-2 py-1 bg-[#05070b] border border-slate-600 hover:border-slate-400 rounded-[2px] text-[10px] text-slate-300 uppercase tracking-wider flex items-center gap-1 shrink-0"
-                        >
-                          {copiedTotpSecret ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                          <span>{copiedTotpSecret ? "Copied" : "Copy"}</span>
-                        </button>
+                    <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-3 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="text-xs font-bold text-white uppercase tracking-wider">
+                          Step 1: Add to Your Authenticator App
+                        </div>
+                        <div className="inline-flex border border-slate-700 rounded-[2px] p-0.5">
+                          <button
+                            type="button"
+                            aria-pressed={totpSetupMode === "qr"}
+                            onClick={() => setTotpSetupMode("qr")}
+                            className={`px-2 py-1 text-[9.5px] font-bold uppercase tracking-wider rounded-[1px] transition ${
+                              totpSetupMode === "qr" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            QR code
+                          </button>
+                          <button
+                            type="button"
+                            aria-pressed={totpSetupMode === "manual"}
+                            onClick={() => setTotpSetupMode("manual")}
+                            className={`px-2 py-1 text-[9.5px] font-bold uppercase tracking-wider rounded-[1px] transition ${
+                              totpSetupMode === "manual" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            Manual key
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1">
-                        <span>Account: {user.email}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(totpOtpAuthUrl);
-                            setStatusMsg({ type: "success", text: "otpauth:// URI copied." });
-                          }}
-                          className="text-blue-400 hover:underline"
-                        >
-                          Copy otpauth URI
-                        </button>
-                      </div>
+                      {totpSetupMode === "qr" ? (
+                        totpOtpAuthUrl ? (
+                          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                            <div className="shrink-0 bg-white p-3">
+                              <QRCodeSVG
+                                value={totpOtpAuthUrl}
+                                size={156}
+                                bgColor="#ffffff"
+                                fgColor="#05070b"
+                                level="M"
+                                marginSize={2}
+                                title="Verxl 2FA setup QR code"
+                              />
+                            </div>
+                            <div className="min-w-0 space-y-1.5">
+                              <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-400">
+                                Verxl Protocol
+                              </div>
+                              <div className="text-[12px] font-semibold text-white break-all">
+                                {user.email || "your account"}
+                              </div>
+                              <p className="max-w-[220px] text-[10.5px] leading-relaxed text-slate-400">
+                                Scan with Google Authenticator, 1Password or Bitwarden. The QR encodes an{" "}
+                                <span className="font-mono text-[9px] text-slate-300">otpauth://</span> URI.
+                              </p>
+                              <p className="max-w-[220px] text-[9.5px] leading-relaxed text-slate-500">
+                                Treat the QR like the secret: it can enroll the account.
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="border border-dashed border-slate-700 p-3 text-[11px] text-slate-400">
+                            No setup URI loaded.{" "}
+                            <button type="button" onClick={handleStart2faSetup} className="text-blue-400 hover:underline">
+                              Generate a new key
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-[11px] text-slate-300">
+                            In Google Authenticator, 1Password, or Bitwarden, add a new account manually with this secret key:
+                          </p>
+                          <div className="flex items-center gap-2 bg-[#0a0e17] border border-slate-700 p-2.5 rounded-[2px]">
+                            <span className="font-mono text-xs sm:text-sm text-emerald-400 font-bold tracking-widest break-all select-all flex-1">
+                              {totpFormattedSecret || totpSecret}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(totpSecret);
+                                setCopiedTotpSecret(true);
+                                setTimeout(() => setCopiedTotpSecret(false), 2000);
+                              }}
+                              className="px-2 py-1 bg-[#05070b] border border-slate-600 hover:border-slate-400 rounded-[2px] text-[10px] text-slate-300 uppercase tracking-wider flex items-center gap-1 shrink-0"
+                            >
+                              {copiedTotpSecret ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                              <span>{copiedTotpSecret ? "Copied" : "Copy"}</span>
+                            </button>
+                          </div>
+                          <div className="text-[10px] text-slate-400 flex items-center justify-between pt-0.5">
+                            <span>Account: {user.email}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(totpOtpAuthUrl);
+                                setStatusMsg({ type: "success", text: "otpauth:// URI copied." });
+                              }}
+                              className="text-blue-400 hover:underline"
+                            >
+                              Copy otpauth URI
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <form onSubmit={handleConfirm2fa} className="space-y-3">
