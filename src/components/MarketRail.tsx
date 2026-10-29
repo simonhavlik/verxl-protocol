@@ -463,7 +463,7 @@ export const MarketRail: React.FC = () => {
       <div className="market-rail__legend">
         <span>PEG = USDC/USDT deviation from 1.0000</span>
         <span className="market-rail__div">·</span>
-        <span>TRANSFER = 65,000 gas * gas price * ETH/USDT</span>
+        <span>TRANSFER = 65,000 gas × gas price × ETH/USDT</span>
         <span className="market-rail__div">·</span>
         <span className="market-rail__ok">Spot reference; protocol revenue is separate</span>
       </div>

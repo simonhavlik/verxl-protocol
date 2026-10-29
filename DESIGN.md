@@ -122,7 +122,7 @@ Signature lines
 - “Measured, not promised.”
 - “Ciphertext, by default.”
 - “A horizon you can audit.”
-- “The model is not the product. The clearing is.”
+- “The clearing is the product.”
 - “Build on what clears.”
 
 Rules

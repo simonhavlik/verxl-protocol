@@ -388,13 +388,13 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               <span className="text-white/20">/ 04</span>
             </div>
             <h2 className="mt-3 text-[clamp(1.9rem,3.6vw,3.2rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#f3f6f5]">
-              The model is not
+              The clearing is
               <br />
               <span className="text-[#8fa39b]">the product.</span>
             </h2>
             <p className="mt-5 max-w-[560px] text-[15px] leading-relaxed text-[#a9b6bd]">
               We built Verxl because the inference market asks you to choose between private, fast and affordable.
-              I do not think that is a real trade-off. It is an architecture problem.
+              The trade-off is an architecture problem.
             </p>
             <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-[#a9b6bd]">
               Keep the plaintext in the browser. Keep the model in Prague. Settle in USDC. Take 50 bps.

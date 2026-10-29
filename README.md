@@ -20,7 +20,7 @@ Verxl is a clearing layer for AI inference. It does not train models. It does no
 - **Settlement:** 50 bps of compute to the protocol; 99.5% to the provider; USDC on Arbitrum, demonstrated on Sepolia.
 - **Surfaces:** API, encrypted Chat, Playground, and a provider registry. Search, charts and file attachments sit in Chat.
 
-The model is not the product. The clearing path is.
+The clearing path is the product.
 
 ---
 
