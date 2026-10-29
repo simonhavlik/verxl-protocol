@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const W = 760;
 const H = 430;
@@ -50,13 +50,79 @@ const MODELS = [
   },
 ];
 
+type LiveModel = {
+  modelId: string;
+  name: string;
+  provider: string;
+  context: string;
+  prompt: number;
+  completion: number;
+};
+
 export const EfficiencyFrontier: React.FC = () => {
+  const [liveModels, setLiveModels] = useState<LiveModel[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/providers")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: any) => {
+        if (cancelled || !data || !Array.isArray(data.providers)) return;
+        const models: LiveModel[] = [];
+        for (const provider of data.providers) {
+          const configs = Array.isArray(provider.modelsConfig) && provider.modelsConfig.length
+            ? provider.modelsConfig
+            : [{
+                model_id: provider.modelIdentifier,
+                prompt_rate: provider.pricePromptUsd,
+                completion_rate: provider.priceCompletionUsd,
+                context_display: provider.contextDisplay,
+              }];
+          for (const config of configs) {
+            if (!config?.model_id) continue;
+            models.push({
+              modelId: String(config.model_id),
+              name: String(config.display_name || config.model_id),
+              provider: String(provider.name || "Approved provider"),
+              context: String(config.context_display || provider.contextDisplay || "Context on request"),
+              prompt: Number(config.prompt_rate ?? provider.pricePromptUsd ?? 0),
+              completion: Number(config.completion_rate ?? provider.priceCompletionUsd ?? 0),
+            });
+          }
+        }
+        if (models.length) setLiveModels(models);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  const displayModels = liveModels.length
+    ? liveModels.map((model, index) => {
+        const haystack = `${model.modelId} ${model.name}`.toLowerCase();
+        const curated = MODELS.find((item) => {
+          const name = item.name.toLowerCase();
+          return (name.includes("qwen") && haystack.includes("qwen")) ||
+                 (name.includes("deepseek") && haystack.includes("deepseek")) ||
+                 (name.includes("mimo") && haystack.includes("mimo"));
+        });
+        if (curated) return { ...curated, n: String(index + 1).padStart(2, "0") };
+        const price = model.completion > 0 ? `$${model.completion.toFixed(2)} / 1M` : "Price on request";
+        return {
+          n: String(index + 1).padStart(2, "0"),
+          name: model.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+          role: haystack.includes("uncensored") ? "Live route / uncensored" : "Live route / approved",
+          body: `${model.provider}. ${model.context} context.${model.prompt > 0 ? ` $${model.prompt.toFixed(2)} input.` : ""}`,
+          data: `${model.context} · ${price}`,
+        };
+      })
+    : MODELS;
+
   return (
     <div className="mt-10 grid grid-cols-1 gap-8 border-t border-white/10 pt-8 lg:grid-cols-12">
       <div className="lg:col-span-7">
         <div className="border border-white/10 bg-[#080c12]">
           <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">
-            <span>LiveBench overall vs cost / successful task</span>
+            <span>LiveBench snapshot · quality vs cost</span>
             <span className="text-[#b8f6dd]">Value frontier</span>
           </div>
           <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="LiveBench quality versus cost efficiency frontier">
@@ -105,13 +171,19 @@ export const EfficiencyFrontier: React.FC = () => {
             <text x={X(1.65)} y={Y(77.9)} fill="#7fae9d" fontFamily="Menlo, monospace" fontSize="7" letterSpacing="0.12em">VALUE FRONTIER</text>
           </svg>
           <div className="border-t border-white/10 px-3 py-2 font-mono text-[8px] leading-relaxed text-[#65737b]">
-            Source: LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Cost per successful task; benchmark data. Verxl adds 50 bps. Qwen 3.5 4B is the resident uncensored host; this table covers the LiveBench routes.
+            Source: LiveBench 2.0 · 25 Oct 2026 · Abacus.AI. Benchmark snapshot; the live route list is below. Verxl adds 50 bps.
           </div>
         </div>
       </div>
 
       <div className="space-y-4 lg:col-span-5">
-        {MODELS.map((model) => (
+        <div className="flex items-center justify-between border-b border-white/10 pb-2 font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">
+          <span>Live catalogue</span>
+          <span className="text-[#b8f6dd]/70">
+            {liveModels.length ? `${liveModels.length} route${liveModels.length === 1 ? "" : "s"}` : "Registry"}
+          </span>
+        </div>
+        {displayModels.map((model) => (
           <div key={model.n} className="border-l border-[#b8f6dd]/25 pl-4">
             <div className="flex items-baseline justify-between gap-3">
               <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">{model.n} / {model.role}</div>
@@ -121,8 +193,9 @@ export const EfficiencyFrontier: React.FC = () => {
             <p className="mt-1 max-w-[360px] text-[11.5px] leading-relaxed text-[#8b989e]">{model.body}</p>
           </div>
         ))}
-        <div className="border-t border-white/10 pt-3 font-mono text-[8.5px] leading-relaxed text-[#65737b]">
-          Three to start. Approved providers can add models to the registry; the same API and the same 50 bps apply.
+        <div className="flex flex-col gap-2 border-t border-white/10 pt-3 font-mono text-[8.5px] leading-relaxed text-[#65737b]">
+          <span>The live catalogue is served from the provider registry. Approved providers add routes; the same API and the same 50 bps apply.</span>
+          <a href="/registry" className="text-[#b8f6dd] hover:underline">Open the registry →</a>
         </div>
       </div>
     </div>

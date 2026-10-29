@@ -417,7 +417,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <div className="mt-10 grid grid-cols-1 border-t border-white/10 sm:grid-cols-2">
           {[
             ["A clearing layer.", "We route inference across approved providers. Training stays with the model labs."],
-            ["A lean edge.", "One initial host, three starting models, an OpenAI-compatible API; the registry can grow."],
+            ["A lean edge.", "One initial host, an open provider registry, an OpenAI-compatible API; the catalogue grows."],
             ["A privacy boundary.", "The operator sees usage records; plaintext stays in the browser. Chats stay out of training."],
             ["A USDC fee.", "The fee is USDC on Arbitrum. Token, points and emissions are out of scope."],
           ].map(([title, body], i) => (
@@ -510,13 +510,13 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
           index="08"
           kicker="Accountability"
           title={<>Access with a gate.<br /><span className="text-[#8fa39b]">A process you can inspect.</span></>}
-          copy="We can be precise about who gets access, what the uncensored model can do, and what happens when a provider tolerates abuse."
+          copy="We can be precise about who gets access, what the uncensored policy allows, and what happens when a provider tolerates abuse."
         />
         <div className="mt-10 grid grid-cols-1 border-t border-white/10 md:grid-cols-3 md:divide-x md:divide-white/10">
           {[
-            ["01 / REPUTABLE PROVIDERS ONLY", "Every provider is reviewed and approved before listing. We look for abuse handling, a clear logging policy and operational accountability; Approval is a review decision."],
-            ["02 / UNCENSORED, DELIBERATELY SMALL", "Qwen 3.5 4B is uncensored and 4B parameters, below our 20B ceiling. Frontier models run 500B to 4T. The smaller model keeps the uncensored surface below frontier-scale risk; the harder routes go to DeepSeek and MiMo."],
-            ["03 / FRONTIER WORK STAYS SAFETY-ALIGNED", "Harder, frontier-grade work routes to DeepSeek V4.1 Flash and MiMo 2.6 Flash. Abuse reports lead to provider removal; the platform is a gate, with a process."],
+            ["01 / REPUTABLE PROVIDERS ONLY", "Every provider is reviewed and approved before listing. We look for abuse handling, a clear logging policy and operational accountability. Approval is a review decision."],
+            ["02 / UNCENSORED MODELS STAY UNDER 20B", "The cap applies to every uncensored route. Any future uncensored model must fit the same 20B ceiling. Frontier models run 500B to 4T, so the uncensored surface stays well below frontier-scale capability."],
+            ["03 / FRONTIER WORK STAYS SAFETY-ALIGNED", "Harder, frontier-grade requests route to safety-aligned models from approved providers. Abuse reports lead to provider removal; the platform is a gate, with a process."],
           ].map(([label, body]) => (
             <div key={label} className="py-7 md:px-6 md:first:pl-0 md:last:pr-0">
               <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">{label}</div>

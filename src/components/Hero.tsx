@@ -381,7 +381,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <p className="max-w-[460px] text-[15.5px] leading-[1.65] text-[#a9b6bd]">
               Route one OpenAI-compatible request across independent inference providers.
               Anyone can register as a provider; we review and approve each one before it is listed.
-              Three models to start; the approved registry can grow.
+              The registry is open; the live catalogue grows from approved providers.
               Providers keep 99.5% in USDC on Arbitrum; the protocol takes 50 bps.
             </p>
 
@@ -411,7 +411,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-[#7d8a92]">
               <span>50 bps protocol</span>
               <span>99.5% to providers</span>
-              <span>3 to start</span>
+              <span>Live catalogue</span>
               <span className="text-[#b8f6dd]/70">Sepolia</span>
             </div>
           </div>
@@ -1183,12 +1183,12 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </div>
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
-            Three to start.
+            The live catalogue.
             <br />
             <span className="text-[#8fa39b]">One frontier.</span>
           </h2>
           <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
-            The catalogue starts with three models. The approved provider registry adds routes; the frontier is the mix.
+            The registry is the source of truth. The live routes below are served from it; approved providers add more. The frontier is the mix.
           </p>
         </div>
         <EfficiencyFrontier />
