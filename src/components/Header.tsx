@@ -20,7 +20,6 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, loginWithWallet } = useAuth();
   const [connectingWallet, setConnectingWallet] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [hideMobileHeader, setHideMobileHeader] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
 
   const handleConnectWalletClick = async () => {
@@ -49,17 +48,6 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   useEffect(() => {
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      setHideMobileHeader(y > 96 && y > lastY + 4);
-      lastY = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
     if (mobileNavRef.current) {
       const activeEl = mobileNavRef.current.querySelector('[data-active="true"]') as HTMLElement;
       if (activeEl) activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
@@ -83,13 +71,13 @@ export const Header: React.FC<HeaderProps> = ({
   const isActiveMore = moreItems.some((i) => i.id === activeTab);
 
   return (
-    <header className={`sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl max-md:transition-transform max-md:duration-300 ${hideMobileHeader ? "max-md:-translate-y-full" : "max-md:translate-y-0"}`}>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl max-md:static">
       <div className="flex h-6 items-center justify-center gap-2 border-b border-white/5 bg-[#0b1016] px-3 font-mono text-[8.5px] uppercase tracking-[0.18em] text-[#b8f6dd]/70">
         <span className="h-1 w-1 bg-[#b8f6dd]" />
         <span>Sepolia test run</span>
       </div>
 
-      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[68px] max-md:h-[54px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex shrink-0 cursor-pointer items-center gap-2.5" onClick={() => setActiveTab("overview")}>
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
             <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
@@ -204,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div
         ref={mobileNavRef}
-        className="no-scrollbar flex gap-5 overflow-x-auto border-t border-white/5 px-4 py-2.5 md:hidden"
+        className="no-scrollbar sticky top-0 z-50 flex gap-5 overflow-x-auto border-t border-white/5 bg-[#070a0f]/95 px-4 py-2.5 backdrop-blur-xl md:hidden"
       >
         {allItems.map((item) => (
           <button

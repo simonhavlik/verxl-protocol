@@ -11,6 +11,7 @@ import {
   type ChatPlaintext,
 } from "../lib/chatCrypto";
 import { openMetaMaskOnMobile } from "../lib/wallet";
+import { Portal } from "./Portal";
 import {
   Plus,
   MessageSquare,
@@ -857,7 +858,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const handleChatScroll = () => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
     autoScrollRef.current = atBottom;
     setShowScrollButton(!atBottom);
   };
@@ -1880,7 +1881,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   return (
     <div
-      className="h-[calc(100dvh-108px)] min-h-0 lg:h-[calc(100vh-129px)] lg:min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#070a0f] overflow-hidden text-slate-100 font-sans shadow-2xl relative max-lg:-mx-3 max-lg:-mt-4 max-lg:mb-0 max-lg:h-[calc(100dvh-132px)] max-lg:rounded-none max-lg:border-x-0 max-lg:border-t-0"
+      className="h-[calc(100dvh-108px)] min-h-0 lg:h-[calc(100vh-129px)] lg:min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#070a0f] overflow-hidden text-slate-100 font-sans shadow-2xl relative max-lg:-mx-3 max-lg:-mt-4 max-lg:mb-0 max-lg:h-[calc(100dvh-121px)] max-lg:rounded-none max-lg:border-x-0 max-lg:border-t-0"
       onDragOver={(e) => {
         e.preventDefault();
         setDragActive(true);
@@ -2466,6 +2467,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             ))}
           </select>
           <button
+            onClick={() => setShowSettingsModal(true)}
+            className="p-2.5 text-[#8b989e] active:scale-95"
+            aria-label="Chat settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+          <button
             onClick={createNewSession}
             className="p-2.5 text-[#b8f6dd] active:scale-95"
             aria-label="New chat"
@@ -2478,6 +2486,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         <div
           ref={scrollContainerRef}
           onScroll={handleChatScroll}
+          onWheel={(e) => {
+            if (e.deltaY < 0) autoScrollRef.current = false;
+          }}
+          onTouchMove={(e) => {
+            const el = e.currentTarget;
+            if (el.scrollHeight - el.scrollTop - el.clientHeight > 24) {
+              autoScrollRef.current = false;
+            }
+          }}
           className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 select-text"
         >
           {/* Empty Conversation Welcome Screen */}
@@ -3092,7 +3109,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* 3. DEPOSIT MODAL WITH 1-CLICK WEB3 & ANTI-SNATCHING SECURITY   */}
       {/* ============================================================== */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
+        
+        <Portal><div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
           <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => {
@@ -3287,15 +3305,16 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </p>
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       {/* ============================================================== */}
       {/* 4. SETTINGS & PERSONA MODAL                                    */}
       {/* ============================================================== */}
       {showSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none">
-          <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-lg w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
+        
+        <Portal><div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none">
+          <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-lg w-full max-h-[90dvh] overflow-y-auto p-5 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => setShowSettingsModal(false)}
               className="absolute top-3 right-3 text-slate-400 hover:text-white p-1"
@@ -3308,6 +3327,27 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               <h3 className="text-sm font-bold uppercase tracking-wider">
                 Chat account
               </h3>
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-slate-800">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400">Thinking</div>
+              <div className="grid grid-cols-4 gap-1">
+                {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => updateThinkLevel(level)}
+                    className={`py-1.5 rounded-[2px] border text-[10px] font-mono uppercase transition ${
+                      (activeSession.think || "medium") === level
+                        ? "bg-[#b8f6dd]/15 border-[#b8f6dd]/40 text-[#dff8ef]"
+                        : "bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[9px] text-slate-500 leading-relaxed">Higher thinking spends more output tokens. This is the same setting as the desktop Think row.</p>
             </div>
 
             <div className="space-y-2 pt-2 border-t border-slate-800">
@@ -3596,13 +3636,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ============================================================== */}
       {/* 5. SHARED AUTH & LOGIN MODAL (API KEY & EMAIL OTP)            */}
       {/* ============================================================== */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
+        
+        <Portal><div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
           <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-md w-full p-6 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => {
@@ -3795,7 +3837,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             )}
           </div>
-        </div>
+        </div></Portal>
       )}
     </div>
   );

@@ -219,6 +219,7 @@ export default function App() {
   // Warm the heavy tab chunks during idle, and always warm Playground first.
   useEffect(() => {
     preloadRoute("playground");
+    preloadRoute("chat");
     const w = window as any;
     if (typeof w.requestIdleCallback === "function") {
       const id = w.requestIdleCallback(() => preloadCoreRoutes(), { timeout: 1500 });

@@ -29,6 +29,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { Portal } from "./Portal";
 import { openMetaMaskOnMobile } from "../lib/wallet";
 
 export interface ProviderModelConfig {
@@ -1261,7 +1262,7 @@ main();`,
   };
 
   return (
-    <div className="space-y-6 font-mono text-slate-200">
+    <div className="mobile-compact space-y-6 font-mono text-slate-200">
       {/* Top Protocol Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/15 pb-2.5">
         <div className="flex items-center gap-2 text-xs">
@@ -1436,6 +1437,7 @@ main();`,
                     </label>
                     <input
                       type="password"
+                      autoComplete="current-password"
                       value={passwordInput}
                       onChange={(e) => setPasswordInput(e.target.value)}
                       placeholder="Required when email protection is on"
@@ -2613,7 +2615,7 @@ main();`,
 
       {/* MODAL 1: DEPOSIT USDC ON ARBITRUM (1-CLICK METAMASK & ANTI-SNATCHING PROOF) */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
@@ -2834,7 +2836,7 @@ main();`,
 
       {/* MODAL 2: PROVIDER PAYOUT REQUEST DRAWER */}
       {showPayoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-purple-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
@@ -2950,7 +2952,8 @@ main();`,
 
       {/* MODAL: CONFIGURE / REGISTER PROVIDER NODE */}
       {showNodeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+        
+        <Portal><div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-purple-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
@@ -3147,12 +3150,12 @@ main();`,
               </button>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       {/* MODAL: LINK OPTIONAL EMAIL */}
       {showLinkEmailModal && user && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm">
           <div className="w-full max-w-md bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
@@ -3265,7 +3268,7 @@ main();`,
 
       {/* MODAL 3: SECURITY MANAGEMENT MODAL (2FA & PASSWORD) */}
       {showSecurityModal && user && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-blue-500/40 rounded-[3px] p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
@@ -3405,6 +3408,7 @@ main();`,
                           <form onSubmit={handleDisable2fa} className="space-y-2">
                             <input
                               type="password"
+                              autoComplete="current-password"
                               required
                               placeholder="Confirm current account password"
                               value={disablePasswordConfirm}

@@ -155,7 +155,7 @@ export const Governance: React.FC = () => {
   const activeCount = stats ? stats.active_proposals_count : 2;
 
   return (
-    <div className="space-y-3.5">
+    <div className="mobile-compact space-y-3.5">
       {/* Header */}
       <div>
         <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 mb-1 uppercase tracking-wider">

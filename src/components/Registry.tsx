@@ -142,7 +142,7 @@ export const Registry: React.FC<RegistryProps> = ({
   const activeNodesCount = providers.filter((p) => p.status === "ACTIVE" || p.status === "PENDING_AUDIT").length;
 
   return (
-    <div className="space-y-3.5 font-mono">
+    <div className="mobile-compact space-y-3.5 font-mono">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>

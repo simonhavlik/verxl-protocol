@@ -16,7 +16,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
   const [activeTab, setActiveTab] = useState<"privacy" | "terms" | "mica" | "charter">(initialTab);
 
   return (
-    <div className="space-y-6 font-mono text-slate-200">
+    <div className="mobile-compact space-y-6 font-mono text-slate-200">
       {/* Header & Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-500/20 pb-3">
         <div className="space-y-0.5">

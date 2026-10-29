@@ -15,7 +15,7 @@
 
 Verxl is a clearing layer for AI inference. It does not train models. It does not rent a GPU cloud. It routes one OpenAI-compatible request to an approved provider, meters the compute, and settles the fee in USDC.
 
-- **Access:** `POST /v1/chat/completions`, Bearer auth, SSE streaming, three current models.
+- **Access:** `POST /v1/chat/completions`, Bearer auth, SSE streaming, three starting models; the live registry adds more.
 - **Privacy:** chat messages are encrypted in the browser with a wallet-derived key before they leave the tab.
 - **Settlement:** 50 bps of compute to the protocol; 99.5% to the provider; USDC on Arbitrum, demonstrated on Sepolia.
 - **Surfaces:** API, encrypted Chat, Playground, and a provider registry. Search, charts and file attachments sit in Chat.
@@ -35,7 +35,7 @@ Verxl is presented as a quiet, evidence-first system. One idea per section, one 
 | What matters | How the interface answers |
 |---|---|
 | **The claim** | One idea per section. A number is shown with its method and boundary, not as decoration. |
-| **The provider set** | The current demo runs three models. The registry is open: anyone can register a provider, and every provider is reviewed and approved before listing. |
+| **The provider set** | The catalogue starts with three published routes. The registry is open: anyone can register a provider, and every provider is reviewed and approved before listing. |
 | **The boundary** | Sepolia is stated on the page, not buried. No mainnet, SLA or coverage claim survives without a caveat. |
 | **The fee** | 50 bps, 99.5% to providers, USDC. No token, points or emissions in the product path. |
 | **The private surface** | Ciphertext at rest and a browser-held key. The metadata the operator still sees is disclosed. |
@@ -83,7 +83,7 @@ The registry is open by design.
 
 - **Anyone can register** as an inference provider.
 - **Every provider is reviewed and approved** before it is listed. Registration is not automatic listing.
-- The **current demo runs three** models. The approved roster can grow; the catalogue is a snapshot, not a cap.
+- The **current catalogue starts with three** routes. The live registry is the source of truth, so approved providers can add more.
 - There is **no staking, bonding or slashing** in the product path. Approval is a review decision, not a purchase of placement.
 - There is **no product token**. The fee is USDC; the academic Aragon DAO is a Sepolia governance artefact, not a consumer investment.
 
@@ -98,6 +98,26 @@ The registry is open by design.
 | MiMo 2.6 Flash | Official bridge | 1M | 85 ms |
 
 TTFT is measured on the Sepolia demonstration. It is not an SLA.
+
+The three routes above are the starting catalogue, not a cap. The live catalogue is served from the provider registry (`/api/providers`); approved providers add models and the public catalogue section updates from it.
+
+---
+
+## Accountability
+
+- Every provider is reviewed and approved before listing; approval looks at abuse handling, logging policy and operational accountability.
+- Every uncensored route is capped at **20B parameters**. Qwen 3.5 4B is the current starting example; a future uncensored model must fit the same ceiling. Frontier models run 500B to 4T.
+- Frontier-grade requests route to safety-aligned models from approved providers. DeepSeek V4.1 Flash and MiMo 2.6 Flash are the current starting examples; the registry is the source of truth.
+- Abuse reports lead to provider removal. The policy applies to every model, not a fixed list.
+
+---
+
+## Mobile
+
+- Routes are code-split; the Hero is lazy, WebGL is skipped on phones, and KaTeX is out of the first-load Chat/Playground chunk.
+- Route chunks are prefetched on hover/touch and during idle; HTML is no-cache while hashed assets are immutable.
+- About and Whitepaper keep the phone page short with full content one tap away; Oracle collapses audit history; Chat uses a standard mobile header, drawer and composer.
+- Verified at 390px: no page-level horizontal overflow. MetaMask on iOS uses `metamask://dapp/...` first.
 
 ---
 
@@ -163,7 +183,7 @@ Environment variables are documented in `.env.example`; the demo defaults to pub
 - This is a Sepolia demonstration. Do not present it as mainnet production.
 - The map is illustrative; it is not a coverage map, SLA or latency guarantee.
 - The demo has no enterprise SLA and no consumer token.
-- The current catalogue is intentionally small; the open registry is the path to a broader provider set.
+- The catalogue starts with three routes; the open registry is the path to a broader provider set.
 
 ---
 

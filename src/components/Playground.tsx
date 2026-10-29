@@ -527,7 +527,7 @@ main();`,
         : "text-slate-400 border-slate-700 bg-slate-800/40";
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 font-mono">
+      <div className="mobile-compact grid grid-cols-1 lg:grid-cols-12 gap-3 font-mono">
         {/* Control column */}
         <div className="lg:col-span-5 flex flex-col gap-2.5 min-w-0">
           <div className="grid grid-cols-3 gap-1.5">
