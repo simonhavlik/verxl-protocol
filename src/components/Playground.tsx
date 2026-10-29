@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
-import "katex/dist/katex.min.css";
-import markedKatex from "marked-katex-extension";
 import { useAuth } from "../context/AuthContext";
 import {
   Play,
@@ -24,8 +22,6 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-
-marked.use(markedKatex({ throwOnError: false }));
 
 marked.setOptions({
   gfm: true,

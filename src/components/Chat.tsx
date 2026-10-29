@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { marked } from "marked";
-import "katex/dist/katex.min.css";
-import markedKatex from "marked-katex-extension";
 import {
   deriveChatKey,
   encryptChatPayload,
@@ -12,6 +10,7 @@ import {
   clearChatKeyCache,
   type ChatPlaintext,
 } from "../lib/chatCrypto";
+import { openMetaMaskOnMobile } from "../lib/wallet";
 import {
   Plus,
   MessageSquare,
@@ -28,6 +27,7 @@ import {
   Settings,
   Coins,
   Terminal,
+  Menu,
   Cpu,
   X,
   LogIn,
@@ -47,8 +47,6 @@ import {
   FileText,
   Pencil,
 } from "lucide-react";
-
-marked.use(markedKatex({ throwOnError: false }));
 
 marked.setOptions({
   gfm: true,
@@ -816,7 +814,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [expandedReasoningIds, setExpandedReasoningIds] = useState<Record<string, boolean>>({});
 
   // UI States
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+  );
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -922,7 +922,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInputPrompt("");
-    if (window.innerWidth < 768) setSidebarOpen(false);
+    if (window.innerWidth < 1024) setSidebarOpen(false);
     syncSessionToDb(newSession);
   };
 
@@ -1880,7 +1880,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   return (
     <div
-      className="h-[calc(100vh-129px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#070a0f] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
+      className="h-[calc(100dvh-108px)] min-h-0 lg:h-[calc(100vh-129px)] lg:min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#070a0f] overflow-hidden text-slate-100 font-sans shadow-2xl relative max-lg:-mx-3 max-lg:-mt-4 max-lg:mb-0 max-lg:h-[calc(100dvh-132px)] max-lg:rounded-none max-lg:border-x-0 max-lg:border-t-0"
       onDragOver={(e) => {
         e.preventDefault();
         setDragActive(true);
@@ -1899,18 +1899,29 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           <div className="text-sm font-mono text-blue-300">Drop files to attach</div>
         </div>
       )}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close conversations"
+          className="absolute inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       {/* ============================================================== */}
       {/* 1. LEFT SIDEBAR: CONVERSATION HISTORY & ACCOUNT STATUS         */}
       {/* ============================================================== */}
       <aside
         className={`${
-          sidebarOpen ? "w-64 sm:w-72" : "w-0"
-        } transition-all duration-200 shrink-0 border-r border-slate-800 bg-[#0a0f14] flex flex-col overflow-hidden select-none z-30`}
+          sidebarOpen ? "w-[84vw] max-w-[320px] lg:w-64 xl:w-72" : "w-0"
+        } transition-all duration-200 shrink-0 border-r border-slate-800 bg-[#0a0f14] flex flex-col overflow-hidden select-none z-40 max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:h-full max-lg:shadow-2xl`}
       >
         {/* New Chat Button */}
         <div className="p-3 border-b border-slate-800/80">
           <button
-            onClick={createNewSession}
+            onClick={() => {
+              createNewSession();
+              if (window.innerWidth < 1024) setSidebarOpen(false);
+            }}
             className="w-full flex items-center justify-between px-3 py-2 rounded-[3px] bg-blue-600 hover:bg-[#8fa39b] text-white font-mono text-xs font-semibold tracking-wide shadow-sm shadow-blue-500/30 transition active:scale-[0.98]"
           >
             <div className="flex items-center gap-2">
@@ -1937,7 +1948,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 key={session.id}
                 onClick={() => {
                   setActiveSessionId(session.id);
-                  if (window.innerWidth < 768) setSidebarOpen(false);
+                  if (window.innerWidth < 1024) setSidebarOpen(false);
                 }}
                 className={`group relative flex items-center justify-between px-2.5 py-2 rounded-[3px] cursor-pointer transition ${
                   isActive
@@ -2127,7 +2138,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* ============================================================== */}
       <main className="flex-1 flex flex-col bg-[#070a0f] overflow-hidden relative">
         {/* Top Header Bar */}
-        <header className="h-12 border-b border-slate-800 bg-[#0a0f14]/90 px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-20">
+        <header className="hidden lg:flex h-12 border-b border-slate-800 bg-[#0a0f14]/90 px-3 sm:px-4 items-center justify-between shrink-0 select-none z-20">
           <div className="flex items-center gap-2">
             {/* Toggle Sidebar Button */}
             <button
@@ -2153,7 +2164,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
               {/* Model Dropdown Menu with Search, Filter & Last Used */}
               {showModelDropdown && (
-                <div className="absolute left-0 mt-1.5 w-80 sm:w-96 rounded-[4px] bg-[#0a0f14] border border-blue-500/40 shadow-2xl p-2.5 z-50 space-y-2 font-mono text-xs max-h-[85vh] overflow-y-auto">
+                <div className="absolute left-0 mt-1.5 w-[calc(100vw-1.5rem)] max-w-[24rem] sm:w-96 rounded-[4px] bg-[#0a0f14] border border-blue-500/40 shadow-2xl p-2.5 z-50 space-y-2 font-mono text-xs max-h-[85vh] overflow-y-auto">
                   {/* Search Bar */}
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2.5" />
@@ -2433,6 +2444,36 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           </div>
         </header>
 
+        {/* Mobile Chat Header */}
+        <header className="flex h-14 shrink-0 items-center justify-between gap-1 border-b border-white/10 bg-[#070a0f] px-2 lg:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2.5 text-[#d7e2de] active:scale-95"
+            aria-label="Open conversations"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <select
+            value={activeSession.model}
+            onChange={(e) => selectModel(e.target.value)}
+            className="min-w-0 flex-1 appearance-none bg-transparent px-1 text-center font-mono text-[12px] font-semibold text-white outline-none"
+            aria-label="Select model"
+          >
+            {AVAILABLE_MODELS.map((m) => (
+              <option key={m.id} value={m.id} className="bg-[#0a0f14] text-white">
+                {m.name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={createNewSession}
+            className="p-2.5 text-[#b8f6dd] active:scale-95"
+            aria-label="New chat"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </header>
+
         {/* Messages Scroll Area */}
         <div
           ref={scrollContainerRef}
@@ -2441,7 +2482,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         >
           {/* Empty Conversation Welcome Screen */}
           {activeSession.messages.length === 0 && !activeStreaming ? (
-            <div className="max-w-2xl mx-auto py-6 sm:py-8 flex flex-col items-center justify-center text-center space-y-5 select-none">
+            <div className="max-w-2xl mx-auto py-8 sm:py-10 lg:py-6 flex flex-col items-center justify-center text-center space-y-5 select-none">
               <div className="relative">
                 <div className="border border-[#b8f6dd]/20 bg-[#0b1117] p-2.5 shadow-xl shadow-black/30">
                   <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" aria-hidden="true">
@@ -2449,17 +2490,17 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="0.9" opacity="0.55" />
                   </svg>
                 </div>
-                <span className="absolute -bottom-1.5 -right-1.5 border border-[#b8f6dd]/20 bg-[#0b1117] px-1.5 py-0.2 text-[9px] font-mono font-bold text-[#b8f6dd] uppercase tracking-wider">
+                <span className="absolute -bottom-1.5 -right-1.5 border border-[#b8f6dd]/20 bg-[#0b1117] px-1.5 py-0.2 text-[9px] font-mono font-bold text-[#b8f6dd] uppercase tracking-wider max-lg:hidden">
                   50 BPS
                 </span>
               </div>
 
               <div className="space-y-1">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono">
-                  Verxl Protocol Chat
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono max-lg:font-sans max-lg:text-[22px] max-lg:font-semibold">
+                  Verxl Chat
                 </h2>
-                <p className="text-[11.5px] sm:text-xs text-slate-400 font-mono max-w-md mx-auto leading-relaxed">
-                  Non-custodial edge AI inference. Output costs cleared in real time from your balance with 50 bps protocol fee.
+                <p className="text-[11.5px] sm:text-xs text-slate-400 font-mono max-w-md mx-auto leading-relaxed max-lg:font-sans max-lg:text-[13px]">
+                  Ask anything. Your chats are encrypted in this browser.
                 </p>
               </div>
 
@@ -2472,7 +2513,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     onClick={() => handleSendMessage(starter.prompt)}
                     className="flex items-center justify-between gap-2 border border-white/10 bg-[#0a0f14] px-2.5 py-1.5 text-left transition hover:border-[#b8f6dd]/40 hover:bg-[#0b1117]"
                   >
-                    <span className="truncate font-mono text-[10.5px] font-semibold text-[#b8f6dd]">
+                    <span className="truncate font-mono text-[10.5px] font-semibold text-[#b8f6dd] max-lg:font-sans max-lg:text-[12.5px]">
                       {starter.title}
                     </span>
                     <span className="shrink-0 font-mono text-[10px] text-[#65737b]">→</span>
@@ -2491,7 +2532,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   } space-y-1`}
                 >
                   {/* Sender Label & Meta */}
-                  <div className="flex items-center gap-2 px-1 text-[10px] font-mono text-slate-400">
+                  <div className="hidden lg:flex items-center gap-2 px-1 text-[10px] font-mono text-slate-400">
                     <span className="font-bold uppercase tracking-wider">
                       {msg.role === "user" ? "You" : "Verxl Assistant"}
                     </span>
@@ -2509,10 +2550,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
                   {/* Message Bubble Card */}
                   <div
-                    className={`max-w-[92%] sm:max-w-[82%] rounded-[4px] p-3.5 sm:p-4 text-xs font-mono leading-relaxed select-text ${
+                    className={`max-w-[92%] sm:max-w-[82%] rounded-[4px] p-3.5 sm:p-4 text-xs font-mono leading-relaxed select-text max-lg:max-w-[88%] max-lg:rounded-2xl max-lg:border-0 max-lg:p-3.5 max-lg:font-sans max-lg:text-[14px] max-lg:leading-[1.65] ${
                       msg.role === "user"
-                        ? "bg-[#0d141a] border border-blue-500/30 text-slate-100 shadow-md"
-                        : "bg-[#0a0f14] border border-slate-800/90 text-slate-200 shadow-lg w-full"
+                        ? "bg-[#0d141a] border border-blue-500/30 text-slate-100 shadow-md max-lg:bg-[#18232b] max-lg:text-white max-lg:shadow-none"
+                        : "bg-[#0a0f14] border border-slate-800/90 text-slate-200 shadow-lg w-full max-lg:max-w-full max-lg:bg-transparent max-lg:text-[#e6eeea] max-lg:shadow-none"
                     }`}
                   >
                     {/* Collapsible Reasoning Process Accordion */}
@@ -2583,7 +2624,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
                     {/* User message actions */}
                     {msg.role === "user" && editingMessageId !== msg.id && (
-                      <div className="mt-2 pt-2 border-t border-blue-500/20 flex justify-end gap-3 text-[10px] text-slate-400">
+                      <div className="hidden lg:flex mt-2 pt-2 border-t border-blue-500/20 justify-end gap-3 text-[10px] text-slate-400">
                         <button
                           onClick={() => startEditMessage(msg)}
                           className="flex items-center gap-1 hover:text-white transition"
@@ -2752,7 +2793,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         )}
 
         {/* Input Box Footer Container */}
-        <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#0a0f14]/90 shrink-0">
+        <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#0a0f14]/90 shrink-0 max-lg:border-t-0 max-lg:bg-[#070a0f] max-lg:p-3 max-lg:pb-[max(12px,env(safe-area-inset-bottom))]">
           <div className="max-w-4xl mx-auto space-y-2">
             {isStreaming && !activeStreaming && (
               <div className="text-[9px] font-mono text-slate-500 px-1">
@@ -2795,7 +2836,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             )}
 
             {/* Input Form */}
-            <div className="relative flex items-end gap-2 bg-[#070a0f] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
+            <div className="relative flex items-end gap-2 bg-[#070a0f] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner max-lg:rounded-[24px] max-lg:border-white/15 max-lg:bg-[#0a0f14] max-lg:p-1.5">
               <textarea
                 ref={textareaRef}
                 value={inputPrompt}
@@ -2814,9 +2855,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     }
                   }
                 }}
-                placeholder="Ask Verxl compute anything... (Shift+Enter for newline, Enter to send)"
+                placeholder="Message Verxl…"
                 rows={1}
-                className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none resize-none font-mono py-1 px-1.5 leading-relaxed max-h-44"
+                className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none resize-none font-mono py-1 px-1.5 leading-relaxed max-h-44 max-lg:font-sans max-lg:text-[14px] max-lg:px-2.5 max-lg:py-2"
               />
 
               <input
@@ -2831,7 +2872,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-[3px] border border-slate-800 bg-[#070a0f] text-slate-400 hover:text-white transition shrink-0"
+                className="p-2 rounded-[3px] border border-slate-800 bg-[#070a0f] text-slate-400 hover:text-white transition shrink-0 max-lg:rounded-full"
                 title="Attach files"
                 disabled={isParsing}
               >
@@ -2845,7 +2886,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     localStorage.setItem("vrxl_force_pdf_ocr", "0");
                     saveChatSettings({ forcePdfOcr: false });
                   }}
-                  className="px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition bg-[#d99a9a]/10 border-[#d99a9a]/30 text-[#e3b8b8]"
+                  className="hidden lg:block px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition bg-[#d99a9a]/10 border-[#d99a9a]/30 text-[#e3b8b8]"
                   title="Force PDF OCR is on; click to disable"
                 >
                   Force PDF OCR
@@ -2854,7 +2895,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
               <button
                 onClick={() => setSearchEnabled((v) => !v)}
-                className={`p-2 rounded-[3px] border transition shrink-0 ${
+                className={`p-2 rounded-[3px] max-lg:rounded-full border transition shrink-0 ${
                   searchEnabled
                     ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
                     : "bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white"
@@ -2869,7 +2910,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   value={activeSession.searchBudget ?? 512}
                   onChange={(e) => updateSearchBudget(Number(e.target.value))}
                   title="Search context budget"
-                  className="bg-[#070a0f] border border-slate-800 text-slate-400 text-[9px] font-mono px-1 py-1 rounded-[2px] outline-none shrink-0"
+                  className="hidden lg:block bg-[#070a0f] border border-slate-800 text-slate-400 text-[9px] font-mono px-1 py-1 rounded-[2px] outline-none shrink-0"
                 >
                   <option value={256}>256 ctx</option>
                   <option value={512}>512 ctx</option>
@@ -2879,7 +2920,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 </select>
               )}
 
-              <div className="relative group shrink-0 font-mono text-[9px] text-slate-400">
+              <div className="hidden lg:block relative group shrink-0 font-mono text-[9px] text-slate-400">
                 <span className="cursor-help whitespace-nowrap" title="Context used by the last request">
                   ctx {fmtTokens(contextStats.used)}/{fmtTokens(contextLimit)}
                 </span>
@@ -2917,7 +2958,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               {activeStreaming ? (
                 <button
                   onClick={handleStopGeneration}
-                  className="p-2 rounded-[3px] bg-rose-600 hover:bg-rose-500 text-white transition shrink-0 active:scale-95"
+                  className="p-2 rounded-[3px] max-lg:rounded-full bg-rose-600 hover:bg-rose-500 text-white transition shrink-0 active:scale-95"
                   title="Halt streaming"
                 >
                   <Square className="w-4 h-4 fill-current" />
@@ -2926,7 +2967,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!inputPrompt.trim() || isStreaming}
-                  className={`p-2 rounded-[3px] transition shrink-0 ${
+                  className={`p-2 rounded-[3px] max-lg:rounded-full transition shrink-0 ${
                     inputPrompt.trim()
                       ? "bg-blue-600 hover:bg-[#8fa39b] text-white shadow-md shadow-blue-500/30 active:scale-95 cursor-pointer"
                       : "bg-slate-800 text-slate-400 cursor-not-allowed"
@@ -2939,7 +2980,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             </div>
 
             {/* Input Status & Cost Preview Bar */}
-            <div className="flex flex-wrap items-center justify-between text-[10px] font-mono text-slate-400 px-1">
+            <div className="hidden lg:flex flex-wrap items-center justify-between text-[10px] font-mono text-slate-400 px-1">
               <div className="flex items-center gap-2 relative">
                 <button
                   onClick={() => setShowContextDetails((v) => !v)}
@@ -3641,6 +3682,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={async () => {
+                    if (typeof window !== "undefined" && !(window as any).ethereum) {
+                      if (openMetaMaskOnMobile()) {
+                        setAuthError(null);
+                        setAuthSuccess("Opening MetaMask… finish connecting there.");
+                        return;
+                      }
+                      setAuthError("Open this page inside MetaMask on your phone, or install the extension.");
+                      return;
+                    }
                     if (typeof window !== "undefined" && (window as any).ethereum) {
                       try {
                         setAuthError(null);

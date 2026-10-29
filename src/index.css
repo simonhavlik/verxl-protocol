@@ -232,13 +232,13 @@ td, th, .tabular, .font-mono {
   inset: 12px;
   z-index: 3;
   pointer-events: none;
-  border: 1px solid rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(184, 246, 221, 0.10);
 }
 .hero-corners i {
   position: absolute;
   width: 24px;
   height: 24px;
-  border: 0 solid rgba(96, 165, 250, 0.55);
+  border: 0 solid rgba(184, 246, 221, 0.55);
 }
 .hero-corners .tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
 .hero-corners .tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
@@ -1014,4 +1014,23 @@ td, th, .tabular, .font-mono {
   border: none;
   border-top: 1px solid rgba(59, 130, 246, 0.2);
   margin: 0.75rem 0;
+}
+
+
+@media (max-width: 1023px) {
+  .terminal-markdown {
+    font-family: "Helvetica Neue", Inter, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .terminal-markdown p,
+  .terminal-markdown li {
+    font-family: inherit;
+  }
+  .terminal-markdown pre,
+  .terminal-markdown code {
+    max-width: 100%;
+    overflow-x: auto;
+    font-size: 11px;
+  }
 }

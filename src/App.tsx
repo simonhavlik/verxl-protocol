@@ -2,9 +2,10 @@ import React, { useState, useEffect, lazy, Suspense, Component, type ErrorInfo }
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { AuthProvider } from "./context/AuthContext";
 import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
+const Hero = lazy(() => import("./components/Hero").then((m) => ({ default: m.Hero })));
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
+import { preloadCoreRoutes, preloadRoute } from "./lib/routePreload";
 
 // Code-split interior tabs for instant mobile initial page loads & sub-200ms TTI
 const Chat = lazy(() => import("./components/Chat").then((m) => ({ default: m.Chat })));
@@ -204,6 +205,7 @@ export default function App() {
 
   // Sync tab changes with browser URL
   const handleTabChange = (tab: string) => {
+    preloadRoute(tab);
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const targetPath = tab === "overview" ? "/" : `/${tab}`;
@@ -213,6 +215,18 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "instant" });
     }
   };
+
+  // Warm the heavy tab chunks during idle, and always warm Playground first.
+  useEffect(() => {
+    preloadRoute("playground");
+    const w = window as any;
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => preloadCoreRoutes(), { timeout: 1500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(preloadCoreRoutes, 900);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Listen to browser Back / Forward navigation
   useEffect(() => {
@@ -276,10 +290,12 @@ export default function App() {
           {/* Main Content Area */}
           {activeTab === "overview" ? (
             <div className="flex-1 flex flex-col relative z-10">
-              <Hero onNavigate={handleTabChange} />
+              <Suspense fallback={<div className="min-h-[60vh]" />}>
+                <Hero onNavigate={handleTabChange} />
+              </Suspense>
             </div>
           ) : (
-            <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
+            <main className="flex-1 max-w-7xl w-full min-w-0 overflow-x-hidden mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
               <TabErrorBoundary activeTab={activeTab}>
                 <Suspense fallback={<TabLoadingFallback />}>
                   {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}

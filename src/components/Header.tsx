@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ExternalLink, Wallet, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { openMetaMaskOnMobile } from "../lib/wallet";
+import { preloadRoute } from "../lib/routePreload";
 
 interface HeaderProps {
   activeTab: string;
@@ -18,9 +20,15 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, loginWithWallet } = useAuth();
   const [connectingWallet, setConnectingWallet] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [hideMobileHeader, setHideMobileHeader] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
 
   const handleConnectWalletClick = async () => {
+    if (typeof window !== "undefined" && !(window as any).ethereum) {
+      if (openMetaMaskOnMobile()) return;
+      onConnectWallet();
+      return;
+    }
     if (typeof window !== "undefined" && (window as any).ethereum) {
       try {
         setConnectingWallet(true);
@@ -39,6 +47,17 @@ export const Header: React.FC<HeaderProps> = ({
     }
     onConnectWallet();
   };
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setHideMobileHeader(y > 96 && y > lastY + 4);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (mobileNavRef.current) {
@@ -64,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isActiveMore = moreItems.some((i) => i.id === activeTab);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl">
+    <header className={`sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl max-md:transition-transform max-md:duration-300 ${hideMobileHeader ? "max-md:-translate-y-full" : "max-md:translate-y-0"}`}>
       <div className="flex h-6 items-center justify-center gap-2 border-b border-white/5 bg-[#0b1016] px-3 font-mono text-[8.5px] uppercase tracking-[0.18em] text-[#b8f6dd]/70">
         <span className="h-1 w-1 bg-[#b8f6dd]" />
         <span>Sepolia test run</span>
@@ -84,6 +103,9 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
+              onPointerEnter={() => preloadRoute(item.id)}
+              onTouchStart={() => preloadRoute(item.id)}
+              onFocus={() => preloadRoute(item.id)}
               className={`border-b pb-1 text-[12px] transition-colors ${
                 activeTab === item.id
                   ? "border-[#b8f6dd] text-white"
@@ -118,6 +140,9 @@ export const Header: React.FC<HeaderProps> = ({
                         setActiveTab(item.id);
                         setShowMore(false);
                       }}
+                      onPointerEnter={() => preloadRoute(item.id)}
+                      onTouchStart={() => preloadRoute(item.id)}
+                      onFocus={() => preloadRoute(item.id)}
                       className={`block w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
                         activeTab === item.id ? "text-[#b8f6dd]" : "text-[#9aa7ad] hover:text-white"
                       }`}
@@ -135,6 +160,8 @@ export const Header: React.FC<HeaderProps> = ({
           {user && (
             <button
               onClick={() => setActiveTab("console")}
+              onPointerEnter={() => preloadRoute("console")}
+              onTouchStart={() => preloadRoute("console")}
               className="hidden items-center gap-1.5 border border-white/10 px-2.5 py-1.5 font-mono text-[10px] text-[#c9d4d8] transition-colors hover:border-white/25 sm:flex"
               title="Balance"
             >

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import type * as ThreeTypes from "three";
 import {
   ArrowRight,
   ShieldCheck,
@@ -10,10 +10,10 @@ import {
   Sliders,
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
-import { Playground } from "./Playground";
-import { RouteMap } from "./RouteMap";
-import { EfficiencyFrontier } from "./EfficiencyFrontier";
-import { MarketRail } from "./MarketRail";
+const Playground = lazy(() => import("./Playground").then((m) => ({ default: m.Playground })));
+const RouteMap = lazy(() => import("./RouteMap").then((m) => ({ default: m.RouteMap })));
+const EfficiencyFrontier = lazy(() => import("./EfficiencyFrontier").then((m) => ({ default: m.EfficiencyFrontier })));
+const MarketRail = lazy(() => import("./MarketRail").then((m) => ({ default: m.MarketRail })));
 
 interface HeroProps {
   onNavigate: (tab: string) => void;
@@ -123,16 +123,38 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
   // Three.js WebGL Constellation and Orbital Rings (from Simon's Portfolio Optimizer)
   useEffect(() => {
+    const shouldRender =
+      typeof window !== "undefined" &&
+      window.innerWidth > 768 &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!shouldRender) return;
+
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+
+    (async () => {
+      await new Promise<void>((resolve) => {
+        const w = window as any;
+        if (typeof w.requestIdleCallback === "function") {
+          w.requestIdleCallback(() => resolve(), { timeout: 2000 });
+        } else {
+          window.setTimeout(resolve, 900);
+        }
+      });
+      if (cancelled) return;
+      const Three = await import("three");
+      if (cancelled) return;
+
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
 
     const isSmall = typeof window !== "undefined" && window.innerWidth <= 768;
-    const nodeCount = isSmall ? 160 : 380;
+    const nodeCount = isSmall ? 120 : 380;
 
-    let renderer: THREE.WebGLRenderer;
+    let renderer: ThreeTypes.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({
+      renderer = new Three.WebGLRenderer({
         canvas,
         alpha: true,
         antialias: !isSmall,
@@ -145,24 +167,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 2));
     renderer.setClearColor(0x000000, 0);
 
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x05070b, 0.08);
+    const scene = new Three.Scene();
+    scene.fog = new Three.FogExp2(0x05070b, 0.08);
 
-    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 60);
+    const camera = new Three.PerspectiveCamera(46, 1, 0.1, 60);
     camera.position.set(0, 0, 5.8);
 
-    const group = new THREE.Group();
+    const group = new Three.Group();
     scene.add(group);
 
     // Golden angle nodes on sphere shell
-    const vecs: THREE.Vector3[] = [];
+    const vecs: ThreeTypes.Vector3[] = [];
     for (let i = 0; i < nodeCount; i++) {
       const y = 1 - (i / (nodeCount - 1)) * 2;
       const radius = Math.sqrt(Math.max(0, 1 - y * y));
       const theta = i * 2.399963229728653; // golden angle
       const shell = 2.1 + Math.random() * 0.5;
       vecs.push(
-        new THREE.Vector3(
+        new Three.Vector3(
           Math.cos(theta) * radius * shell,
           y * shell * 0.88,
           Math.sin(theta) * radius * shell
@@ -177,8 +199,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       positions[k * 3 + 2] = v.z;
     });
 
-    const pointsGeo = new THREE.BufferGeometry();
-    pointsGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const pointsGeo = new Three.BufferGeometry();
+    pointsGeo.setAttribute("position", new Three.BufferAttribute(positions, 3));
 
     // Radial gradient glow texture for nodes
     const makeSprite = () => {
@@ -193,23 +215,23 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, 64, 64);
       }
-      const tex = new THREE.CanvasTexture(c);
+      const tex = new Three.CanvasTexture(c);
       tex.needsUpdate = true;
       return tex;
     };
 
-    const pointMat = new THREE.PointsMaterial({
+    const pointMat = new Three.PointsMaterial({
       color: 0xd6f4ea,
       size: 0.14,
       map: makeSprite(),
       transparent: true,
       opacity: 0.9,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: Three.AdditiveBlending,
       sizeAttenuation: true,
     });
 
-    const points = new THREE.Points(pointsGeo, pointMat);
+    const points = new Three.Points(pointsGeo, pointMat);
     group.add(points);
 
     // Constellation edges between near neighbours
@@ -224,11 +246,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       if (linkPositions.length > 7500) break;
     }
 
-    const linkGeo = new THREE.BufferGeometry();
-    linkGeo.setAttribute("position", new THREE.Float32BufferAttribute(linkPositions, 3));
-    const links = new THREE.LineSegments(
+    const linkGeo = new Three.BufferGeometry();
+    linkGeo.setAttribute("position", new Three.Float32BufferAttribute(linkPositions, 3));
+    const links = new Three.LineSegments(
       linkGeo,
-      new THREE.LineBasicMaterial({
+      new Three.LineBasicMaterial({
         color: 0x8fa39b,
         transparent: true,
         opacity: 0.22,
@@ -238,22 +260,22 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     group.add(links);
 
     // Orbital rings in electric cobalt
-    const rings: THREE.LineLoop[] = [];
+    const rings: ThreeTypes.LineLoop[] = [];
     for (let r = 0; r < 3; r++) {
-      const ringPts: THREE.Vector3[] = [];
+      const ringPts: ThreeTypes.Vector3[] = [];
       for (let s = 0; s <= 200; s++) {
         const t = (s / 200) * Math.PI * 2;
         ringPts.push(
-          new THREE.Vector3(
+          new Three.Vector3(
             Math.cos(t) * (2.65 + r * 0.16),
             0,
             Math.sin(t) * (2.65 + r * 0.16)
           )
         );
       }
-      const ring = new THREE.LineLoop(
-        new THREE.BufferGeometry().setFromPoints(ringPts),
-        new THREE.LineBasicMaterial({
+      const ring = new Three.LineLoop(
+        new Three.BufferGeometry().setFromPoints(ringPts),
+        new Three.LineBasicMaterial({
           color: 0xb8f6dd,
           transparent: true,
           opacity: 0.24 - r * 0.05,
@@ -332,12 +354,20 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       rafId = requestAnimationFrame(animate);
     }
 
-    return () => {
+    cleanup = () => {
       if (observer) observer.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
       container.removeEventListener("pointermove", onPointerMove);
       renderer.dispose();
+    };
+    })().catch(() => {
+      // WebGL unavailable; the static hero remains fully usable.
+    });
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
     };
   }, []);
 
@@ -637,7 +667,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                         <span>EU route</span>
                         <span className="text-[#b8f6dd]">live</span>
                       </div>
-                      <RouteMap className="w-full flex-1" />
+                      <Suspense fallback={<div className="flex flex-1 items-center justify-center font-mono text-[8px] uppercase tracking-wider text-[#65737b]">Loading route…</div>}><RouteMap className="w-full flex-1" /></Suspense>
                       <div className="border-t border-white/5 px-2 py-1 font-mono text-[7.5px] text-[#7d8a92]">
                         client → edge → Prague
                       </div>
@@ -781,7 +811,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
           </div>
           <div className="p-3 sm:p-4">
-            <Playground variant="compact" onNavigate={onNavigate} />
+            <Suspense fallback={<div className="p-6 font-mono text-[10px] text-[#65737b]">Loading live console…</div>}><Playground variant="compact" onNavigate={onNavigate} /></Suspense>
           </div>
         </div>
       </section>
@@ -1191,7 +1221,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             The registry is the source of truth. The live routes below are served from it; approved providers add more. The frontier is the mix.
           </p>
         </div>
-        <EfficiencyFrontier />
+        <Suspense fallback={<div className="mt-10 border-t border-white/10 pt-8 font-mono text-[10px] text-[#65737b]">Loading the live catalogue…</div>}><EfficiencyFrontier /></Suspense>
       </section>
 
       {/* Client-side encrypted chat storage: mechanism, stored fields, access boundary */}
@@ -1348,7 +1378,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       </section>
 
       {/* Live settlement rail: real spot quotes and Arbitrum chain telemetry */}
-      <MarketRail />
+      <Suspense fallback={<div className="h-24" />}><MarketRail /></Suspense>
     </div>
   );
 };

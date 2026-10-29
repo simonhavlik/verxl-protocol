@@ -22,9 +22,9 @@ export const WhitepaperContent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-4xl w-full min-w-0 mx-auto space-y-4 overflow-x-hidden">
       {/* Minimal Utility Bar — Satoshi Cleanliness */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] px-3.5 py-2 flex items-center justify-between text-xs font-mono shadow-sm">
+      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono shadow-sm">
         <div className="flex items-center gap-2 text-slate-300">
           <FileText className="w-3.5 h-3.5 text-blue-400" />
           <span className="font-semibold text-white">docs/WHITEPAPER.md</span>
@@ -96,7 +96,7 @@ export const WhitepaperContent: React.FC = () => {
           </div>
 
           {/* ASCII Banner */}
-          <pre className="font-mono text-[9px] sm:text-[11px] leading-tight text-blue-400/90 py-3 overflow-x-auto inline-block text-left border border-slate-800/90 bg-[#05070b] p-3.5 rounded-[2px] mt-2 w-full">
+          <pre className="font-mono text-[9px] sm:text-[11px] leading-tight text-blue-400/90 py-3 overflow-x-auto block max-w-full text-left border border-slate-800/90 bg-[#05070b] p-3.5 rounded-[2px] mt-2 w-full">
 {`__      ________ _____  __   __ _      
 \\ \\    / /  ____|  __ \\ \\ \\ / /| |     
  \\ \\  / /| |__  | |__) | \\ V / | |     
