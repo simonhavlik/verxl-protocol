@@ -142,6 +142,9 @@ export const Console: React.FC = () => {
   const [copiedTotpSecret, setCopiedTotpSecret] = useState(false);
   const [copiedRecoveryCodes, setCopiedRecoveryCodes] = useState(false);
   const [disablingTotp, setDisablingTotp] = useState(false);
+  const [securitySettingSaving, setSecuritySettingSaving] = useState(false);
+  const [securitySettingError, setSecuritySettingError] = useState<string | null>(null);
+  const [securitySettingSuccess, setSecuritySettingSuccess] = useState<string | null>(null);
   const [disablePasswordConfirm, setDisablePasswordConfirm] = useState("");
 
   // Key Creation Modal
@@ -207,7 +210,10 @@ export const Console: React.FC = () => {
       setLinkingEmail(true);
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ email: linkEmailInput.trim().toLowerCase() }),
       });
       const data = (await res.json()) as any;
@@ -235,7 +241,7 @@ export const Console: React.FC = () => {
       if (res.success) {
         setStatusMsg({
           type: "success",
-          text: `Email '${linkEmailInput.trim().toLowerCase()}' linked to your account! You can now also log in with email OTP & configure 2FA.`,
+          text: `Email '${linkEmailInput.trim().toLowerCase()}' linked to your account! You can now sign in with email OTP and configure 2FA.`,
         });
         setShowLinkEmailModal(false);
         setLinkEmailInput("");
@@ -442,7 +448,7 @@ export const Console: React.FC = () => {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput }),
+        body: JSON.stringify({ email: emailInput, password: passwordInput || undefined }),
       });
       const data = (await res.json()) as any;
       if (res.ok) {
@@ -1308,7 +1314,7 @@ main();`,
                 Access Developer Console
               </h2>
               <p className="text-xs text-slate-300 font-sans">
-                Sign in with your Web3 wallet, passwordless email OTP, or cryptographic password with hardware TOTP 2FA.
+                Sign in with your Web3 wallet, email OTP with password protection, or cryptographic password with hardware TOTP 2FA.
               </p>
             </div>
 
@@ -1362,7 +1368,7 @@ main();`,
             <div className="relative flex py-1 items-center">
               <div className="flex-grow border-t border-slate-800"></div>
               <span className="flex-shrink mx-2 text-[10px] text-slate-400 uppercase tracking-wider">
-                Or Continue With Email (Optional Login / 2FA)
+                Or Continue With Email (OTP / 2FA)
               </span>
               <div className="flex-grow border-t border-slate-800"></div>
             </div>
@@ -1378,7 +1384,7 @@ main();`,
                     : "border-transparent text-slate-400 hover:text-white"
                 }`}
               >
-                Email OTP (Passwordless)
+                Email OTP
               </button>
               <button
                 type="button"
@@ -1411,6 +1417,21 @@ main();`,
                         className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                      Account Password (if set)
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder="Required when email protection is on"
+                      className="w-full bg-[#05070b] border border-slate-700 rounded-[2px] px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono"
+                    />
+                    <p className="mt-1 text-[9.5px] text-slate-500 leading-relaxed">
+                      Required if this account has a password and “Require password with email” is on in Security settings.
+                    </p>
                   </div>
                   <button
                     type="submit"
@@ -3647,6 +3668,84 @@ main();`,
                   </div>
                 )}
 
+                <div className="border border-white/10 bg-[#05070b] p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider">
+                        Require password with email
+                      </div>
+                      <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
+                        On by default. When on, requesting an email sign-in code also requires your account password. Passwordless accounts can still use email OTP until a password is set.
+                      </p>
+                      {!user.has_password && (
+                        <p className="mt-1 text-[10px] text-[#d99a9a]">
+                          Set a password below to enforce this setting.
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={user.require_password_with_email ?? true}
+                      aria-label="Require password with email"
+                      disabled={securitySettingSaving}
+                      onClick={async () => {
+                        const next = !(user.require_password_with_email ?? true);
+                        setSecuritySettingSaving(true);
+                        setSecuritySettingError(null);
+                        setSecuritySettingSuccess(null);
+                        try {
+                          const res = await fetch("/api/auth/security-settings", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ require_password_with_email: next }),
+                          });
+                          const data = (await res.json()) as any;
+                          if (!res.ok) throw new Error(data.error || "Failed to save security setting.");
+                          setUser((prev) =>
+                            prev ? { ...prev, require_password_with_email: next } : prev
+                          );
+                          setSecuritySettingSuccess(
+                            next
+                              ? "Email sign-in now requires the account password."
+                              : "Email sign-in no longer requires the account password."
+                          );
+                        } catch (err: any) {
+                          setSecuritySettingError(err.message || "Failed to save security setting.");
+                        } finally {
+                          setSecuritySettingSaving(false);
+                        }
+                      }}
+                      className={`relative mt-0.5 h-5 w-9 shrink-0 border transition ${
+                        (user.require_password_with_email ?? true)
+                          ? "border-[#b8f6dd]/50 bg-[#b8f6dd]"
+                          : "border-slate-600 bg-[#0a0f14]"
+                      } disabled:opacity-50`}
+                    >
+                      <span
+                        className={`absolute top-[3px] h-3 w-3 transition-all ${
+                          (user.require_password_with_email ?? true)
+                            ? "left-[19px] bg-[#070a0f]"
+                            : "left-[3px] bg-slate-500"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {securitySettingError && (
+                    <div className="mt-2 border border-red-500/40 bg-red-950/40 p-2 text-[10px] text-red-300">
+                      {securitySettingError}
+                    </div>
+                  )}
+                  {securitySettingSuccess && (
+                    <div className="mt-2 border border-[#b8f6dd]/25 bg-[#b8f6dd]/5 p-2 text-[10px] text-[#dff8ef]">
+                      {securitySettingSuccess}
+                    </div>
+                  )}
+                </div>
+
                 <div className="bg-[#05070b] border border-blue-500/30 rounded-[2px] p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -3665,7 +3764,7 @@ main();`,
                   </div>
 
                   <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Setting a password enables cryptographic login (PBKDF2-HMAC-SHA256, 100,000 rounds) alongside passwordless email OTP. If 2FA is enabled, password login will require your 6-digit TOTP code.
+                    Setting a password enables cryptographic login (PBKDF2-HMAC-SHA256, 100,000 rounds) alongside email OTP. The toggle above controls whether email OTP also requires this password. If 2FA is enabled, password login will require your 6-digit TOTP code.
                   </p>
 
                   <form onSubmit={handleSavePassword} className="space-y-3 pt-1">

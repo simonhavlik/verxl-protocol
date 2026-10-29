@@ -1,7 +1,8 @@
-import { CORS_HEADERS, generateOtpCode } from "../lib/auth";
+import { CORS_HEADERS, generateOtpCode, verifyPassword, verifySessionToken } from "../lib/auth";
 import { db } from "../lib/db";
 import { sendEmailDirect } from "../lib/smtp";
 import { renderVerxlEmail } from "../lib/email";
+import { getRequirePasswordWithEmail } from "../lib/security-settings";
 
 interface Env {
   SMTP_USER?: string;
@@ -30,6 +31,41 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!email || !emailRegex.test(email)) {
     return new Response(JSON.stringify({ error: "Valid email address is required" }), {
       status: 400,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+
+  // "Require password with email" — on by default. The password is verified
+  // when the sign-in code is requested, so an inbox alone cannot mint a session.
+  // A valid session means this is the authenticated "link email" flow, not login.
+  const password = typeof body.password === "string" ? body.password : "";
+  const authHeader = request.headers.get("Authorization");
+  const sessionToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const linkSession = sessionToken ? await verifySessionToken(sessionToken) : null;
+
+  try {
+    const account = await db
+      .prepare("SELECT id, password_hash FROM users WHERE LOWER(email) = ?")
+      .bind(email)
+      .first<{ id: string; password_hash: string | null }>();
+    if (account?.password_hash && !linkSession) {
+      const requiresPassword = await getRequirePasswordWithEmail(account.id);
+      if (requiresPassword) {
+        const valid = password ? await verifyPassword(password, account.password_hash) : false;
+        if (!valid) {
+          return new Response(
+            JSON.stringify({
+              error: "This account requires its password for email sign-in. Enter your account password and try again.",
+              code: "PASSWORD_REQUIRED",
+            }),
+            { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+      }
+    }
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: "Security setting check failed", details: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }

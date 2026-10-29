@@ -1,5 +1,6 @@
 import { CORS_HEADERS, verifySessionToken } from "../lib/auth";
 import { db } from "../lib/db";
+import { getRequirePasswordWithEmail } from "../lib/security-settings";
 
 interface Env {}
 
@@ -49,6 +50,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
+  const requirePasswordWithEmail = await getRequirePasswordWithEmail(user.id);
+
   const keys = await db.prepare(
     "SELECT id, key_prefix, name, is_active, created_at FROM api_keys WHERE user_id = ? ORDER BY created_at DESC"
   )
@@ -73,6 +76,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         has_active_key: keys.results.some((k: any) => k.is_active === 1),
         has_password: Boolean(user.password_hash),
         two_factor_enabled: Boolean(user.two_factor_enabled),
+        require_password_with_email: requirePasswordWithEmail,
         has_linked_email: Boolean(user.email && !user.email.endsWith("@web3.verxl.user")),
         is_admin:
           user.email?.toLowerCase() === "me@simonhavlik.com" ||

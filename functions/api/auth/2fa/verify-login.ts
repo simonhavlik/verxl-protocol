@@ -3,6 +3,7 @@
 
 import { CORS_HEADERS, signSessionToken, verifySessionToken } from "../../lib/auth";
 import { db } from "../../lib/db";
+import { getRequirePasswordWithEmail } from "../../lib/security-settings";
 import { verifyTotpToken } from "../../lib/totp";
 
 interface Env {}
@@ -90,6 +91,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
+    const requirePasswordWithEmail = await getRequirePasswordWithEmail(user.id);
+
     // Verification successful. Issue final session token.
     const sessionToken = await signSessionToken({ sub: user.id, email: user.email });
 
@@ -105,6 +108,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           total_spent_usd: Number(user.total_spent_usd),
           two_factor_enabled: true,
           has_password: Boolean(user.password_hash),
+          require_password_with_email: requirePasswordWithEmail,
         },
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }

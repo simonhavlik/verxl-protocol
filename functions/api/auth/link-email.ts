@@ -1,5 +1,6 @@
 import { CORS_HEADERS, verifySessionToken, signSessionToken } from "../lib/auth";
 import { db } from "../lib/db";
+import { getRequirePasswordWithEmail } from "../lib/security-settings";
 
 interface Env {}
 
@@ -133,6 +134,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     wallet: updatedUser.wallet_address,
   });
 
+  const requirePasswordWithEmail = await getRequirePasswordWithEmail(updatedUser.id);
+
   return new Response(
     JSON.stringify({
       success: true,
@@ -146,6 +149,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         total_spent_usd: Number(updatedUser.total_spent_usd),
         has_password: Boolean(updatedUser.password_hash),
         two_factor_enabled: Boolean(updatedUser.two_factor_enabled),
+        require_password_with_email: requirePasswordWithEmail,
         is_admin:
           updatedUser.email?.toLowerCase() === "me@simonhavlik.com" ||
           updatedUser.wallet_address?.toLowerCase() === "0x9b64203878f24eb0cdf55c8c6fa7d08ba0cf77e5",

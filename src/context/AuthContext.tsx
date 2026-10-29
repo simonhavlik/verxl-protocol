@@ -10,6 +10,7 @@ export interface UserProfile {
   has_active_key: boolean;
   has_password?: boolean;
   two_factor_enabled?: boolean;
+  require_password_with_email?: boolean;
   has_linked_email?: boolean;
   is_admin?: boolean;
 }
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!rawUser) return null;
     return {
       ...rawUser,
+      require_password_with_email: Boolean(rawUser.require_password_with_email ?? true),
       balance_usd: Number(rawUser.balance_usd || 0),
       total_deposited_usd: Number(rawUser.total_deposited_usd || 0),
       total_spent_usd: Number(rawUser.total_spent_usd || 0),

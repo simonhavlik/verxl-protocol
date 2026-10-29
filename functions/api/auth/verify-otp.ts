@@ -1,5 +1,6 @@
 import { CORS_HEADERS, signSessionToken } from "../lib/auth";
 import { db } from "../lib/db";
+import { getRequirePasswordWithEmail } from "../lib/security-settings";
 
 interface Env {}
 
@@ -92,6 +93,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(user.id)
     .first<{ id: string; key_prefix: string }>();
 
+  const requirePasswordWithEmail = await getRequirePasswordWithEmail(user.id);
+
   // 5. Generate session token
   const token = await signSessionToken({
     sub: user.id,
@@ -113,6 +116,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         active_key_prefix: activeKey ? activeKey.key_prefix : null,
         has_password: Boolean(user.password_hash),
         two_factor_enabled: Boolean(user.two_factor_enabled),
+        require_password_with_email: requirePasswordWithEmail,
       },
     }),
     { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
