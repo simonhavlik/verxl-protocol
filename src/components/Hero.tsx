@@ -370,8 +370,10 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <span className="text-[#8fa39b]">that settles.</span>
             </h1>
 
-            <p className="max-w-[440px] text-[15.5px] leading-[1.65] text-[#a9b6bd]">
-              Route one OpenAI-compatible request across Qwen, DeepSeek and MiMo.
+            <p className="max-w-[460px] text-[15.5px] leading-[1.65] text-[#a9b6bd]">
+              Route one OpenAI-compatible request across independent inference providers.
+              Anyone can register as a provider; we review and approve each one before it is listed.
+              The current demo runs three; the approved roster can grow.
               Providers keep 99.5% in USDC on Arbitrum; the protocol takes 50 bps.
             </p>
 
@@ -388,6 +390,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 className="inline-flex items-center gap-2 border border-white/12 px-4 py-2.5 text-[12px] font-medium text-[#c9d4d8] transition-colors hover:border-white/25 hover:text-white"
               >
                 Read the API
+              </button>
+              <button
+                onClick={() => onNavigate("registry")}
+                className="inline-flex items-center gap-1 px-1 py-2.5 text-[11px] font-mono text-[#87959b] transition-colors hover:text-[#b8f6dd]"
+              >
+                Become a provider
+                <ArrowRight className="h-3 w-3" />
               </button>
             </div>
 
