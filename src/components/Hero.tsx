@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 import { Playground } from "./Playground";
+import { RouteMap } from "./RouteMap";
 import { MarketRail } from "./MarketRail";
 
 interface HeroProps {
@@ -506,6 +507,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       </span>
                     </div>
 
+                    <div className="grid gap-3 sm:grid-cols-[1.32fr_0.68fr]">
                     <div className="space-y-1.5 text-[11px]">
                       <div className="p-2 bg-white/[0.03] border border-[#b8f6dd]/25 flex items-center justify-between">
                         <div>
@@ -547,6 +549,17 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                           <div className="text-[10px] text-slate-400">110 TPS</div>
                         </div>
                       </div>
+                    </div>
+                    <div className="flex min-h-[150px] flex-col border border-[#b8f6dd]/15 bg-[#05070b]">
+                      <div className="flex items-center justify-between border-b border-white/5 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-[#65737b]">
+                        <span>EU route</span>
+                        <span className="text-[#b8f6dd]">live</span>
+                      </div>
+                      <RouteMap className="w-full flex-1" />
+                      <div className="border-t border-white/5 px-2 py-1 font-mono text-[7.5px] text-[#7d8a92]">
+                        client → edge → Prague
+                      </div>
+                    </div>
                     </div>
                   </div>
                 )}
