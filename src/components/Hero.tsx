@@ -798,9 +798,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </div>
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
-            Measured,
+            Measured.
             <br />
-            <span className="text-[#8fa39b]">not promised.</span>
+            <span className="text-[#8fa39b]">With limits.</span>
           </h2>
           <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
             Sepolia telemetry sampled over the last 24 hours. Fees, latency and oracle fidelity; demonstration measurement.
@@ -1206,9 +1206,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </div>
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="font-sans text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
-            Ciphertext,
+            Ciphertext.
             <br />
-            <span className="text-[#8fa39b]">by default.</span>
+            <span className="text-[#8fa39b]">The privacy boundary.</span>
           </h2>
           <p className="max-w-sm font-sans text-[14px] leading-relaxed text-[#a9b6bd]">
             Chats are encrypted in the browser with a wallet-derived key. Postgres stores ciphertext, a wallet key id and timestamps; no message text, titles or prompts. A Verxl API key opens usage and billing, never chat history. Upstream calls use Verxl-held credentials; the provider receives the request, not your account key.
