@@ -417,7 +417,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <div className="mt-10 grid grid-cols-1 border-t border-white/10 sm:grid-cols-2">
           {[
             ["Not a model lab.", "We do not train foundation models. We route and clear access to a small set of them."],
-            ["Not a cloud.", "No regions, no GPU rental, no control plane. One host, three models, an OpenAI-compatible API."],
+            ["Not a cloud.", "No regions, no GPU rental, no control plane. One initial host, three starting models, an OpenAI-compatible API; the registry can grow."],
             ["Not a data broker.", "The operator sees usage records, not plaintext. Chats are not a training corpus."],
             ["Not a token.", "The fee is USDC on Arbitrum. No governance token, no points, no emissions."],
           ].map(([title, body], i) => (
@@ -502,6 +502,31 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Accountability */}
+      <section className="py-16">
+        <SectionIntro
+          index="08"
+          kicker="Accountability"
+          title={<>Access with a gate.<br /><span className="text-[#8fa39b]">Not a shield.</span></>}
+          copy="We can be precise about who gets access, what the uncensored model can do, and what happens when a provider tolerates abuse."
+        />
+        <div className="mt-10 grid grid-cols-1 border-t border-white/10 md:grid-cols-3 md:divide-x md:divide-white/10">
+          {[
+            ["01 / REPUTABLE PROVIDERS ONLY", "Every provider is reviewed and approved before listing. We look for abuse handling, a clear logging policy and operational accountability; approval is not automatic."],
+            ["02 / UNCENSORED, DELIBERATELY SMALL", "Qwen 3.5 4B is uncensored but 4B parameters, below our 20B ceiling. Frontier models run 500B to 4T. A small model can answer anything; it cannot do frontier-scale harm."],
+            ["03 / FRONTIER WORK STAYS SAFETY-ALIGNED", "Harder, frontier-grade work routes to DeepSeek V4.1 Flash and MiMo 2.6 Flash. Abuse reports lead to provider removal; the platform is not a shield."],
+          ].map(([label, body]) => (
+            <div key={label} className="py-7 md:px-6 md:first:pl-0 md:last:pr-0">
+              <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">{label}</div>
+              <p className="mt-3 max-w-[320px] text-[13px] leading-relaxed text-[#9aa7ad]">{body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 max-w-2xl font-mono text-[8.5px] leading-relaxed text-[#65737b]">
+          No system is abuse-proof. The guarantee is a process: approval, model limits, reporting and removal. We publish the boundary rather than pretend it away.
+        </p>
       </section>
 
       {/* Closing */}

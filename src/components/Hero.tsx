@@ -12,6 +12,7 @@ import {
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 import { Playground } from "./Playground";
 import { RouteMap } from "./RouteMap";
+import { EfficiencyFrontier } from "./EfficiencyFrontier";
 import { MarketRail } from "./MarketRail";
 
 interface HeroProps {
@@ -24,6 +25,12 @@ const HARDWARE_SHORT: Record<string, string> = {
   "deepseek-bridge-1": "MoE engine",
 };
 
+const INGEST_MODELS = [
+  { name: "Qwen 3.5 4B Uncensored", tag: "UNCENSORED / 4B", note: "Any question; not frontier-scale.", cost: "$0.05 / 1M", x: 26, y: 66 },
+  { name: "DeepSeek V4.1 Flash", tag: "VALUE FRONTIER", note: "74.0 at $0.181 / task.", cost: "$0.30 / 1M", x: 146, y: 28 },
+  { name: "MiMo 2.6 Flash", tag: "DAILY DRIVER", note: "Half the listed token price.", cost: "$0.14 / 1M", x: 92, y: 50 },
+];
+
 export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -31,6 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   // Walkthrough demo states
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
+  const [ingestPick, setIngestPick] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
   // Fast Fee Calculator State (in millions of tokens per month)
@@ -373,7 +381,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <p className="max-w-[460px] text-[15.5px] leading-[1.65] text-[#a9b6bd]">
               Route one OpenAI-compatible request across independent inference providers.
               Anyone can register as a provider; we review and approve each one before it is listed.
-              The current demo runs three; the approved roster can grow.
+              Three models to start; the approved registry can grow.
               Providers keep 99.5% in USDC on Arbitrum; the protocol takes 50 bps.
             </p>
 
@@ -403,7 +411,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-[#7d8a92]">
               <span>50 bps protocol</span>
               <span>99.5% to providers</span>
-              <span>3 models</span>
+              <span>3 to start</span>
               <span className="text-[#b8f6dd]/70">Sepolia</span>
             </div>
           </div>
@@ -472,33 +480,89 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
-                        <div className="text-slate-400 text-[10px]">SELECTED MODEL</div>
-                        <div className="text-white font-semibold mt-0.5">
-                          qwen3.5-4b-uncensored-32k (Bulbasaur)
+                    <div className="grid gap-3 sm:grid-cols-[1.08fr_0.92fr]">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
+                            <div className="text-slate-400 text-[10px]">SELECTED MODEL</div>
+                            <div className="text-white font-semibold mt-0.5 break-words">
+                              {INGEST_MODELS[ingestPick].name}
+                            </div>
+                          </div>
+                          <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
+                            <div className="text-slate-400 text-[10px]">PAYLOAD AUTH</div>
+                            <div className="text-[#b8f6dd] font-semibold mt-0.5">
+                              Bearer vrxl_sec_8f3a...
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="bg-[#05070b] p-2.5 border border-slate-800/80">
-                        <div className="text-slate-400 text-[10px]">PAYLOAD AUTH</div>
-                        <div className="text-emerald-400 font-semibold mt-0.5">
-                          Bearer vrxl_sec_8f3a...
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="bg-[#05070b] p-3 border border-slate-800/80 space-y-1.5 text-[11px]">
-                      <div className="flex justify-between text-slate-400">
-                        <span>Protocol Clearing Fee (50 bps):</span>
-                        <span className="text-emerald-400 font-bold">$0.00067 USD</span>
+                        <div className="bg-[#05070b] p-3 border border-slate-800/80 space-y-1.5 text-[11px]">
+                          <div className="flex justify-between text-slate-400">
+                            <span>Protocol Clearing Fee (50 bps):</span>
+                            <span className="text-[#b8f6dd] font-bold">$0.00067 USD</span>
+                          </div>
+                          <div className="flex justify-between text-slate-400">
+                            <span>Centralized SaaS Extracted Rent (950 bps):</span>
+                            <span className="text-rose-400 line-through">$0.01273 USD</span>
+                          </div>
+                          <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800/60 font-semibold">
+                            <span className="text-slate-300">Cost compression:</span>
+                            <span className="text-[#b8f6dd]">-94.7%</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-slate-400">
-                        <span>Centralized SaaS Extracted Rent (950 bps):</span>
-                        <span className="text-rose-400 line-through">$0.01273 USD</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800/60 font-semibold">
-                        <span className="text-slate-300">Cost compression:</span>
-                        <span className="text-[#b8f6dd]">-94.7%</span>
+
+                      <div className="border border-white/10 bg-[#05070b] p-2">
+                        <div className="flex items-center justify-between font-mono text-[7.5px] uppercase tracking-[0.1em] text-[#65737b]">
+                          <span>Model selection</span>
+                          <span className="text-[#b8f6dd]">Frontier</span>
+                        </div>
+                        <svg viewBox="0 0 200 82" className="mt-1 h-auto w-full" aria-hidden="true">
+                          <line x1="14" y1="14" x2="14" y2="70" stroke="rgba(255,255,255,0.08)" strokeWidth="0.6" />
+                          <line x1="14" y1="70" x2="192" y2="70" stroke="rgba(255,255,255,0.08)" strokeWidth="0.6" />
+                          <line x1="26" y1="66" x2="92" y2="50" stroke="#b8f6dd" strokeWidth="0.9" strokeDasharray="3 3" opacity="0.7" />
+                          <line x1="92" y1="50" x2="146" y2="28" stroke="#b8f6dd" strokeWidth="0.9" strokeDasharray="3 3" opacity="0.7" />
+                          {INGEST_MODELS.map((model, i) => (
+                            <g key={model.name}>
+                              <circle
+                                cx={model.x}
+                                cy={model.y}
+                                r={i === ingestPick ? 5 : 3}
+                                fill={i === ingestPick ? "#b8f6dd" : "#080c12"}
+                                stroke="#b8f6dd"
+                                strokeWidth={i === ingestPick ? 1.4 : 0.8}
+                              />
+                              <text x={model.x + 7} y={model.y + 2.5} fill={i === ingestPick ? "#f3f6f5" : "#65737b"} fontFamily="Menlo, monospace" fontSize="5.8">
+                                {model.name.split(" ").slice(0, 2).join(" ")}
+                              </text>
+                            </g>
+                          ))}
+                          <text x="180" y="20" textAnchor="end" fill="#7fae9d" fontFamily="Menlo, monospace" fontSize="5.4" letterSpacing="0.1em">VALUE FRONTIER</text>
+                        </svg>
+                        <div className="mt-1 space-y-1">
+                          {INGEST_MODELS.map((model, i) => (
+                            <div
+                              key={model.name}
+                              onClick={() => setIngestPick(i)}
+                              className={`flex cursor-pointer items-center justify-between gap-1 border px-1.5 py-1 transition-colors ${
+                                i === ingestPick
+                                  ? "border-[#b8f6dd]/40 bg-[#b8f6dd]/5"
+                                  : "border-transparent hover:border-white/10"
+                              }`}
+                            >
+                              <span className="flex min-w-0 items-center gap-1.5">
+                                <span className={`h-1 w-1 shrink-0 ${i === ingestPick ? "bg-[#b8f6dd]" : "bg-[#65737b]"}`} />
+                                <span className={`truncate font-mono text-[8px] ${i === ingestPick ? "text-white" : "text-[#87959b]"}`}>
+                                  {model.name}
+                                </span>
+                              </span>
+                              <span className="shrink-0 font-mono text-[6.5px] uppercase tracking-wider text-[#7fae9d]">
+                                {i === 1 ? "optimal" : model.cost}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1099,6 +1163,26 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Models & efficiency frontier */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
+          <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
+          <span>Models</span>
+          <span className="text-white/20">/ 04</span>
+        </div>
+        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="text-[clamp(2rem,4.2vw,3.8rem)] font-medium leading-[0.95] tracking-[-0.045em] text-[#f3f6f5]">
+            Three to start.
+            <br />
+            <span className="text-[#8fa39b]">One frontier.</span>
+          </h2>
+          <p className="max-w-sm text-[14px] leading-relaxed text-[#a9b6bd]">
+            The catalogue starts with three models, not a cap. The approved provider registry adds routes; the frontier is the mix, not the badge.
+          </p>
+        </div>
+        <EfficiencyFrontier />
       </section>
 
       {/* Client-side encrypted chat storage: mechanism, stored fields, access boundary */}

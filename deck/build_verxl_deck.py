@@ -438,7 +438,7 @@ notes(s, """This is the efficiency frontier from the LiveBench 2.0 Overall data,
 # ---------------------------------------------------------------- 06 ROUTING
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "07  /  ROUTING", 8)
 eyebrow(s, "The catalogue")
-title(s, "Three models. One contract.", None, y=1.20, size=42)
+title(s, "Three to start. One contract.", None, y=1.20, size=42)
 cols = [0.65, 4.15, 7.10, 8.75]
 headers = ["MODEL", "HOST", "CONTEXT", "P50 TTFT"]
 for x, h in zip(cols, headers):
@@ -469,9 +469,9 @@ for i, (a, b) in enumerate([("CADENCE", "30 min"), ("VECTOR", "deterministic"), 
     txt(s, 11.15, 3.42 + i * 0.42, 1.4, 0.2, b, 8, SOFT, BODY, align=PP_ALIGN.RIGHT)
 
 hline(s, 0.65, 5.35, 8.75, LINE)
-txt(s, 0.65, 5.52, 8.7, 0.7, "No GPU fleet. No lock-in. One resident host and two official bridges; the route is the contract.", 12, SOFT, BODY, spacing=1.3)
+txt(s, 0.65, 5.52, 8.7, 0.7, "Three to start: Qwen 4B uncensored · DeepSeek frontier · MiMo half price. The registry can grow.", 12, SOFT, BODY, spacing=1.3)
 txt(s, 0.65, 6.35, 8.75, 0.2, "TTFT measured on the Sepolia demonstration. Not an SLA.", 7, MUTED, MONO)
-notes(s, """The catalogue is intentionally small. Qwen 3.5 4B Uncensored is the resident model on the Prague bare-metal host: 32K context, the lowest measured TTFT, and the only host Verxl operates. DeepSeek V4.1 Flash and MiMo 2.6 Flash are reached through official bridges: 1M context each, higher TTFT, no GPU fleet. The canary is the quality control: a deterministic probe with seed 42 runs every 30 minutes, checks fidelity and falls back automatically. The 99.8% figure is the oracle fidelity on the demo telemetry. The caveat matters: these are Sepolia numbers, not an SLA, and the bridge paths are not the same as the bare-metal host.""")
+notes(s, """The catalogue starts with three models, not a cap. Qwen 3.5 4B Uncensored is the resident model on the Prague bare-metal host: 32K context, the lowest measured TTFT, and the only host Verxl operates. It is uncensored but deliberately small — 4B parameters, below the 20B ceiling — so it can answer anything without being a frontier-scale capability. DeepSeek V4.1 Flash is the efficient point for harder work: 74.0 overall at $0.181 per successful task on LiveBench 2.0. MiMo 2.6 Flash is the daily driver at roughly half the listed token price of DeepSeek; on LiveBench its verbosity narrows the per-successful-task gap. The canary is the quality control: a deterministic probe with seed 42 runs every 30 minutes, checks fidelity and falls back automatically. The 99.8% figure is the oracle fidelity on the demo telemetry. The caveat matters: these are Sepolia numbers, not an SLA, and the bridge paths are not the same as the bare-metal host. The approved provider registry can add more models; the API and 50 bps stay the same.""")
 
 # ---------------------------------------------------------------- 07 ECONOMICS
 s = prs.slides.add_slide(prs.slide_layouts[6]); bg(s); chrome(s, "08  /  UNIT ECONOMICS", 9)
