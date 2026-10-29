@@ -92,7 +92,7 @@ export const WhitepaperContent: React.FC = () => {
             <div><span className="text-slate-500">DAO Vault:</span> <code className="text-blue-300">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code></div>
             <div><span className="text-slate-500">Governance:</span> $VRXL (Fixed Genesis: 1,000,000)</div>
             <div><span className="text-slate-500">Settlement:</span> Arbitrum USDC <code className="text-blue-300">0x14f10A86...742b</code></div>
-            <div><span className="text-slate-500">PostgreSQL:</span> Charizard <code className="text-blue-300">212.227.211.88:5432</code> (verxl)</div>
+            <div><span className="text-slate-500">PostgreSQL:</span> managed telemetry via Cloudflare Hyperdrive (verxl)</div>
           </div>
 
           {/* ASCII Banner */}
@@ -214,7 +214,7 @@ export const WhitepaperContent: React.FC = () => {
        ▼                                           ▼
 +──────────────────────────+             +────────────────────────+
 | Verified GPU Provider    |             | PostgreSQL Server      |
-| (vLLM / TGI / SGLang)    |             | - Charizard : 5432     |
+| (vLLM / TGI / SGLang)    |             | - Hyperdrive     |
 | Direct SSE Stream Return |             | - verxl.dao_stats      |
 +──────────────────────────+             | - verxl.proposals      |
                                          +────────────────────────+
@@ -460,10 +460,10 @@ for chunk in response:
             7. Technical Implementation Details
           </h3>
           <h4 className="text-sm font-semibold text-slate-200 font-mono">
-            7.1 PostgreSQL Telemetry Schema on Charizard (212.227.211.88:5432 · schema verxl)
+            7.1 PostgreSQL Telemetry Schema on Cloudflare Hyperdrive (schema verxl)
           </h4>
           <p className="text-[13.5px] text-slate-300">
-            The off-chain routing engine persists balances, audits, proposals, and DAO statistics to PostgreSQL 17 on Charizard:
+            The off-chain routing engine persists balances, audits, proposals, and DAO statistics to PostgreSQL 17 on managed PostgreSQL:
           </p>
 
           <pre className="font-mono text-[9.5px] sm:text-[10.5px] leading-tight text-blue-300 bg-[#05070b] border border-slate-800 p-3 rounded-[2px] overflow-x-auto">
@@ -520,7 +520,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
           </pre>
 
           <div className="space-y-1.5 text-[13px] text-slate-300">
-            <div>• <strong>Phase 1 (Complete):</strong> Aragon OSx DAO deployed on Sepolia, VIP-1 ratified, Charizard PostgreSQL sync operational.</div>
+            <div>• <strong>Phase 1 (Complete):</strong> Aragon OSx DAO deployed on Sepolia, VIP-1 ratified, managed PostgreSQL sync operational.</div>
             <div>• <strong>Phase 2 (Nov 2026):</strong> 5-minute academic proposal pitch at xPort VŠE (Nov 4), peer evaluations.</div>
             <div>• <strong>Phase 3 (Nov-Dec 2026):</strong> Automated oracle slashing triggers, Arbitrum USDC commercial clearing.</div>
             <div>• <strong>Phase 4 (Jan 2027):</strong> Multi-node European data center stress tests, public gateway defense.</div>

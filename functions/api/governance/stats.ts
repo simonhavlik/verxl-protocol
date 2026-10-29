@@ -1,5 +1,5 @@
 // Cloudflare Pages Function: /api/governance/stats
-// Live Aragon OSx DAO treasury balance, block height & PostgreSQL Charizard sync telemetry
+// Live Aragon OSx DAO treasury balance, block height & PostgreSQL managed PostgreSQL sync telemetry
 
 interface Env {}
 
@@ -75,9 +75,7 @@ export const onRequestGet: PagesFunction<Env> = async () => {
     aragon_app_url: `https://app.aragon.org/dao/ethereum-sepolia/${DAO_ADDRESS}`,
     etherscan_url: `https://sepolia.etherscan.io/address/${DAO_ADDRESS}`,
     postgres_sync: {
-      host: "charizard (212.227.211.88:5432)",
-      database: "kiam",
-      schema: "verxl",
+            schema: "verxl",
       tables: ["verxl.dao_stats", "verxl.proposals", "verxl.votes", "verxl.sync_logs"],
       cron_schedule: "*/5 * * * * (Active)",
       status: "SYNCHRONIZED",

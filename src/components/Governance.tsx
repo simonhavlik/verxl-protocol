@@ -128,7 +128,7 @@ export const Governance: React.FC = () => {
       const data = (await res.json()) as any;
       if (res.ok) {
         setSyncFeedback(
-          `Synced Sepolia block #${data.block_number} (${data.treasury_eth} ETH) · Persisted to PostgreSQL on Charizard (verxl.dao_stats & verxl.proposals)`
+          `Synced Sepolia block #${data.block_number} (${data.treasury_eth} ETH) · Persisted to PostgreSQL on managed PostgreSQL (verxl.dao_stats & verxl.proposals)`
         );
         await fetchGovernanceData();
       } else {
@@ -166,7 +166,7 @@ export const Governance: React.FC = () => {
           Aragon OSx DAO & Protocol Specification
         </h2>
         <p className="text-xs text-slate-400 font-mono">
-          Decentralized ownership, on-chain proposals, and automated persistence to PostgreSQL on Charizard (212.227.211.88:5432).
+          Decentralized ownership, on-chain proposals, and automated persistence to managed PostgreSQL telemetry via Cloudflare Hyperdrive.
         </p>
       </div>
 
@@ -181,7 +181,7 @@ export const Governance: React.FC = () => {
             </span>
           </div>
           <p className="text-slate-300 text-[10.5px] leading-relaxed">
-            The Aragon OSx DAO vault (<code className="text-amber-200">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposals VIP-1, VIP-2, VIP-3 are live on the Ethereum Sepolia testnet as an academic demonstration started as an academic university project at Prague University of Economics and Business (VŠE Praha). All votes, telemetry, and treasury actions are continuously synced into PostgreSQL on Charizard (<code className="text-amber-200">212.227.211.88:5432 · schema verxl</code>).
+            The Aragon OSx DAO vault (<code className="text-[#b8f6dd]">0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a</code>) and proposals VIP-1, VIP-2, VIP-3 are live on the Ethereum Sepolia testnet as an academic demonstration started as an academic university project at Prague University of Economics and Business (VŠE Praha). All votes, telemetry, and treasury actions are continuously synced into managed PostgreSQL telemetry via Cloudflare Hyperdrive.
           </p>
         </div>
       </div>
@@ -313,7 +313,7 @@ export const Governance: React.FC = () => {
                   onClick={triggerSync}
                   disabled={syncing}
                   className="hero-btn hero-btn--ghost !py-1.5 !px-3 !text-[11px] inline-flex items-center gap-1.5"
-                  title="Force re-sync with on-chain Aragon DAO and Charizard PostgreSQL"
+                  title="Force re-sync with on-chain Aragon DAO and managed PostgreSQL"
                 >
                   <RefreshCw className={`w-3 h-3 ${syncing ? "animate-spin text-blue-400" : "text-slate-400"}`} />
                   <span>{syncing ? "Syncing..." : "Sync On-Chain"}</span>
@@ -363,7 +363,7 @@ export const Governance: React.FC = () => {
                 </div>
                 <div className="text-xs font-bold text-white mt-0.5 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Charizard : 5432</span>
+                  <span>Hyperdrive</span>
                 </div>
                 <div className="text-[9.5px] text-slate-500 mt-0.5 font-mono">
                   schema verxl · crontab */5m
@@ -401,14 +401,14 @@ export const Governance: React.FC = () => {
               </h3>
               <div className="text-[10px] text-slate-400 flex items-center gap-2">
                 <Server className="w-3 h-3 text-emerald-400" />
-                <span>Auto-Persisted to PostgreSQL on Charizard</span>
+                <span>Auto-Persisted to PostgreSQL on managed PostgreSQL</span>
               </div>
             </div>
 
             {loading ? (
               <div className="bg-[#0a0e17] border border-slate-800 rounded-[4px] p-8 text-center text-xs text-slate-400">
                 <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-blue-400" />
-                <span>Reading proposals from Sepolia RPC & Charizard PostgreSQL...</span>
+                <span>Reading proposals from Sepolia RPC & managed PostgreSQL...</span>
               </div>
             ) : proposals.length > 0 ? (
               proposals.map((proposal) => {
@@ -447,7 +447,7 @@ export const Governance: React.FC = () => {
                         {proposal.postgresSynced && (
                           <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[9.5px] font-mono bg-blue-950/40 text-blue-300 border border-blue-700/40">
                             <Database className="w-2.5 h-2.5 text-blue-400" />
-                            <span>Charizard PG</span>
+                            <span>managed telemetry PG</span>
                           </span>
                         )}
 

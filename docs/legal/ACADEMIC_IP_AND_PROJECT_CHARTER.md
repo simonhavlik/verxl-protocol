@@ -56,7 +56,7 @@ To the fullest extent permissible under Czech law, the Academic Collaborators wa
 
 **4.1 Sole Financial Investment:**  
 Party A (Šimon Havlík) has provided 100.0% of all capital, hardware infrastructure, and operational financing for the project, including:
-- IONOS Charizard VM (PostgreSQL 17 institutional database at `212.227.211.88`);
+- managed PostgreSQL 17 telemetry (Cloudflare Hyperdrive);
 - Bulbasaur Prague bare-metal Vulkan GPU cluster;
 - Oracle Cloud Diglett VM (OMP and Honcho machine memory daemon);
 - Cloudflare Workers edge proxy routing and domain registrations (`verxl.com`);

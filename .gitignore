@@ -52,3 +52,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Internal handover / agent operating notes (kept local, never public)
+HANDOVER.md
+
+# Local agent render/preview scratch
+.dsh-office.*
+
+# Generated presentation outputs and raster deck assets
+deck/assets/
+deck/*.pptx

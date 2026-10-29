@@ -1,5 +1,5 @@
 // Cloudflare Pages Function: /api/governance/sync
-// Trigger / verify live Aragon OSx on-chain state sync with Charizard PostgreSQL
+// Trigger / verify live Aragon OSx on-chain state sync with managed PostgreSQL
 
 interface Env {}
 
@@ -76,14 +76,11 @@ async function handleSync(): Promise<Response> {
     treasury_eth: balanceEth,
     treasury_usd: parseFloat((balanceEth * 2650.0).toFixed(2)),
     postgres_persistence: {
-      server: "charizard (212.227.211.88:5432)",
-      database: "kiam",
-      schema: "verxl",
+            schema: "verxl",
       tables_updated: ["verxl.dao_stats", "verxl.proposals", "verxl.votes", "verxl.sync_logs"],
-      cron_runner: "/home/simon/verxl-gateway/sync_governance.py (every 5 mins)",
       sync_verified: true,
     },
-    message: `Successfully synchronized Aragon DAO org changes at block #${blockNumber}. Persisted to Charizard PostgreSQL (schema verxl).`,
+    message: `Successfully synchronized Aragon DAO org changes at block #${blockNumber}. Persisted to managed PostgreSQL (schema verxl).`,
     synced_at: new Date().toISOString(),
   };
 

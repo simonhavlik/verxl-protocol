@@ -6,7 +6,7 @@
 **DAO Vault Address:** `0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a`  
 **Arbitrum Settlement Escrow:** `0x14f10A865e277C0B1949e18Dd9856602DB11742b`  
 **Governance Token:** `$VRXL` (ERC-20, Fixed Genesis Supply: 1,000,000)  
-**PostgreSQL Telemetry Target:** Charizard `212.227.211.88:5432/kiam` (schema `verxl`)  
+**PostgreSQL Telemetry:** managed PostgreSQL via Cloudflare Hyperdrive (schema `verxl`)  
 **Academic Attribution:** Started as an academic university project at Prague University of Economics and Business (VŠE Praha)  
 **Lead Architect & Author:** Šimon Havlík & Core Contributors  
 **Date:** October 2026  
@@ -109,7 +109,7 @@ Verxl implements a hybrid architecture: latency-critical request routing and str
        ▼                                           ▼
 +──────────────────────────+             +────────────────────────+
 | Verified GPU Provider    |             | PostgreSQL Server      |
-| (vLLM / TGI / SGLang)    |             | - Charizard : 5432     |
+| (vLLM / TGI / SGLang)    |             | - Hyperdrive     |
 | Direct SSE Stream Return |             | - verxl.dao_stats      |
 +──────────────────────────+             | - verxl.proposals      |
                                          +────────────────────────+
@@ -353,9 +353,9 @@ In compliance with the project charter, genesis voting weight is allocated in eq
 
 ## 7. Technical Implementation Details
 
-### 7.1 PostgreSQL Telemetry Schema on Charizard
+### 7.1 PostgreSQL Telemetry Schema on Cloudflare Hyperdrive
 
-The off-chain routing engine tracks balances and provider health through a schema optimized for high concurrency on Charizard (`212.227.211.88:5432`, schema `verxl`):
+The off-chain routing engine tracks balances and provider health through a schema optimized for high concurrency on managed PostgreSQL via Cloudflare Hyperdrive (schema `verxl`):
 
 ```sql
 CREATE SCHEMA IF NOT EXISTS verxl;
@@ -436,7 +436,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
 * Mint 1,000,000 `$VRXL` and distribute founding tranches.
 * Draft and ratify 1-page Memorandum of Association (Founders Agreement).
 * Create and execute Genesis Proposal VIP-1; deposit SepoliaETH into DAO Vault.
-* Persist on-chain state to Charizard PostgreSQL 17 (`verxl` schema).
+* Persist on-chain state to managed PostgreSQL 17 (`verxl` schema).
 
 ### Phase 2: Proposal Pitch & Peer Review (November 2026)
 * Deliver strictly timed 5-minute proposal pitch at xPort VŠE on November 4, 2026.
