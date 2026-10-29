@@ -216,11 +216,15 @@ export default function App() {
     }
   };
 
-  // Warm only the two interactive routes users jump into first.
+  // Warm the interactive surface. On Chat/Playground, don't download the other route.
   useEffect(() => {
-    preloadRoute("playground");
-    preloadRoute("chat");
-  }, []);
+    if (activeTab === "overview") {
+      preloadRoute("playground");
+      preloadRoute("chat");
+    } else {
+      preloadRoute(activeTab);
+    }
+  }, [activeTab]);
 
   // Listen to browser Back / Forward navigation
   useEffect(() => {
