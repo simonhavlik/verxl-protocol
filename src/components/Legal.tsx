@@ -123,7 +123,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <div><strong>Entity / Representation:</strong> Verxl Protocol Research & Development</div>
                 <div><strong>Lead Architect / Contact:</strong> Simon Havlík</div>
                 <div><strong>Jurisdiction:</strong> Prague, Czech Republic (European Union)</div>
-                <div><strong>Data Protection Queries:</strong> privacy@verxl.com / havlik.simon@post.cz</div>
+                <div><strong>Data Protection Queries:</strong> me@simonhavlik.com</div>
                 <div><strong>Supervisory Authority:</strong> Office for Personal Data Protection (<em>Úřad pro ochranu osobních údajů - ÚOOÚ</em>), Pplk. Sochora 27, 170 00 Prague 7, Czech Republic.</div>
               </div>
             </div>
@@ -238,7 +238,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 </div>
               </div>
               <p className="text-[11px] text-slate-400 pt-1">
-                To exercise any of these rights, email <code className="text-cyan-300">privacy@verxl.com</code>. Requests are verified cryptographically and answered within 30 days without charge.
+                To exercise any of these rights, email <code className="text-cyan-300">me@simonhavlik.com</code>. Requests are verified cryptographically and answered within 30 days without charge.
               </p>
             </div>
 

@@ -671,7 +671,7 @@ for shape in slide14.shapes:
         p2.font.color.rgb = ACCENT_BLUE
         
         p3 = shape.text_frame.add_paragraph()
-        p3.text = "Presenter: Šimon Havlík (havlik.simon@post.cz)\nLive Platform: https://verxl.com  ·  Documentation: https://verxl.com/whitepaper\nPrague University of Economics and Business (VŠE Praha)"
+        p3.text = "Presenter: Šimon Havlík (me@simonhavlik.com)\nLive Platform: https://verxl.com  ·  Documentation: https://verxl.com/whitepaper\nPrague University of Economics and Business (VŠE Praha)"
         p3.font.size = Pt(12)
         p3.font.color.rgb = TEXT_SLATE
 

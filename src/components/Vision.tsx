@@ -277,7 +277,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                   <a href="https://github.com/simonhavlik" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
                     <Github className="h-3 w-3" /> GitHub <ArrowUpRight className="h-2.5 w-2.5" />
                   </a>
-                  <a href="mailto:havlik.simon@post.cz" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                  <a href="mailto:me@simonhavlik.com" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
                     <Mail className="h-3 w-3" /> Email
                   </a>
                 </div>
@@ -508,8 +508,8 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               </button>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-[9.5px]">
-              <a href="mailto:havlik.simon@post.cz" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
-                <Mail className="h-3 w-3" /> havlik.simon@post.cz
+              <a href="mailto:me@simonhavlik.com" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                <Mail className="h-3 w-3" /> me@simonhavlik.com
               </a>
               <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
                 <Github className="h-3 w-3" /> Repository <ArrowUpRight className="h-3 w-3" />
