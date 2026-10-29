@@ -59,7 +59,6 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "registry", label: "Registry" },
     { id: "oracle", label: "Oracle" },
     { id: "whitepaper", label: "Whitepaper" },
-    { id: "vision", label: "Vision" },
   ];
   const allItems = [...coreItems, ...moreItems];
   const isActiveMore = moreItems.some((i) => i.id === activeTab);

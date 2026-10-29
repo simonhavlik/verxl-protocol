@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Github, Mail } from "lucide-react";
 // @ts-ignore
 import countries110m from "world-atlas/countries-110m.json";
 import { feature } from "topojson-client";
@@ -160,7 +160,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         <div className="space-y-6 lg:col-span-5">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
             <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
-            <span>Vision</span>
+            <span>About</span>
             <span className="text-white/20">/ 05</span>
           </div>
 
@@ -213,10 +213,91 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Commitments */}
+      {/* Team */}
       <section className="py-16">
         <SectionIntro
           index="01"
+          kicker="The creators"
+          title={<>Three roles.<br /><span className="text-[#8fa39b]">One project.</span></>}
+          copy="Verxl is a VŠE Praha applied blockchain project. Architecture, verification and governance operate as one small team."
+        />
+
+        <div className="mt-10 grid grid-cols-1 gap-8 border-t border-white/10 pt-8 md:grid-cols-3">
+          {[
+            {
+              name: "Simon Havlík",
+              role: "Founder / Lead Architect",
+              bio: "Simon built the edge router, the clearing switch, the Prague Qwen host and the encrypted Chat. He is the lead architect of the VŠE Praha applied blockchain project.",
+              image: "/team/simon-havlik-headshot.webp",
+              meta: "PROTOCOL · PRODUCT · INFRASTRUCTURE",
+              links: true,
+            },
+            {
+              name: "Daniel Kolárovský",
+              role: "Head of Verification / SLA & Process",
+              bio: "Daniel runs the empirical side: canary probes, SLA measurement and the process checks behind each release. The verification loop is part of the product, not a postscript.",
+              image: "/team/daniel-kolarovsky.jpg",
+              meta: "VERIFICATION · PROCESS · EVIDENCE",
+              links: false,
+            },
+            {
+              name: "Miroslava Valová",
+              role: "Head of Compliance / Research & Governance",
+              bio: "Miroslava leads regulatory scope, market research and institutional governance, including the MiCA/GDPR boundary, partner diligence and the protocol's public positioning.",
+              image: "/team/miroslava-valova.jpg",
+              meta: "COMPLIANCE · RESEARCH · GOVERNANCE",
+              links: false,
+            },
+          ].map((member, i) => (
+            <div key={member.name}>
+              <div className="overflow-hidden border border-white/10 bg-[#080c12]">
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  loading="lazy"
+                  className="aspect-[4/5] w-full object-cover object-top saturate-[.9]"
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.12em] text-[#65737b]">
+                <span>Prague, CZ</span>
+                <span>0{i + 1}</span>
+              </div>
+              <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-[#b8f6dd]/70">
+                {member.role}
+              </div>
+              <h3 className="mt-1 text-[22px] font-medium tracking-[-0.025em] text-[#f3f6f5]">
+                {member.name}
+              </h3>
+              <p className="mt-2 max-w-[330px] text-[13px] leading-relaxed text-[#9aa7ad]">{member.bio}</p>
+              <div className="mt-3 font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">
+                {member.meta}
+              </div>
+              {member.links && (
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[9.5px]">
+                  <a href="https://github.com/simonhavlik" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                    <Github className="h-3 w-3" /> GitHub <ArrowUpRight className="h-2.5 w-2.5" />
+                  </a>
+                  <a href="mailto:havlik.simon@post.cz" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                    <Mail className="h-3 w-3" /> Email
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-4 font-mono text-[9px] text-[#65737b] sm:flex-row sm:items-center sm:justify-between">
+          <span>VŠE Praha applied blockchain project · Prague</span>
+          <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+            Repository <ArrowUpRight className="h-3 w-3" />
+          </a>
+        </div>
+      </section>
+
+      {/* Commitments */}
+      <section className="py-16">
+        <SectionIntro
+          index="02"
           kicker="What we mean"
           title={<>Three claims.<br /><span className="text-[#8fa39b]">With limits.</span></>}
           copy="Private, fast and affordable are only useful if they can be checked. Each claim below has a mechanism and a boundary."
@@ -259,10 +340,49 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Founder */}
+      <section className="py-16">
+        <div className="grid grid-cols-1 gap-8 border-t border-white/10 pt-8 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <img
+              src="/team/simon-havlik.jpg"
+              alt="Simon Havlík, Pudong, Shanghai"
+              loading="lazy"
+              className="aspect-[4/5] w-full border border-white/10 object-cover saturate-[.85]"
+            />
+            <div className="mt-2 flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.12em] text-[#65737b]">
+              <span>Pudong, Shanghai</span>
+              <span>Field notes</span>
+            </div>
+          </div>
+          <div className="lg:col-span-7 lg:pl-8">
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
+              <span className="h-1.5 w-1.5 bg-[#b8f6dd]" />
+              <span>From the founder</span>
+              <span className="text-white/20">/ 03</span>
+            </div>
+            <h2 className="mt-3 text-[clamp(1.9rem,3.6vw,3.2rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#f3f6f5]">
+              The model is not
+              <br />
+              <span className="text-[#8fa39b]">the product.</span>
+            </h2>
+            <p className="mt-5 max-w-[560px] text-[15px] leading-relaxed text-[#a9b6bd]">
+              We built Verxl because the inference market asks you to choose between private, fast and affordable.
+              I do not think that is a real trade-off. It is an architecture problem.
+            </p>
+            <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-[#a9b6bd]">
+              Keep the plaintext in the browser. Keep the model in Prague. Settle in USDC. Take 50 bps.
+              That is the whole thesis. Everything else follows from it.
+            </p>
+            <div className="mt-5 font-mono text-[10px] text-[#b8f6dd]/70">Simon Havlík · Prague</div>
+          </div>
+        </div>
+      </section>
+
       {/* Scope */}
       <section className="py-16">
         <SectionIntro
-          index="02"
+          index="04"
           kicker="Scope"
           title={<>A short list.<br /><span className="text-[#8fa39b]">Of what this is not.</span></>}
           copy="The fastest way to lose trust is to be everything to everyone. These are deliberate exclusions, not missing features."
@@ -286,7 +406,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       {/* Horizon */}
       <section className="py-16">
         <SectionIntro
-          index="03"
+          index="05"
           kicker="Horizon"
           title={<>A horizon<br /><span className="text-[#8fa39b]">you can audit.</span></>}
           copy="What is deployed, what is being built and what is explicitly out of scope. Dates are not promises; the left column is live."
@@ -336,7 +456,7 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
       {/* Principles */}
       <section className="py-16">
         <SectionIntro
-          index="04"
+          index="06"
           kicker="Principles"
           title={<>Principles.<br /><span className="text-[#8fa39b]">Hold us to them.</span></>}
           copy="Not values on a wall. These are constraints on how the product is allowed to behave."
@@ -385,6 +505,17 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 className="inline-flex items-center gap-2 border border-white/12 px-4 py-2.5 text-[12px] font-medium text-[#c9d4d8] hover:border-white/25 hover:text-white"
               >
                 Read the API
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-[9.5px]">
+              <a href="mailto:havlik.simon@post.cz" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                <Mail className="h-3 w-3" /> havlik.simon@post.cz
+              </a>
+              <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                <Github className="h-3 w-3" /> Repository <ArrowUpRight className="h-3 w-3" />
+              </a>
+              <button onClick={() => onNavigate("charter")} className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                Founders charter
               </button>
             </div>
           </div>

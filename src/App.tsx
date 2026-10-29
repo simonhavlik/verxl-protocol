@@ -13,8 +13,7 @@ const Registry = lazy(() => import("./components/Registry").then((m) => ({ defau
 const Oracle = lazy(() => import("./components/Oracle").then((m) => ({ default: m.Oracle })));
 const Governance = lazy(() => import("./components/Governance").then((m) => ({ default: m.Governance })));
 const Whitepaper = lazy(() => import("./components/Whitepaper").then((m) => ({ default: m.Whitepaper })));
-const Vision = lazy(() => import("./components/Vision").then((m) => ({ default: m.Vision })));
-const About = lazy(() => import("./components/About").then((m) => ({ default: m.About })));
+const About = lazy(() => import("./components/Vision").then((m) => ({ default: m.Vision })));
 const Console = lazy(() => import("./components/Console").then((m) => ({ default: m.Console })));
 const Legal = lazy(() => import("./components/Legal").then((m) => ({ default: m.Legal })));
 
@@ -178,8 +177,7 @@ function getTabFromPath(): string {
   const path = window.location.pathname.toLowerCase();
   if (path.includes("chat")) return "chat";
   if (path.includes("whitepaper")) return "whitepaper";
-  if (path.includes("vision")) return "vision";
-  if (path.includes("about")) return "about";
+  if (path.includes("vision") || path.includes("about")) return "about";
   if (path.includes("api") || path.includes("console") || path.includes("billing") || path.includes("keys")) return "console";
   if (path.includes("playground") || path.includes("terminal")) return "playground";
   if (path.includes("registry") || path.includes("fleet")) return "registry";
@@ -295,7 +293,6 @@ export default function App() {
                   {activeTab === "oracle" && <Oracle />}
                   {activeTab === "whitepaper" && <Whitepaper />}
                   {activeTab === "governance" && <Governance />}
-                  {activeTab === "vision" && <Vision onNavigate={handleTabChange} />}
                   {activeTab === "about" && <About onNavigate={handleTabChange} />}
                   {activeTab === "console" && <Console />}
                   {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (

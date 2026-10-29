@@ -60,7 +60,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <div className={columnHead}>Network</div>
             <a href="/oracle" onClick={go("oracle")} className={link}>Quality oracle</a>
             <a href="/governance" onClick={go("governance")} className={link}>Aragon DAO</a>
-            <a href="/vision" onClick={go("vision")} className={link}>Vision & roadmap</a>
+            <a href="/about" onClick={go("about")} className={link}>Vision & roadmap</a>
             <a href="/whitepaper" onClick={go("whitepaper")} className={link}>Whitepaper</a>
           </div>
 
