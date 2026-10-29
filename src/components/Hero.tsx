@@ -26,9 +26,9 @@ const HARDWARE_SHORT: Record<string, string> = {
 };
 
 const INGEST_MODELS = [
-  { name: "Qwen 3.5 4B Uncensored", tag: "UNCENSORED / 4B", note: "Any question; not frontier-scale.", cost: "$0.05 / 1M", x: 26, y: 66 },
-  { name: "DeepSeek V4.1 Flash", tag: "VALUE FRONTIER", note: "74.0 at $0.181 / task.", cost: "$0.30 / 1M", x: 146, y: 28 },
-  { name: "MiMo 2.6 Flash", tag: "DAILY DRIVER", note: "Half the listed token price.", cost: "$0.14 / 1M", x: 92, y: 50 },
+  { name: "Qwen 3.5 4B Uncensored", short: "Qwen 4B", tag: "UNCENSORED / 4B", note: "Any question; not frontier-scale.", cost: "$0.05 / 1M", x: 26, y: 66 },
+  { name: "DeepSeek V4.1 Flash", short: "DeepSeek", tag: "VALUE FRONTIER", note: "74.0 at $0.181 / task.", cost: "$0.30 / 1M", x: 146, y: 28 },
+  { name: "MiMo 2.6 Flash", short: "MiMo 2.6", tag: "DAILY DRIVER", note: "Half the listed token price.", cost: "$0.14 / 1M", x: 92, y: 50 },
 ];
 
 export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
@@ -523,6 +523,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                           <line x1="14" y1="70" x2="192" y2="70" stroke="rgba(255,255,255,0.08)" strokeWidth="0.6" />
                           <line x1="26" y1="66" x2="92" y2="50" stroke="#b8f6dd" strokeWidth="0.9" strokeDasharray="3 3" opacity="0.7" />
                           <line x1="92" y1="50" x2="146" y2="28" stroke="#b8f6dd" strokeWidth="0.9" strokeDasharray="3 3" opacity="0.7" />
+                          <text x="16" y="11" fill="#65737b" fontFamily="Menlo, monospace" fontSize="5">QUALITY</text>
+                          <text x="192" y="77" textAnchor="end" fill="#65737b" fontFamily="Menlo, monospace" fontSize="5">COST →</text>
                           {INGEST_MODELS.map((model, i) => (
                             <g key={model.name}>
                               <circle
@@ -533,12 +535,19 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                                 stroke="#b8f6dd"
                                 strokeWidth={i === ingestPick ? 1.4 : 0.8}
                               />
-                              <text x={model.x + 7} y={model.y + 2.5} fill={i === ingestPick ? "#f3f6f5" : "#65737b"} fontFamily="Menlo, monospace" fontSize="5.8">
-                                {model.name.split(" ").slice(0, 2).join(" ")}
+                              <text
+                                x={model.x + (i === 1 ? -6 : 7)}
+                                y={model.y + 2.5}
+                                textAnchor={i === 1 ? "end" : "start"}
+                                fill={i === ingestPick ? "#f3f6f5" : "#65737b"}
+                                fontFamily="Menlo, monospace"
+                                fontSize="5.8"
+                              >
+                                {model.short}
                               </text>
                             </g>
                           ))}
-                          <text x="180" y="20" textAnchor="end" fill="#7fae9d" fontFamily="Menlo, monospace" fontSize="5.4" letterSpacing="0.1em">VALUE FRONTIER</text>
+                          <text x="192" y="14" textAnchor="end" fill="#7fae9d" fontFamily="Menlo, monospace" fontSize="5" letterSpacing="0.08em">VALUE FRONTIER</text>
                         </svg>
                         <div className="mt-1 space-y-1">
                           {INGEST_MODELS.map((model, i) => (
