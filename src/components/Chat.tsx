@@ -72,7 +72,7 @@ const VegaChart = ({ spec }: { spec: any }) => {
       if (ref.current) ref.current.innerHTML = "";
     };
   }, [spec]);
-  return <div ref={ref} className="mt-3 w-full overflow-x-auto bg-[#05070b] border border-slate-800 p-2" />;
+  return <div ref={ref} className="mt-3 w-full overflow-x-auto bg-[#070a0f] border border-slate-800 p-2" />;
 };
 
 const renderMarkdown = (content: string): string => {
@@ -259,28 +259,28 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
 
 const STARTER_PROMPTS = [
   {
-    title: "Protocol Fee Efficiency",
-    subtitle: "Financial spread analysis",
+    title: "Fee math",
+    subtitle: "Unit economics",
     prompt:
-      "Calculate the net protocol fee savings for an AI fintech startup processing 500 million tokens monthly through Verxl (50 bps fee) versus centralized SaaS aggregators (950 bps fee). Include runway preservation metrics.",
+      "Compare the 50 bps Verxl protocol fee with a 950 bps aggregator on a $1,000 compute bill. Show the arithmetic, the implied provider payout and the caveat that these are protocol parameters.",
   },
   {
-    title: "Nash Equilibrium & Slashing",
-    subtitle: "Game-theoretic verification",
+    title: "Client-side encryption",
+    subtitle: "Privacy architecture",
     prompt:
-      "Formulate how Verxl's 10% collateral slashing rule and probabilistic oracle auditing enforce Nash equilibrium for independent GPU hosts providing FP16 inference.",
+      "Explain how Verxl encrypts chat messages in the browser, how the wallet-derived key works, what Postgres can store, and what the operator can still see.",
   },
   {
-    title: "Rust Tokio Router",
-    subtitle: "High-concurrency systems",
+    title: "Model routing",
+    subtitle: "Fleet and latency",
     prompt:
-      "Draft a high-concurrency Rust Tokio client for Verxl's OpenAI-compatible /v1/chat/completions endpoint with connection pooling, backoff retry, and streaming SSE parsing.",
+      "Compare the three Verxl models, their context windows, measured TTFT and when each one is routed. Distinguish the Prague bare-metal host from the official bridges and state the limits.",
   },
   {
-    title: "Autonomous Quality Oracle",
-    subtitle: "Smart contract audit logic",
+    title: "Settlement receipt",
+    subtitle: "USDC on Sepolia",
     prompt:
-      "Explain the smart contract mechanism of Verxl's Autonomous Quality Oracle on Ethereum Sepolia, specifically how deterministic seed=42 probes trigger probation or collateral slashing.",
+      "Walk through what a Verxl inference receipt contains, how USDC settlement works on Sepolia, and which parts are deliberately not live on mainnet.",
   },
 ];
 
@@ -880,15 +880,40 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     autoScrollRef.current = true;
     setShowScrollButton(false);
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      // An empty conversation should show its welcome/logo from the top, not
+      // auto-scroll the taller welcome state out of view.
+      const hasMessages = (activeSession?.messages.length || 0) > 0;
+      scrollContainerRef.current.scrollTop = hasMessages
+        ? scrollContainerRef.current.scrollHeight
+        : 0;
     }
-  }, [activeSessionId]);
+  }, [activeSessionId, activeSession?.messages.length]);
 
   useEffect(() => {
-    if (scrollContainerRef.current && autoScrollRef.current) {
+    if (
+      scrollContainerRef.current &&
+      autoScrollRef.current &&
+      (activeSession?.messages.length || 0) > 0
+    ) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [activeSession?.messages.length]);
+
+  // The welcome state is taller than the message viewport at some window sizes.
+  // Keep it anchored to the top so the brand mark and heading are not scrolled away.
+  useEffect(() => {
+    if ((activeSession?.messages.length || 0) !== 0) return;
+    let cancelled = false;
+    const reset = () => {
+      if (!cancelled && scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
+    };
+    reset();
+    const t = window.setTimeout(reset, 80);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [activeSessionId, activeSession?.messages.length]);
 
   // Create New Chat Session
   const createNewSession = () => {
@@ -1855,7 +1880,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   return (
     <div
-      className="h-[calc(100vh-129px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#05070b] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
+      className="h-[calc(100vh-129px)] min-h-[580px] flex rounded-[4px] border border-blue-500/20 bg-[#070a0f] overflow-hidden text-slate-100 font-sans shadow-2xl relative"
       onDragOver={(e) => {
         e.preventDefault();
         setDragActive(true);
@@ -1870,7 +1895,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }}
     >
       {dragActive && (
-        <div className="absolute inset-0 z-50 bg-blue-500/10 border-2 border-dashed border-blue-400 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 z-50 bg-[#8fa39b]/10 border-2 border-dashed border-blue-400 flex items-center justify-center pointer-events-none">
           <div className="text-sm font-mono text-blue-300">Drop files to attach</div>
         </div>
       )}
@@ -1880,13 +1905,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       <aside
         className={`${
           sidebarOpen ? "w-64 sm:w-72" : "w-0"
-        } transition-all duration-200 shrink-0 border-r border-slate-800 bg-[#080c14] flex flex-col overflow-hidden select-none z-30`}
+        } transition-all duration-200 shrink-0 border-r border-slate-800 bg-[#0a0f14] flex flex-col overflow-hidden select-none z-30`}
       >
         {/* New Chat Button */}
         <div className="p-3 border-b border-slate-800/80">
           <button
             onClick={createNewSession}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-semibold tracking-wide shadow-sm shadow-blue-500/30 transition active:scale-[0.98]"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-[3px] bg-blue-600 hover:bg-[#8fa39b] text-white font-mono text-xs font-semibold tracking-wide shadow-sm shadow-blue-500/30 transition active:scale-[0.98]"
           >
             <div className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -1916,7 +1941,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }}
                 className={`group relative flex items-center justify-between px-2.5 py-2 rounded-[3px] cursor-pointer transition ${
                   isActive
-                    ? "bg-[#0f172a] text-blue-300 border border-blue-500/30 shadow-sm"
+                    ? "bg-[#0d141a] text-blue-300 border border-blue-500/30 shadow-sm"
                     : "text-slate-400 hover:bg-slate-900/60 hover:text-slate-200"
                 }`}
               >
@@ -1944,7 +1969,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       title="Working"
                     />
                   ) : finishedSessionIds.has(session.id) ? (
-                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <Check className="w-3 h-3 text-[#b8f6dd] shrink-0" />
                   ) : null}
                 </div>
 
@@ -1975,15 +2000,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         </div>
 
         {/* User Account & Real-Time Balance Footer */}
-        <div className="p-3 border-t border-slate-800 bg-[#05070b]/90 space-y-2">
+        <div className="p-3 border-t border-slate-800 bg-[#070a0f]/90 space-y-2">
           {user && (
-            <div className="px-2.5 py-1.5 rounded-[3px] bg-[#080c14] border border-slate-800">
+            <div className="px-2.5 py-1.5 rounded-[3px] bg-[#0a0f14] border border-slate-800">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                   {cryptoStatus === "ready" ? (
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#b8f6dd] shrink-0" />
                   ) : (
-                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <Lock className="w-3.5 h-3.5 text-[#d99a9a] shrink-0" />
                   )}
                   <div className="min-w-0">
                     <div className="text-[8.5px] uppercase tracking-wider text-slate-500 font-mono">
@@ -1992,10 +2017,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     <div
                       className={`text-[9.5px] font-mono truncate ${
                         cryptoStatus === "ready"
-                          ? "text-emerald-300"
+                          ? "text-[#dff8ef]"
                           : cryptoStatus === "unavailable"
                           ? "text-slate-400"
-                          : "text-amber-300"
+                          : "text-[#e3b8b8]"
                       }`}
                     >
                       {cryptoStatus === "ready"
@@ -2011,7 +2036,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 {cryptoStatus === "locked" && (
                   <button
                     onClick={unlockChatSync}
-                    className="px-2 py-1 rounded-[2px] bg-emerald-600/80 hover:bg-emerald-500 text-white text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
+                    className="px-2 py-1 rounded-[2px] bg-[#5f8a7a]/80 hover:bg-[#7fae9d] text-white text-[9px] font-mono font-bold uppercase tracking-wider shrink-0"
                   >
                     Enable
                   </button>
@@ -2033,14 +2058,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           )}
 
           {/* Balance Pill */}
-          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] bg-[#0c1220] border border-blue-500/20">
+          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] bg-[#0b1117] border border-blue-500/20">
             <div className="flex items-center gap-2">
-              <Coins className="w-3.5 h-3.5 text-emerald-400" />
+              <Coins className="w-3.5 h-3.5 text-[#b8f6dd]" />
               <div>
                 <div className="text-[9px] uppercase tracking-wider text-slate-400 font-mono">
                   Account Balance
                 </div>
-                <div className="text-xs font-bold font-mono text-emerald-400">
+                <div className="text-xs font-bold font-mono text-[#b8f6dd]">
                   ${balanceUsd.toFixed(4)} <span className="text-[9px] font-normal text-slate-400">USD</span>
                 </div>
               </div>
@@ -2087,7 +2112,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </button>
               <button
                 onClick={() => setShowSettingsModal(true)}
-                className="p-1.5 hover:text-white text-slate-400 border border-slate-800 rounded-[3px] bg-[#0c1220] transition"
+                className="p-1.5 hover:text-white text-slate-400 border border-slate-800 rounded-[3px] bg-[#0b1117] transition"
                 title="Settings"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -2100,14 +2125,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* ============================================================== */}
       {/* 2. MAIN CHAT AREA                                              */}
       {/* ============================================================== */}
-      <main className="flex-1 flex flex-col bg-[#05070b] overflow-hidden relative">
+      <main className="flex-1 flex flex-col bg-[#070a0f] overflow-hidden relative">
         {/* Top Header Bar */}
-        <header className="h-12 border-b border-slate-800 bg-[#080c14]/90 px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-20">
+        <header className="h-12 border-b border-slate-800 bg-[#0a0f14]/90 px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-20">
           <div className="flex items-center gap-2">
             {/* Toggle Sidebar Button */}
             <button
               onClick={() => setSidebarOpen((prev) => !prev)}
-              className="p-1.5 rounded-[3px] border border-slate-800 bg-[#05070b] text-slate-400 hover:text-white transition"
+              className="p-1.5 rounded-[3px] border border-slate-800 bg-[#070a0f] text-slate-400 hover:text-white transition"
               title={sidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
             >
               <Terminal className="w-4 h-4 text-blue-400" />
@@ -2117,7 +2142,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             <div className="relative">
               <button
                 onClick={() => setShowModelDropdown((prev) => !prev)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#0c1220] border border-blue-500/30 text-xs font-mono text-slate-200 hover:border-blue-400 transition"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#0b1117] border border-blue-500/30 text-xs font-mono text-slate-200 hover:border-blue-400 transition"
               >
                 <Cpu className="w-3.5 h-3.5 text-blue-400" />
                 <span className="font-semibold truncate max-w-[150px] sm:max-w-[260px]">
@@ -2128,7 +2153,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
               {/* Model Dropdown Menu with Search, Filter & Last Used */}
               {showModelDropdown && (
-                <div className="absolute left-0 mt-1.5 w-80 sm:w-96 rounded-[4px] bg-[#080c14] border border-blue-500/40 shadow-2xl p-2.5 z-50 space-y-2 font-mono text-xs max-h-[85vh] overflow-y-auto">
+                <div className="absolute left-0 mt-1.5 w-80 sm:w-96 rounded-[4px] bg-[#0a0f14] border border-blue-500/40 shadow-2xl p-2.5 z-50 space-y-2 font-mono text-xs max-h-[85vh] overflow-y-auto">
                   {/* Search Bar */}
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2.5" />
@@ -2137,7 +2162,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       placeholder="Search models, 1M context, providers..."
                       value={modelSearch}
                       onChange={(e) => setModelSearch(e.target.value)}
-                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] pl-7 pr-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                      className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] pl-7 pr-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
                       autoFocus
                     />
                   </div>
@@ -2156,7 +2181,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         className={`px-2 py-0.5 rounded-[2px] border transition ${
                           modelCategory === tab.id
                             ? "bg-blue-600/30 border-blue-500 text-blue-200 font-bold"
-                            : "bg-[#0c1220] border-slate-800 text-slate-400 hover:text-white"
+                            : "bg-[#0b1117] border-slate-800 text-slate-400 hover:text-white"
                         }`}
                       >
                         {tab.label}
@@ -2179,7 +2204,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                             <button
                               key={rid}
                               onClick={() => selectModel(m.id)}
-                              className="px-2 py-1 rounded-[2px] bg-[#0c1220] border border-slate-800 hover:border-blue-500/50 text-[10.5px] text-slate-300 flex items-center gap-1 transition"
+                              className="px-2 py-1 rounded-[2px] bg-[#0b1117] border border-slate-800 hover:border-blue-500/50 text-[10.5px] text-slate-300 flex items-center gap-1 transition"
                             >
                               <span className="truncate max-w-[120px]">{m.name}</span>
                               <span className="text-[8.5px] text-blue-400 font-bold">1M</span>
@@ -2194,7 +2219,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   <div className="space-y-1.5 pt-1 border-t border-slate-800/80">
                     <div className="px-1 text-[9.5px] uppercase tracking-wider text-slate-400 font-bold flex items-center justify-between">
                       <span>Available Models ({filteredModels.length})</span>
-                      <span className="text-emerald-400 text-[9px]">50 BPS PROTOCOL FEE</span>
+                      <span className="text-[#b8f6dd] text-[9px]">50 BPS PROTOCOL FEE</span>
                     </div>
 
                     {filteredModels.map((m) => (
@@ -2211,12 +2236,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           <div className="flex items-center gap-1.5 truncate">
                             <span className="truncate">{m.name}</span>
                             {m.isOfficialBridge && (
-                              <span className="px-1 py-0.2 rounded-[2px] bg-blue-500/20 border border-blue-500/40 text-[8.5px] text-blue-300 shrink-0 font-mono">
+                              <span className="px-1 py-0.2 rounded-[2px] bg-[#8fa39b]/20 border border-blue-500/40 text-[8.5px] text-blue-300 shrink-0 font-mono">
                                 Official Bridge
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-emerald-400 font-semibold shrink-0">{m.speed}</span>
+                          <span className="text-[10px] text-[#b8f6dd] font-semibold shrink-0">{m.speed}</span>
                         </div>
 
                         <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">{m.description}</div>
@@ -2234,7 +2259,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           </div>
 
                           {/* Cached Prompt & Output Prefix Fee */}
-                          <div className="flex items-center justify-between text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] border border-emerald-500/20">
+                          <div className="flex items-center justify-between text-[#b8f6dd] bg-[#b8f6dd]/10 px-2 py-0.5 rounded-[2px] border border-[#b8f6dd]/15">
                             <span className="font-semibold flex items-center gap-1">
                               <span>💾 Cached Prompt Prefix:</span>
                             </span>
@@ -2245,13 +2270,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
                           {/* Special Hours / Off-Peak Fee (Only for models with off-peak rates like DeepSeek) */}
                           {m.specialHoursPromptRate ? (
-                            <div className="text-amber-300 bg-amber-500/10 px-2 py-1 rounded-[2px] border border-amber-500/20 space-y-0.5">
+                            <div className="text-[#e3b8b8] bg-[#d99a9a]/10 px-2 py-1 rounded-[2px] border border-[#d99a9a]/20 space-y-0.5">
                               <div className="flex items-center justify-between font-bold text-[10px]">
                                 <span>🌙 Off-Peak / Special Hours:</span>
                                 <span className="text-white">${m.specialHoursPromptRate} Prompt / ${m.specialHoursCompletionRate} Output</span>
                               </div>
                               {m.specialHoursDesc && (
-                                <div className="text-[8.5px] text-amber-200/80 leading-snug">
+                                <div className="text-[8.5px] text-[#e3b8b8]/80 leading-snug">
                                   {m.specialHoursDesc}
                                 </div>
                               )}
@@ -2267,19 +2292,19 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         {/* Provider Node Label & Data Policy */}
                         <div className="text-[9.5px] text-slate-400 mt-1.5 pt-1 border-t border-slate-800/50 flex items-center justify-between">
                           <span className="flex items-center gap-1 text-slate-300">
-                            <Server className="w-3 h-3 text-purple-400" />
+                            <Server className="w-3 h-3 text-[#8fa39b]" />
                             <span>Provider: <strong className="text-white">{m.provider}</strong></span>
                           </span>
                           {m.isOfficialBridge ? (
                             <span
-                              className="text-amber-400 font-mono text-[8.5px] bg-amber-500/10 px-1.5 py-0.5 rounded-[2px] border border-amber-500/20"
+                              className="text-[#d99a9a] font-mono text-[8.5px] bg-[#d99a9a]/10 px-1.5 py-0.5 rounded-[2px] border border-[#d99a9a]/20"
                               title="Inference queries are forwarded to upstream provider servers (DeepSeek / Xiaomi) and are subject to their respective logging & retention policies."
                             >
                               Bridge · Upstream Logged
                             </span>
                           ) : (
                             <span
-                              className="text-emerald-400 font-mono text-[8.5px] bg-emerald-500/10 px-1.5 py-0.5 rounded-[2px] border border-emerald-500/20 font-bold"
+                              className="text-[#b8f6dd] font-mono text-[8.5px] bg-[#b8f6dd]/10 px-1.5 py-0.5 rounded-[2px] border border-[#b8f6dd]/15 font-bold"
                               title="Inference executes on dedicated local bare-metal hardware with volatile RAM streaming and zero disk persistence."
                             >
                               Bare-Metal · Zero-Logging
@@ -2301,7 +2326,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           </div>
 
           {(
-            <div className="hidden lg:flex items-center gap-1 px-1.5 py-1 rounded-[3px] bg-[#05070b] border border-slate-800 font-mono text-[9px]">
+            <div className="hidden lg:flex items-center gap-1 px-1.5 py-1 rounded-[3px] bg-[#070a0f] border border-slate-800 font-mono text-[9px]">
               <span className="text-slate-500 uppercase tracking-wider mr-0.5">Think</span>
               {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
                 <button
@@ -2324,12 +2349,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {/* Live Balance Badge */}
             <div
               onClick={() => setShowDepositModal(true)}
-              className="cursor-pointer hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#0c1220] border border-blue-500/20 font-mono text-xs hover:border-blue-400 transition"
+              className="cursor-pointer hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#0b1117] border border-blue-500/20 font-mono text-xs hover:border-blue-400 transition"
               title="Click to Deposit"
             >
-              <span className="w-2 h-2 rounded-[50%] bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-[50%] bg-[#b8f6dd] animate-pulse" />
               <span className="text-slate-400 text-[10px] uppercase">Balance:</span>
-              <span className="text-emerald-400 font-bold">${balanceUsd.toFixed(4)}</span>
+              <span className="text-[#b8f6dd] font-bold">${balanceUsd.toFixed(4)}</span>
             </div>
 
             {/* Auth Button or User Badge */}
@@ -2348,7 +2373,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-semibold transition active:scale-95"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-blue-600 hover:bg-[#8fa39b] text-white text-xs font-mono font-semibold transition active:scale-95"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Sign In</span>
@@ -2359,13 +2384,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             <div className="relative">
               <button
                 onClick={() => setShowExportMenu((v) => !v)}
-                className="p-1.5 rounded-[3px] bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white transition"
+                className="p-1.5 rounded-[3px] bg-[#070a0f] border border-slate-800 text-slate-400 hover:text-white transition"
                 title="Export chat"
               >
                 <Download className="w-3.5 h-3.5" />
               </button>
               {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 w-44 z-50 rounded-[3px] border border-slate-700 bg-[#080c14] shadow-2xl font-mono text-[10.5px]">
+                <div className="absolute right-0 top-full mt-1 w-44 z-50 rounded-[3px] border border-slate-700 bg-[#0a0f14] shadow-2xl font-mono text-[10.5px]">
                   <button
                     onClick={() => {
                       exportChat("markdown");
@@ -2400,7 +2425,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {/* Settings Button */}
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="p-1.5 rounded-[3px] bg-[#05070b] border border-slate-800 text-slate-400 hover:text-white transition"
+              className="p-1.5 rounded-[3px] bg-[#070a0f] border border-slate-800 text-slate-400 hover:text-white transition"
               title="Chat Settings"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -2416,14 +2441,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         >
           {/* Empty Conversation Welcome Screen */}
           {activeSession.messages.length === 0 && !activeStreaming ? (
-            <div className="max-w-2xl mx-auto py-8 sm:py-12 flex flex-col items-center justify-center text-center space-y-6 select-none">
+            <div className="max-w-2xl mx-auto py-6 sm:py-8 flex flex-col items-center justify-center text-center space-y-5 select-none">
               <div className="relative">
-                <img
-                  src="/logo-square.jpg"
-                  alt="Verxl Logo"
-                  className="w-16 h-16 rounded-[4px] border border-blue-500/50 shadow-xl shadow-blue-500/20 object-cover"
-                />
-                <span className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.2 rounded-[2px] bg-blue-600 text-[9px] font-mono font-bold text-white uppercase tracking-wider">
+                <div className="border border-[#b8f6dd]/20 bg-[#0b1117] p-2.5 shadow-xl shadow-black/30">
+                  <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" aria-hidden="true">
+                    <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="1.8" />
+                    <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="0.9" opacity="0.55" />
+                  </svg>
+                </div>
+                <span className="absolute -bottom-1.5 -right-1.5 border border-[#b8f6dd]/20 bg-[#0b1117] px-1.5 py-0.2 text-[9px] font-mono font-bold text-[#b8f6dd] uppercase tracking-wider">
                   50 BPS
                 </span>
               </div>
@@ -2432,29 +2458,25 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono">
                   Verxl Protocol Chat
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-400 font-mono max-w-md mx-auto">
+                <p className="text-[11.5px] sm:text-xs text-slate-400 font-mono max-w-md mx-auto leading-relaxed">
                   Non-custodial edge AI inference. Output costs cleared in real time from your balance with 50 bps protocol fee.
                 </p>
               </div>
 
-              {/* Starter Prompts Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left pt-2">
+              {/* Compact starter prompts — keeps the welcome inside the viewport */}
+              <div className="grid w-full grid-cols-1 gap-1.5 pt-1 text-left sm:grid-cols-2">
                 {STARTER_PROMPTS.map((starter, i) => (
-                  <div
+                  <button
                     key={i}
+                    type="button"
                     onClick={() => handleSendMessage(starter.prompt)}
-                    className="p-3 rounded-[3px] bg-[#080c14] border border-slate-800/90 hover:border-blue-500/50 cursor-pointer transition group"
+                    className="flex items-center justify-between gap-2 border border-white/10 bg-[#0a0f14] px-2.5 py-1.5 text-left transition hover:border-[#b8f6dd]/40 hover:bg-[#0b1117]"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-bold text-blue-400 group-hover:text-blue-300">
-                        {starter.title}
-                      </span>
-                      <span className="text-[9.5px] font-mono text-slate-400">{starter.subtitle}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                      {starter.prompt}
-                    </p>
-                  </div>
+                    <span className="truncate font-mono text-[10.5px] font-semibold text-[#b8f6dd]">
+                      {starter.title}
+                    </span>
+                    <span className="shrink-0 font-mono text-[10px] text-[#65737b]">→</span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -2478,7 +2500,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     {msg.role === "assistant" && msg.metrics && Number(msg.metrics.costUsd || 0) > 0 && (
                       <>
                         <span>•</span>
-                        <span className="text-emerald-400 font-semibold font-mono">
+                        <span className="text-[#b8f6dd] font-semibold font-mono">
                           -${Number(msg.metrics.costUsd || 0).toFixed(6)} USD
                         </span>
                       </>
@@ -2489,13 +2511,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   <div
                     className={`max-w-[92%] sm:max-w-[82%] rounded-[4px] p-3.5 sm:p-4 text-xs font-mono leading-relaxed select-text ${
                       msg.role === "user"
-                        ? "bg-[#0c1729] border border-blue-500/30 text-slate-100 shadow-md"
-                        : "bg-[#080c14] border border-slate-800/90 text-slate-200 shadow-lg w-full"
+                        ? "bg-[#0d141a] border border-blue-500/30 text-slate-100 shadow-md"
+                        : "bg-[#0a0f14] border border-slate-800/90 text-slate-200 shadow-lg w-full"
                     }`}
                   >
                     {/* Collapsible Reasoning Process Accordion */}
                     {msg.reasoning && (
-                      <div className="mb-3 rounded-[3px] bg-[#04060a] border border-slate-800/80 overflow-hidden">
+                      <div className="mb-3 rounded-[3px] bg-[#060a0e] border border-slate-800/80 overflow-hidden">
                         <button
                           onClick={() => toggleReasoning(msg.id)}
                           className="w-full px-2.5 py-1.5 flex items-center justify-between text-[10px] font-mono text-slate-400 hover:text-slate-200 bg-slate-900/40 border-b border-slate-800/40 transition"
@@ -2531,7 +2553,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           onChange={(e) => setEditingText(e.target.value)}
                           rows={3}
                           autoFocus
-                          className="w-full bg-[#05070b] border border-blue-500/40 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-400 font-mono resize-none"
+                          className="w-full bg-[#070a0f] border border-blue-500/40 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-400 font-mono resize-none"
                         />
                         <div className="flex justify-end gap-2 text-[10px]">
                           <button
@@ -2546,7 +2568,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           <button
                             onClick={saveEditedMessage}
                             disabled={!editingText.trim()}
-                            className="px-2 py-1 rounded-[2px] bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-semibold"
+                            className="px-2 py-1 rounded-[2px] bg-blue-600 hover:bg-[#8fa39b] disabled:bg-slate-800 text-white font-semibold"
                           >
                             Save & resend
                           </button>
@@ -2616,7 +2638,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     {msg.role === "assistant" && msg.metrics && (
                       <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 select-none">
                         <div className="flex items-center gap-2">
-                          <span className="text-emerald-400 font-semibold">
+                          <span className="text-[#b8f6dd] font-semibold">
                             Cost: -${(msg.metrics.costUsd || 0).toFixed(6)}
                           </span>
                           <span>•</span>
@@ -2634,8 +2656,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                           >
                             {copiedMessageId === msg.id ? (
                               <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400">Copied</span>
+                                <Check className="w-3 h-3 text-[#b8f6dd]" />
+                                <span className="text-[#b8f6dd]">Copied</span>
                               </>
                             ) : (
                               <>
@@ -2676,10 +2698,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     </span>
                   </div>
 
-                  <div className="w-full max-w-[85%] rounded-[4px] p-4 text-xs font-mono leading-relaxed bg-[#080c14] border border-blue-500/30 text-slate-200 shadow-xl">
+                  <div className="w-full max-w-[85%] rounded-[4px] p-4 text-xs font-mono leading-relaxed bg-[#0a0f14] border border-blue-500/30 text-slate-200 shadow-xl">
                     {/* Live Streaming Reasoning */}
                     {streamingReasoning && (
-                      <div className="mb-3 rounded-[3px] bg-[#04060a] border border-blue-500/20 p-2.5">
+                      <div className="mb-3 rounded-[3px] bg-[#060a0e] border border-blue-500/20 p-2.5">
                         <div className="text-[9.5px] uppercase tracking-wider text-blue-400 font-bold mb-1 flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                           <span>Generating Reasoning Protocol...</span>
@@ -2722,7 +2744,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {showScrollButton && (
           <button
             onClick={scrollChatToLatest}
-            className="absolute bottom-28 right-4 z-40 p-2 rounded-full bg-[#0c1220] border border-blue-500/40 text-blue-300 shadow-lg hover:text-white"
+            className="absolute bottom-28 right-4 z-40 p-2 rounded-full bg-[#0b1117] border border-blue-500/40 text-blue-300 shadow-lg hover:text-white"
             title="Jump to latest"
           >
             <ArrowDown className="w-4 h-4" />
@@ -2730,7 +2752,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         )}
 
         {/* Input Box Footer Container */}
-        <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#080c14]/90 shrink-0">
+        <div className="p-3 sm:p-4 border-t border-slate-800 bg-[#0a0f14]/90 shrink-0">
           <div className="max-w-4xl mx-auto space-y-2">
             {isStreaming && !activeStreaming && (
               <div className="text-[9px] font-mono text-slate-500 px-1">
@@ -2755,7 +2777,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {(attachments.length > 0 || isParsing || attachmentError) && (
               <div className="flex flex-wrap items-center gap-1.5 px-1 text-[9px] font-mono">
                 {attachments.map((a, i) => (
-                  <span key={`${a.name}_${i}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-slate-700 bg-[#05070b] text-slate-300">
+                  <span key={`${a.name}_${i}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-slate-700 bg-[#070a0f] text-slate-300">
                     <FileText className="w-3 h-3 text-blue-400" />
                     {a.name}
                     <button
@@ -2767,13 +2789,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     </button>
                   </span>
                 ))}
-                {isParsing && <span className="text-amber-400">Parsing file...</span>}
+                {isParsing && <span className="text-[#d99a9a]">Parsing file...</span>}
                 {attachmentError && <span className="text-rose-400">{attachmentError}</span>}
               </div>
             )}
 
             {/* Input Form */}
-            <div className="relative flex items-end gap-2 bg-[#05070b] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
+            <div className="relative flex items-end gap-2 bg-[#070a0f] border border-slate-700/80 focus-within:border-blue-500 rounded-[4px] p-2 transition shadow-inner">
               <textarea
                 ref={textareaRef}
                 value={inputPrompt}
@@ -2809,7 +2831,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-[3px] border border-slate-800 bg-[#05070b] text-slate-400 hover:text-white transition shrink-0"
+                className="p-2 rounded-[3px] border border-slate-800 bg-[#070a0f] text-slate-400 hover:text-white transition shrink-0"
                 title="Attach files"
                 disabled={isParsing}
               >
@@ -2823,7 +2845,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     localStorage.setItem("vrxl_force_pdf_ocr", "0");
                     saveChatSettings({ forcePdfOcr: false });
                   }}
-                  className="px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition bg-amber-600/20 border-amber-500/50 text-amber-300"
+                  className="px-1.5 py-1 rounded-[2px] border text-[9px] font-mono shrink-0 transition bg-[#d99a9a]/10 border-[#d99a9a]/30 text-[#e3b8b8]"
                   title="Force PDF OCR is on; click to disable"
                 >
                   Force PDF OCR
@@ -2834,8 +2856,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 onClick={() => setSearchEnabled((v) => !v)}
                 className={`p-2 rounded-[3px] border transition shrink-0 ${
                   searchEnabled
-                    ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
-                    : "bg-[#05070b] border-slate-800 text-slate-400 hover:text-white"
+                    ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
+                    : "bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white"
                 }`}
                 title="Search the web (Firecrawl)"
               >
@@ -2847,7 +2869,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   value={activeSession.searchBudget ?? 512}
                   onChange={(e) => updateSearchBudget(Number(e.target.value))}
                   title="Search context budget"
-                  className="bg-[#05070b] border border-slate-800 text-slate-400 text-[9px] font-mono px-1 py-1 rounded-[2px] outline-none shrink-0"
+                  className="bg-[#070a0f] border border-slate-800 text-slate-400 text-[9px] font-mono px-1 py-1 rounded-[2px] outline-none shrink-0"
                 >
                   <option value={256}>256 ctx</option>
                   <option value={512}>512 ctx</option>
@@ -2861,7 +2883,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 <span className="cursor-help whitespace-nowrap" title="Context used by the last request">
                   ctx {fmtTokens(contextStats.used)}/{fmtTokens(contextLimit)}
                 </span>
-                <div className="hidden group-hover:block absolute bottom-full right-0 mb-2 w-64 z-50 border border-slate-700 bg-[#080c14] p-2 shadow-2xl">
+                <div className="hidden group-hover:block absolute bottom-full right-0 mb-2 w-64 z-50 border border-slate-700 bg-[#0a0f14] p-2 shadow-2xl">
                   <div className="text-[8px] uppercase tracking-wider text-slate-500 mb-1">
                     Context · {lastAssistantContext ? "last request" : "current"}
                   </div>
@@ -2880,12 +2902,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   ))}
                   <div className="mt-1 pt-1 border-t border-slate-800 flex justify-between text-[8.5px]">
                     <span className="text-slate-500">Left</span>
-                    <span className="text-emerald-400">{fmtTokens(contextStats.left)}</span>
+                    <span className="text-[#b8f6dd]">{fmtTokens(contextStats.left)}</span>
                   </div>
                   {contextStats.compactionSaved > 0 && (
                     <div className="flex justify-between text-[8.5px]">
                       <span className="text-slate-500">Compacted</span>
-                      <span className="text-emerald-400">{fmtTokens(contextStats.compactionSaved)}</span>
+                      <span className="text-[#b8f6dd]">{fmtTokens(contextStats.compactionSaved)}</span>
                     </div>
                   )}
                 </div>
@@ -2906,7 +2928,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   disabled={!inputPrompt.trim() || isStreaming}
                   className={`p-2 rounded-[3px] transition shrink-0 ${
                     inputPrompt.trim()
-                      ? "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/30 active:scale-95 cursor-pointer"
+                      ? "bg-blue-600 hover:bg-[#8fa39b] text-white shadow-md shadow-blue-500/30 active:scale-95 cursor-pointer"
                       : "bg-slate-800 text-slate-400 cursor-not-allowed"
                   }`}
                   title="Send Message"
@@ -2926,20 +2948,20 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 >
                   <span className="relative w-10 h-1 bg-slate-800 overflow-hidden">
                     <span
-                      className="absolute top-0 bottom-0 left-0 bg-emerald-500"
+                      className="absolute top-0 bottom-0 left-0 bg-[#7fae9d]"
                       style={{
                         width: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt) / contextLimit) * 100)}%`,
                       }}
                     />
                     <span
-                      className="absolute top-0 bottom-0 bg-blue-500"
+                      className="absolute top-0 bottom-0 bg-[#8fa39b]"
                       style={{
                         left: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt) / contextLimit) * 100)}%`,
                         width: `${Math.min(100, (contextStats.tools / contextLimit) * 100)}%`,
                       }}
                     />
                     <span
-                      className="absolute top-0 bottom-0 bg-amber-400"
+                      className="absolute top-0 bottom-0 bg-[#b8f6dd]"
                       style={{
                         left: `${Math.min(100, ((contextStats.system + contextStats.history + contextStats.prompt + contextStats.tools) / contextLimit) * 100)}%`,
                         width: `${Math.min(100, (contextStats.response / contextLimit) * 100)}%`,
@@ -2953,7 +2975,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   <ChevronDown className="w-2.5 h-2.5" />
                 </button>
                 {showContextDetails && (
-                  <div className="absolute bottom-full left-0 mb-2 w-[300px] border border-slate-700 bg-[#080c14] shadow-2xl z-50 p-2 font-mono text-[9px]">
+                  <div className="absolute bottom-full left-0 mb-2 w-[300px] border border-slate-700 bg-[#0a0f14] shadow-2xl z-50 p-2 font-mono text-[9px]">
                     <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                       {[
                         ["System", contextStats.system],
@@ -2975,7 +2997,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         <select
                           value={activeSession.searchBudget || 512}
                           onChange={(e) => updateSearchBudget(Number(e.target.value))}
-                          className="bg-[#05070b] border border-slate-700 text-slate-300 text-[9px] px-1 py-0.5 outline-none"
+                          className="bg-[#070a0f] border border-slate-700 text-slate-300 text-[9px] px-1 py-0.5 outline-none"
                         >
                           {[256, 512, 1024, 2048, -1].map((n) => (
                             <option key={n} value={n}>
@@ -2990,7 +3012,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     <div className="flex flex-wrap gap-x-3 mt-1 pt-1 border-t border-slate-800 text-[8px] text-slate-500">
                       <span>{compactAt ? `Auto-compact ${fmtTokens(compactAt)}` : "No auto-compact"}</span>
                       {contextStats.compactionSaved > 0 && (
-                        <span className="text-emerald-400">
+                        <span className="text-[#b8f6dd]">
                           {fmtTokens(contextStats.compactionSaved)} compacted
                         </span>
                       )}
@@ -3004,10 +3026,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   Est. Cost: ~${((Math.max(1, inputPrompt.length / 4) / 1e6) * 0.15).toFixed(6)} USD
                 </span>
                 {isSearching && activeStreaming && (
-                  <span className="text-emerald-400">Searching the web...</span>
+                  <span className="text-[#b8f6dd]">Searching the web...</span>
                 )}
                 {searchError && activeStreaming && (
-                  <span className="text-amber-400">{searchError}</span>
+                  <span className="text-[#d99a9a]">{searchError}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -3030,7 +3052,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* ============================================================== */}
       {showDepositModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
-          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
+          <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => {
                 setShowDepositModal(false);
@@ -3042,7 +3064,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             </button>
 
             <div className="flex items-center gap-2 text-white">
-              <Coins className="w-5 h-5 text-emerald-400" />
+              <Coins className="w-5 h-5 text-[#b8f6dd]" />
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wider">
                   Deposit Arbitrum USDC / Add Balance
@@ -3062,7 +3084,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }}
                 className={`flex-1 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
                   depositTab === "1click"
-                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
+                    ? "border-[#b8f6dd] text-[#dff8ef] bg-[#b8f6dd]/10"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -3076,7 +3098,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }}
                 className={`flex-1 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
                   depositTab === "manual"
-                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    ? "border-blue-500 text-blue-400 bg-[#8fa39b]/10"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -3089,7 +3111,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             {depositTab === "1click" && (
               <div className="space-y-3">
                 <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Fastest & most secure: transfers USDC directly on <span className="text-blue-300 font-semibold">Arbitrum One</span> and signs a zero-gas cryptographic proof so <span className="text-emerald-300 font-semibold">no front-running bot can steal your deposit</span>.
+                  Fastest & most secure: transfers USDC directly on <span className="text-blue-300 font-semibold">Arbitrum One</span> and signs a zero-gas cryptographic proof so <span className="text-[#dff8ef] font-semibold">no front-running bot can steal your deposit</span>.
                 </p>
 
                 {/* Amount Presets */}
@@ -3108,8 +3130,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         }}
                         className={`py-1.5 rounded-[3px] font-mono text-xs font-bold transition border ${
                           depositAmountPreset === amt && !customDepositAmount
-                            ? "bg-emerald-600/30 border-emerald-400 text-emerald-300 shadow-sm"
-                            : "bg-[#05070b] border-slate-800 text-slate-300 hover:border-slate-600"
+                            ? "bg-[#5f8a7a]/30 border-[#b8f6dd] text-[#dff8ef] shadow-sm"
+                            : "bg-[#070a0f] border-slate-800 text-slate-300 hover:border-slate-600"
                         }`}
                       >
                         ${amt}
@@ -3124,7 +3146,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       placeholder="Or enter custom amount in USD..."
                       value={customDepositAmount}
                       onChange={(e) => setCustomDepositAmount(e.target.value)}
-                      className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-emerald-500 font-mono"
+                      className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-[#b8f6dd] font-mono"
                     />
                   </div>
                 </div>
@@ -3134,7 +3156,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   type="button"
                   onClick={handle1ClickWeb3Deposit}
                   disabled={isDepositingWeb3}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                  className="w-full py-2.5 bg-[#5f8a7a] hover:bg-[#7fae9d] disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-black/30 active:scale-[0.98]"
                 >
                   <Wallet className="w-4 h-4" />
                   <span>
@@ -3158,7 +3180,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   <label className="text-[10px] uppercase tracking-wider text-slate-400">
                     Verxl Treasury Deposit Address (Arbitrum One USDC):
                   </label>
-                  <div className="flex items-center justify-between bg-[#05070b] border border-slate-800 p-2 rounded-[3px]">
+                  <div className="flex items-center justify-between bg-[#070a0f] border border-slate-800 p-2 rounded-[3px]">
                     <span className="font-mono text-[10.5px] text-blue-300 truncate max-w-[270px]">
                       {TREASURY_WALLET}
                     </span>
@@ -3168,7 +3190,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       title="Copy address"
                     >
                       {copiedTreasury ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <Check className="w-3.5 h-3.5 text-[#b8f6dd]" />
                       ) : (
                         <Copy className="w-3.5 h-3.5" />
                       )}
@@ -3186,12 +3208,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       placeholder="0x..."
                       value={depositTxHash}
                       onChange={(e) => setDepositTxHash(e.target.value)}
-                      className="flex-1 bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                      className="flex-1 bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 font-mono"
                     />
                     <button
                       onClick={handleVerifyDeposit}
                       disabled={verifyingDeposit || !depositTxHash.trim()}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white rounded-[3px] font-bold tracking-wider text-[11px] transition"
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-[#8fa39b] disabled:bg-slate-800 text-white rounded-[3px] font-bold tracking-wider text-[11px] transition"
                     >
                       {verifyingDeposit ? "Verifying..." : "Verify"}
                     </button>
@@ -3202,7 +3224,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
             {/* Status Message */}
             {depositStatus && (
-              <div className="text-[10.5px] text-amber-300 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-[2px] leading-relaxed">
+              <div className="text-[10.5px] text-[#e3b8b8] bg-[#d99a9a]/10 border border-[#d99a9a]/20 p-2.5 rounded-[2px] leading-relaxed">
                 {depositStatus}
               </div>
             )}
@@ -3232,7 +3254,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* ============================================================== */}
       {showSettingsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none">
-          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] max-w-lg w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
+          <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-lg w-full p-5 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => setShowSettingsModal(false)}
               className="absolute top-3 right-3 text-slate-400 hover:text-white p-1"
@@ -3259,7 +3281,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               )}
               <div className="flex items-center justify-between text-[9.5px] text-slate-400">
                 <span>Chat encryption</span>
-                <span className={cryptoStatus === "ready" ? "text-emerald-300" : "text-amber-300"}>
+                <span className={cryptoStatus === "ready" ? "text-[#dff8ef]" : "text-[#e3b8b8]"}>
                   {cryptoStatus === "ready"
                     ? "AES-256-GCM · wallet key"
                     : cryptoStatus === "unavailable"
@@ -3287,8 +3309,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     aria-pressed={searchToolEnabled}
                     className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
                       searchToolEnabled
-                        ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
-                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                        ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
+                        : "bg-[#070a0f] border-slate-700 text-slate-500"
                     }`}
                   >
                     {searchToolEnabled ? "ON" : "OFF"}
@@ -3324,7 +3346,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     localStorage.setItem("vrxl_search_provider", e.target.value);
                     saveChatSettings({ searchProvider: e.target.value });
                   }}
-                  className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                 >
                   <option value="firecrawl">Firecrawl (keyless, browser IP)</option>
                   <option value="brave">Brave Search (own key)</option>
@@ -3341,7 +3363,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       localStorage.setItem("vrxl_search_key", e.target.value);
                       saveChatSettings({ searchKey: e.target.value });
                     }}
-                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                   />
                 )}
                 {searchProvider === "custom" && (
@@ -3354,7 +3376,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       localStorage.setItem("vrxl_search_base", e.target.value);
                       saveChatSettings({ searchBaseUrl: e.target.value });
                     }}
-                    className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                   />
                 )}
                 <p className="text-[8.5px] text-slate-500 leading-relaxed">
@@ -3380,8 +3402,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   aria-pressed={showForcePdfOcrToggle}
                   className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
                     showForcePdfOcrToggle
-                      ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
-                      : "bg-[#05070b] border-slate-700 text-slate-500"
+                      ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
+                      : "bg-[#070a0f] border-slate-700 text-slate-500"
                   }`}
                 >
                   {showForcePdfOcrToggle ? "ON" : "OFF"}
@@ -3407,8 +3429,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     aria-pressed={forcePdfOcr}
                     className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
                       forcePdfOcr
-                        ? "bg-amber-600/20 border-amber-500/50 text-amber-300"
-                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                        ? "bg-[#d99a9a]/10 border-[#d99a9a]/30 text-[#e3b8b8]"
+                        : "bg-[#070a0f] border-slate-700 text-slate-500"
                     }`}
                   >
                     {forcePdfOcr ? "ON" : "OFF"}
@@ -3435,8 +3457,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     aria-pressed={chartToolEnabled}
                     className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
                       chartToolEnabled
-                        ? "bg-emerald-600/20 border-emerald-500/50 text-emerald-300"
-                        : "bg-[#05070b] border-slate-700 text-slate-500"
+                        ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
+                        : "bg-[#070a0f] border-slate-700 text-slate-500"
                     }`}
                   >
                     {chartToolEnabled ? "ON" : "OFF"}
@@ -3453,23 +3475,23 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                     onChange={(e) => setMcpQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") void searchMcpRegistry(); }}
                     placeholder="Search registry.modelcontextprotocol.io"
-                    className="flex-1 bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
+                    className="flex-1 bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-blue-500 font-mono"
                   />
                   <button
                     onClick={() => void searchMcpRegistry()}
-                    className="px-2 py-1 rounded-[2px] bg-blue-600/80 hover:bg-blue-500 text-white text-[9px] font-mono"
+                    className="px-2 py-1 rounded-[2px] bg-blue-600/80 hover:bg-[#8fa39b] text-white text-[9px] font-mono"
                   >
                     Search
                   </button>
                 </div>
-                {mcpLoading && <div className="text-[9px] text-amber-400">Searching registry...</div>}
+                {mcpLoading && <div className="text-[9px] text-[#d99a9a]">Searching registry...</div>}
                 {mcpError && <div className="text-[9px] text-rose-400">{mcpError}</div>}
                 <div className="max-h-44 overflow-y-auto space-y-1">
                   {mcpResults.map((entry: any, i) => {
                     const srv = entry.server;
                     const remote = srv?.remotes?.find((r: any) => r.type === "streamable-http");
                     return (
-                      <div key={`${srv?.name}_${i}`} className="border border-slate-800 bg-[#05070b] p-1.5">
+                      <div key={`${srv?.name}_${i}`} className="border border-slate-800 bg-[#070a0f] p-1.5">
                         <div className="flex items-start justify-between gap-2">
                           <span className="text-[9px] text-slate-300 font-mono break-all">{srv?.name}</span>
                           {remote ? (
@@ -3526,7 +3548,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               )}
               <button
                 onClick={() => setShowSettingsModal(false)}
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-[3px] font-bold tracking-wider"
+                className="px-4 py-1.5 bg-blue-600 hover:bg-[#8fa39b] text-white rounded-[3px] font-bold tracking-wider"
               >
                 Close
               </button>
@@ -3540,7 +3562,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       {/* ============================================================== */}
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
-          <div className="bg-[#0a0e17] border border-blue-500/40 rounded-[4px] max-w-md w-full p-6 space-y-4 shadow-2xl relative font-mono text-xs">
+          <div className="bg-[#0a0f15] border border-blue-500/40 rounded-[4px] max-w-md w-full p-6 space-y-4 shadow-2xl relative font-mono text-xs">
             <button
               onClick={() => {
                 setShowAuthModal(false);
@@ -3574,7 +3596,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }}
                 className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
                   authTab === "wallet"
-                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
+                    ? "border-[#b8f6dd] text-[#dff8ef] bg-[#b8f6dd]/10"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -3589,7 +3611,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 }}
                 className={`flex-1 py-2 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition border-b-2 ${
                   authTab === "email"
-                    ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                    ? "border-blue-500 text-blue-400 bg-[#8fa39b]/10"
                     : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -3605,7 +3627,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               </div>
             )}
             {authSuccess && (
-              <div className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 p-2.5 rounded-[2px]">
+              <div className="text-[11px] text-[#dff8ef] bg-[#b8f6dd]/10 border border-[#b8f6dd]/20 p-2.5 rounded-[2px]">
                 {authSuccess}
               </div>
             )}
@@ -3643,7 +3665,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       setAuthError("MetaMask extension not detected in this browser.");
                     }
                   }}
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                  className="w-full py-2.5 bg-[#5f8a7a] hover:bg-[#7fae9d] text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-black/30 active:scale-[0.98]"
                 >
                   <Wallet className="w-4 h-4" />
                   <span>Connect MetaMask Wallet</span>
@@ -3668,14 +3690,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         placeholder="you@domain.com"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono"
+                        className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] p-2 text-xs text-white outline-none focus:border-blue-500 font-mono"
                         autoFocus
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={authLoading || !emailInput.trim()}
-                      className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2"
+                      className="w-full py-2 bg-blue-600 hover:bg-[#8fa39b] disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2"
                     >
                       {authLoading ? "Sending Code..." : "Send Verification Code"}
                     </button>
@@ -3695,7 +3717,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                         placeholder="123456"
                         value={otpInput}
                         onChange={(e) => setOtpInput(e.target.value)}
-                        className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] p-2 text-center text-lg tracking-[0.3em] text-white outline-none focus:border-blue-500 font-mono font-bold"
+                        className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] p-2 text-center text-lg tracking-[0.3em] text-white outline-none focus:border-blue-500 font-mono font-bold"
                         autoFocus
                       />
                     </div>
@@ -3713,7 +3735,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                       <button
                         type="submit"
                         disabled={authLoading || otpInput.trim().length !== 6}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition"
+                        className="flex-1 py-2 bg-blue-600 hover:bg-[#8fa39b] disabled:bg-slate-800 text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition"
                       >
                         {authLoading ? "Verifying..." : "Verify & Sign In"}
                       </button>
