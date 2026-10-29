@@ -117,7 +117,7 @@
 * **Project Resources:**
   * **Gateway & Web:** `https://verxl.com`
   * **Aragon DAO on Sepolia:** `app.aragon.org/#/daos/sepolia/verxl-dao.dao.eth`
-  * **GitHub Repository:** `github.com/verxl-protocol/verxl-gateway`
+  * **GitHub Repository:** `github.com/simonhavlik/verxl-protocol`
   * **Contact:** Šimon Havlík (Team Leader) | VŠE Student Email: `havs04@vse.cz`
 * **Q&A Transition:** *"We are ready for your questions, feedback, and peer evaluations!"*
 * **Visual Elements:** VŠE FIR Logo, Verxl DAO Square Logo, and QR code to project repository and live Sepolia DAO.
