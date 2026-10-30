@@ -12,7 +12,6 @@ import {
   RefreshCw,
   AlertTriangle,
   Code2,
-  Terminal,
   Lock,
   Activity,
   Send,
@@ -1262,26 +1261,22 @@ main();`,
   };
 
   return (
-    <div className="mobile-compact space-y-6 font-mono text-slate-200">
-      {/* Top Protocol Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/15 pb-2.5">
-        <div className="flex items-center gap-2 text-xs">
-          <Terminal className="w-3.5 h-3.5 text-blue-400" />
-          <span className="font-semibold text-white uppercase tracking-wider">
-            Commercial Clearing Console & Settlement
-          </span>
-          <span className="text-slate-400">·</span>
-          <span className="text-blue-400 text-[11px]">Arbitrum USDC</span>
+    <div className="flex min-h-0 flex-col font-mono text-slate-200">
+      <div className="sticky top-0 z-30 flex h-[52px] shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] bg-[#070a0f]/90 px-6 backdrop-blur-xl">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#8b989e]">API</span>
+          <span className="hidden font-mono text-[9px] text-[#65737b] sm:inline">Developer console</span>
         </div>
-        <div className="text-[10px] text-slate-400 flex items-center gap-2">
-          <span>Fee: <strong className="text-emerald-400">50 bps (0.5%)</strong></span>
-          <span className="text-slate-700">|</span>
-          <span>Min Deposit: <strong className="text-white">$0.10 USD</strong></span>
-          <span className="text-slate-700">|</span>
-          <span>Min Payout: <strong className="text-white">$1.00 USD</strong></span>
+        <div className="flex items-center gap-4 font-mono text-[9px] uppercase tracking-[0.1em] text-[#8b989e]">
+          <span className="hidden sm:inline">Arbitrum USDC</span>
+          <span className="text-[#3a4441]">·</span>
+          <span><strong className="font-medium text-[#d7e2de]">50 bps</strong></span>
+          <span className="text-[#3a4441]">·</span>
+          <span className="hidden md:inline">min $0.10 · payout $1.00</span>
         </div>
       </div>
 
+      <div className="space-y-5 px-6 py-4">
       {/* Global Status Notification Banner */}
       {statusMsg && (
         <div
@@ -1316,8 +1311,8 @@ main();`,
                 <Lock className="w-3 h-3" />
                 <span>Non-Custodial Developer Authentication</span>
               </div>
-              <h2 className="text-lg font-bold text-white uppercase tracking-wider">
-                Access Developer Console
+              <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-white">
+                Sign in to the API console
               </h2>
               <p className="text-xs text-slate-300 font-sans">
                 Sign in with your Web3 wallet, email OTP with password protection, or cryptographic password with hardware TOTP 2FA.
@@ -1368,7 +1363,7 @@ main();`,
                     setStatusMsg({ type: "error", text: err.message || "MetaMask connect cancelled." });
                   }
                 }}
-                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-[0.99]"
+                className="w-full py-2.5 bg-[#b8f6dd] hover:bg-[#d7f8ec] text-[#07110d] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer active:scale-[0.99]"
               >
                 <Wallet className="w-4 h-4" />
                 <span>Connect MetaMask Wallet</span>
@@ -3840,6 +3835,7 @@ main();`,
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

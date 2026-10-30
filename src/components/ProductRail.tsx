@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, FlaskConical, KeyRound, MessageSquare, Network, Wallet } from "lucide-react";
+import { ArrowLeft, KeyRound, MessageSquare, Server, Terminal, Wallet } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { preloadRoute } from "../lib/routePreload";
 
@@ -10,10 +10,11 @@ interface ProductRailProps {
   onConnectWallet?: () => void;
 }
 
-const productItems = [
+const items = [
   { id: "chat", label: "Chat", icon: MessageSquare },
-  { id: "playground", label: "Playground", icon: FlaskConical },
-  { id: "registry", label: "Registry", icon: Network },
+  { id: "playground", label: "Playground", icon: Terminal },
+  { id: "registry", label: "Registry", icon: Server },
+  { id: "console", label: "API", icon: KeyRound },
 ];
 
 export const ProductRail: React.FC<ProductRailProps> = ({
@@ -26,23 +27,24 @@ export const ProductRail: React.FC<ProductRailProps> = ({
   const account = user?.wallet_address || walletAddress;
 
   return (
-    <aside className="hidden h-dvh w-[232px] shrink-0 select-none flex-col border-r border-white/[0.07] bg-[#080c10] lg:flex">
+    <aside className="relative z-30 hidden h-dvh w-16 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#080c10] lg:flex">
       <button
         type="button"
         onClick={() => onNavigate("overview")}
-        className="flex h-[52px] shrink-0 items-center gap-2.5 border-b border-white/[0.07] px-4 text-left transition hover:bg-white/[0.025]"
+        className="group relative flex h-[52px] w-full items-center justify-center border-b border-white/[0.07] text-[#b8f6dd] transition hover:bg-white/[0.025]"
+        aria-label="Verxl home"
       >
-        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" aria-hidden="true">
+        <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" fill="none" aria-hidden="true">
           <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
           <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
         </svg>
-        <span className="text-[13.5px] font-semibold tracking-[-0.02em] text-white">Verxl</span>
-        <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.16em] text-[#65737b]">app</span>
+        <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+          Verxl home
+        </span>
       </button>
 
-      <nav className="flex flex-col gap-0.5 px-2 py-3">
-        <div className="mb-1 px-2 font-mono text-[8px] uppercase tracking-[0.16em] text-[#65737b]">Workspace</div>
-        {productItems.map((item) => {
+      <nav className="flex w-full flex-col items-center gap-1 py-2">
+        {items.map((item) => {
           const Icon = item.icon;
           const active = activeTab === item.id;
           return (
@@ -53,56 +55,59 @@ export const ProductRail: React.FC<ProductRailProps> = ({
                 preloadRoute(item.id);
                 onNavigate(item.id);
               }}
-              className={`group flex h-9 items-center gap-2.5 border-l-2 px-2.5 text-left transition ${
+              aria-label={item.label}
+              aria-current={active ? "page" : undefined}
+              className={`group relative flex h-11 w-11 items-center justify-center transition ${
                 active
-                  ? "border-[#b8f6dd] bg-white/[0.045] text-white"
-                  : "border-transparent text-[#9aa7ad] hover:bg-white/[0.025] hover:text-white"
+                  ? "bg-[#b8f6dd]/[0.08] text-[#b8f6dd]"
+                  : "text-[#65737b] hover:bg-white/[0.025] hover:text-[#c9d4d8]"
               }`}
             >
-              <Icon className={`h-[15px] w-[15px] ${active ? "text-[#b8f6dd]" : "text-[#65737b] group-hover:text-[#9aa7ad]"}`} />
-              <span className="text-[12px]">{item.label}</span>
+              {active && <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-[#b8f6dd]" />}
+              <Icon className="h-[17px] w-[17px]" />
+              <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+                {item.label}
+              </span>
             </button>
           );
         })}
       </nav>
 
-      <div className="mt-auto border-t border-white/[0.07] p-2">
-        <button
-          type="button"
-          onClick={() => onNavigate("console")}
-          className="flex h-9 w-full items-center gap-2.5 px-2.5 text-left text-[#9aa7ad] transition hover:bg-white/[0.025] hover:text-white"
-        >
-          <KeyRound className="h-[15px] w-[15px] text-[#65737b]" />
-          <span className="text-[12px]">API console</span>
-        </button>
+      <div className="mt-auto flex w-full flex-col items-center gap-1 border-t border-white/[0.07] py-2">
+        {account ? (
+          <div
+            className="group relative flex h-9 w-9 items-center justify-center"
+            title={account}
+          >
+            <span className="h-2 w-2 rounded-full bg-[#b8f6dd]" />
+            <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[8px] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+              {account.slice(0, 6)}…{account.slice(-4)}
+            </span>
+          </div>
+        ) : onConnectWallet ? (
+          <button
+            type="button"
+            onClick={onConnectWallet}
+            className="group relative flex h-9 w-9 items-center justify-center text-[#65737b] transition hover:text-[#b8f6dd]"
+            aria-label="Connect wallet"
+          >
+            <Wallet className="h-4 w-4" />
+            <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+              Connect wallet
+            </span>
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => onNavigate("overview")}
-          className="flex h-9 w-full items-center gap-2.5 px-2.5 text-left text-[#9aa7ad] transition hover:bg-white/[0.025] hover:text-white"
+          className="group relative flex h-9 w-9 items-center justify-center text-[#65737b] transition hover:text-white"
+          aria-label="Back to site"
         >
-          <ArrowLeft className="h-[15px] w-[15px] text-[#65737b]" />
-          <span className="text-[12px]">Back to site</span>
+          <ArrowLeft className="h-4 w-4" />
+          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+            Back to site
+          </span>
         </button>
-
-        <div className="mt-2 border-t border-white/[0.07] px-2.5 pt-3">
-          {account ? (
-            <div className="flex items-center gap-2 font-mono text-[9px] text-[#9aa7ad]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#b8f6dd]" />
-              <span>{account.slice(0, 6)}…{account.slice(-4)}</span>
-            </div>
-          ) : onConnectWallet ? (
-            <button
-              type="button"
-              onClick={onConnectWallet}
-              className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#b8f6dd] transition hover:text-white"
-            >
-              <Wallet className="h-3 w-3" />
-              Connect wallet
-            </button>
-          ) : (
-            <span className="font-mono text-[9px] text-[#65737b]">SEPOLIA · TEST RUN</span>
-          )}
-        </div>
       </div>
     </aside>
   );

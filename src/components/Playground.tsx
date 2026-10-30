@@ -10,16 +10,10 @@ import {
   Clock,
   ArrowDown,
   Code2,
-  DollarSign,
   Terminal,
-  HelpCircle,
   X,
   Server,
   ShieldAlert,
-  Lock,
-  MessageSquare,
-  KeyRound,
-  ArrowRight,
   Sparkles,
 } from "lucide-react";
 
@@ -798,7 +792,21 @@ main();`,
   }
 
   return (
-    <div className="space-y-3.5">
+    <div className="flex min-h-0 flex-col">
+      <div className="sticky top-0 z-30 flex h-[52px] shrink-0 items-center justify-between gap-4 border-b border-white/[0.07] bg-[#070a0f]/90 px-6 backdrop-blur-xl">
+        <div className="flex min-w-0 items-baseline gap-3">
+          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#8b989e]">Playground</span>
+          <span className="hidden truncate font-mono text-[9px] text-[#65737b] sm:inline">
+            {model === "qwen3.5-4b-uncensored-32k" ? "Qwen 3.5 4B · Prague bare metal" : model === "deepseek-v4.1-flash" ? "DeepSeek V4.1 Flash · official bridge" : "MiMo 2.6 Flash · official bridge"}
+          </span>
+        </div>
+        <div className="flex shrink-0 items-center gap-4">
+          <button onClick={() => onNavigate?.("chat")} className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b989e] transition hover:text-white">Chat</button>
+          <button onClick={() => onNavigate?.("console")} className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b989e] transition hover:text-white">API keys</button>
+          <button onClick={() => setShowDisclaimer(!showDisclaimer)} className={`font-mono text-[9px] uppercase tracking-[0.12em] transition ${showDisclaimer ? "text-[#b8f6dd]" : "text-[#8b989e] hover:text-white"}`}>Policy</button>
+        </div>
+      </div>
+      <div className="space-y-4 px-6 py-4">
       {showScrollOutput && (
         <button
           onClick={scrollOutputToLatest}
@@ -808,59 +816,6 @@ main();`,
           <ArrowDown className="w-4 h-4" />
         </button>
       )}
-      {/* Section Header */}
-      <div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
-          <Terminal className="w-3 h-3" />
-          <span>OPENAI SDK COMPATIBLE ENDPOINT (/v1/chat/completions) · SEPOLIA TESTNET</span>
-        </div>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex flex-wrap items-center gap-2">
-              <span>Free Inference Playground</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-normal">
-                LIVE BULBASAUR HOST · 32K RESIDENT CONTEXT
-              </span>
-            </h2>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Sub-50ms TTFT streaming inference routed directly to our Prague bare-metal cluster running Qwen 3.5 4B Uncensored (32k context resident) via Verxl 50 bps decentralized clearinghouse.
-            </p>
-          </div>
-
-          {/* Quick Access to API and Chat */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => onNavigate?.("chat")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white font-mono text-[11px] font-bold uppercase tracking-wider shadow-sm shadow-blue-500/20 transition cursor-pointer"
-              title="Open full interactive chat interface"
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>Interactive Chat</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-
-            <button
-              onClick={() => onNavigate?.("console")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-[#0c1220] hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-mono text-[11px] font-bold uppercase tracking-wider transition cursor-pointer"
-              title="Open Developer API, Keys & Balance Management"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Developer API</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-
-            <button
-              onClick={() => setShowDisclaimer(!showDisclaimer)}
-              className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1.5 rounded-[3px] bg-[#0a0e17] border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition cursor-pointer"
-              title="Read Model & Protocol Policy Disclaimer"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-              <span>Policy Notice</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Precautions & Policy Disclaimer Modal/Banner */}
       {showDisclaimer && (
         <div className="bg-[#0c0f18] border border-amber-500/40 rounded-[3px] p-3 text-xs font-mono text-slate-300 space-y-2 relative shadow-lg">
@@ -887,10 +842,10 @@ main();`,
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         {/* Left Column: Configuration & Controls */}
-        <div className="lg:col-span-5 space-y-3">
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-3 space-y-3 shadow-sm">
+        <div className="min-w-0 space-y-3">
+          <div className="space-y-3 border border-white/[0.07] bg-[#0b1117] p-4">
             <h3 className="text-[10px] font-semibold text-slate-300 font-mono tracking-wider uppercase flex items-center justify-between border-b border-slate-800/80 pb-1.5">
               <span>Model & Execution Parameters</span>
               <span className="text-[9px] text-blue-400 font-mono">50 BPS PROTOCOL TAKE</span>
@@ -926,55 +881,22 @@ main();`,
                 </option>
               </select>
 
-              {/* Free Tier vs Paid Models Callout */}
+              {/* Compact entitlement strip */}
               {user ? (
-                <div className="mt-2 p-2.5 rounded-[2px] bg-emerald-950/20 border border-emerald-500/30 text-[10.5px] font-mono space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                      <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                      <span>ALL PLATFORM MODELS UNLOCKED</span>
-                    </span>
-                    <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
-                      ${Number(user.balance_usd || 0).toFixed(2)} USD Available
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-300 leading-relaxed font-sans">
-                    Authenticated session active. You can run all 3 platform models directly in this terminal, and code snippets below automatically generate ready-to-run curl and Python SDK requests with your active model.
-                  </p>
-                  <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
-                    <span className="text-blue-300">Active Model: <strong>{model}</strong></span>
-                    <span className="text-emerald-400">50 bps Protocol Fee</span>
-                  </div>
+                <div className="mt-2 flex items-center justify-between gap-2 border border-white/[0.07] px-2.5 py-1.5 font-mono text-[9px] text-[#8b989e]">
+                  <span className="flex items-center gap-1.5 text-[#b8f6dd]">
+                    <Sparkles className="h-3 w-3" />
+                    <span>All models unlocked</span>
+                  </span>
+                  <span>${Number(user.balance_usd || 0).toFixed(2)} USD · 50 bps</span>
                 </div>
               ) : (
-                <div className="mt-2 p-2.5 rounded-[2px] bg-[#070b14] border border-blue-500/20 text-[10.5px] font-mono space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-blue-400 font-bold">
-                      <Server className="w-3.5 h-3.5 shrink-0" />
-                      <span>
-                        {model.includes("qwen") || model.includes("uncensored")
-                          ? "Free Demo Model: Qwen 3.5 4B Uncensored (Bulbasaur)"
-                          : model.includes("deepseek")
-                          ? "Official Bridge Model: DeepSeek V4.1 Flash (Snippet Ready)"
-                          : "Official Bridge Model: Xiaomi MiMo 2.6 Flash (Snippet Ready)"}
-                      </span>
-                    </span>
-                    <span className="text-[8.5px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      {model.includes("qwen") ? "Unlimited Free Demo" : "Login to Execute"}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
-                    {model.includes("qwen")
-                      ? "Bulbasaur Qwen 3.5 4B Uncensored is completely free to test with zero sign-up required. Select any model to preview its integration code snippets."
-                      : "You selected an official bridge model. Code snippets are updated in real time with this model. To execute live streaming inference, connect your MetaMask wallet or log in to unlock."}
-                  </p>
-                  <div className="text-[9.5px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80 font-mono">
-                    <span className="flex items-center gap-1 text-slate-400">
-                      <Lock className="w-3 h-3 text-amber-400" />
-                      <span>Rate Limit: 40 req / 10 min demo</span>
-                    </span>
-                    <span className="text-emerald-400">50 bps Protocol Fee</span>
-                  </div>
+                <div className="mt-2 flex items-center justify-between gap-2 border border-white/[0.07] px-2.5 py-1.5 font-mono text-[9px] text-[#8b989e]">
+                  <span className="flex items-center gap-1.5">
+                    <Server className="h-3 w-3 text-[#b8f6dd]" />
+                    <span>{model.includes("qwen") || model.includes("uncensored") ? "Free demo · Qwen 3.5 4B" : "Sign in to run bridge models"}</span>
+                  </span>
+                  <span>{model.includes("qwen") || model.includes("uncensored") ? "40 req / 10 min" : "50 bps"}</span>
                 </div>
               )}
             </div>
@@ -1101,39 +1023,14 @@ main();`,
               )}
             </div>
           </div>
-
-          {/* Real-Time Financial Metric Card */}
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] p-4 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-400 flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Protocol Fee Compression</span>
-              </span>
-              <span className="text-emerald-400 font-semibold font-mono">-94.7%</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-slate-800">
-                <div className="text-[9.5px] text-slate-400 font-mono">VERXL FEE (50 BPS)</div>
-                <div className="text-sm font-bold font-mono text-emerald-400 mt-0.5">
-                  ${metrics.protocolFeeUsd.toFixed(5)}
-                </div>
-              </div>
-              <div className="bg-[#05070b] p-2.5 rounded-[3px] border border-slate-800">
-                <div className="text-[9.5px] text-slate-400 font-mono">CENTRALIZED SAAS (950 BPS)</div>
-                <div className="text-sm font-bold font-mono text-rose-400 line-through mt-0.5">
-                  ${metrics.traditionalSaaSUsd.toFixed(5)}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Streaming Output & Telemetry */}
-        <div className="lg:col-span-7 space-y-3">
+        <div className="min-w-0 space-y-3">
           {/* Output Card */}
           <div
             ref={terminalWindowRef}
-            className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] flex flex-col h-[390px] overflow-hidden scroll-mt-20"
+            className="flex h-[430px] flex-col overflow-hidden border border-white/[0.07] bg-[#0b1117] scroll-mt-20"
           >
             {/* Top Bar of Output Card */}
             <div className="px-3 py-2 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
@@ -1238,7 +1135,7 @@ main();`,
           </div>
 
           {/* Multi-Language Code Snippets Drawer */}
-          <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden">
+          <div className="overflow-hidden border border-white/[0.07] bg-[#0b1117]">
             <div className="px-4 py-2.5 bg-[#05070b] border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Code2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -1289,36 +1186,6 @@ main();`,
           </div>
         </div>
       </div>
-
-      {/* Direct Transition to Developer API or Chat */}
-      <div className="p-4 rounded-[4px] bg-gradient-to-r from-blue-950/40 via-[#0a0e17] to-indigo-950/40 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
-        <div className="space-y-1">
-          <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-            <span>Ready for Production? Integrate via API or Open Full Chat</span>
-          </div>
-          <p className="text-[11.5px] text-slate-300 font-sans leading-relaxed">
-            Use Verxl's OpenAI-compatible endpoint with 50 bps protocol clearing on Arbitrum One, or continue in our rich multi-turn conversation suite.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => onNavigate?.("chat")}
-            className="px-4 py-2 rounded-[3px] bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-500/25 transition cursor-pointer"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Open Chat</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => onNavigate?.("console")}
-            className="px-4 py-2 rounded-[3px] bg-[#0c1220] hover:bg-slate-800 text-emerald-300 hover:text-white border border-emerald-500/40 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition cursor-pointer"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Developer API & Keys</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
       </div>
     </div>
   );

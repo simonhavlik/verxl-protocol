@@ -142,77 +142,41 @@ export const Registry: React.FC<RegistryProps> = ({
   const activeNodesCount = providers.filter((p) => p.status === "ACTIVE" || p.status === "PENDING_AUDIT").length;
 
   return (
-    <div className="mobile-compact space-y-3.5 font-mono">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-[2px] bg-blue-500/10 border border-blue-500/30 text-[10px] font-mono text-blue-400 mb-1 uppercase tracking-wider">
-            <Server className="w-3 h-3" />
-            <span>ON-CHAIN VERXL COMPUTE REGISTRY · SEPOLIA TESTNET</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Decentralized GPU Compute Fleet
-          </h2>
-          <p className="text-xs text-slate-400 font-mono">
-            Audited, high-throughput GPU clusters and official API bridges routed dynamically at 50 bps protocol fee.
-          </p>
+    <div className="flex min-h-0 flex-col font-mono">
+      <div className="sticky top-0 z-30 flex h-[52px] shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] bg-[#070a0f]/90 px-6 backdrop-blur-xl">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#8b989e]">Registry</span>
+          <span className="hidden font-mono text-[9px] text-[#65737b] sm:inline">Approved compute providers</span>
         </div>
-
-        {/* Global Registry Stats & Onboard Button */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-3 bg-[#0a0e17] border border-blue-500/20 px-3 py-1.5 rounded-[3px] font-mono text-xs shadow-sm">
-            <div>
-              <div className="text-[9px] text-slate-400 uppercase tracking-wider">ACTIVE FLEET</div>
-              <div className="text-xs font-bold text-emerald-400 tabular">
-                {activeNodesCount} / {providers.length} Nodes
-              </div>
-            </div>
-            <div className="h-6 w-[1px] bg-slate-800"></div>
-            <div>
-              <div className="text-[9px] text-slate-400 uppercase tracking-wider">PROTOCOL FEE</div>
-              <div className="text-xs font-bold text-white tabular">
-                50 bps (0.5%)
-              </div>
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#8b989e] sm:flex">
+            <span className="h-1 w-1 rounded-full bg-[#b8f6dd]" />
+            <span><strong className="font-medium text-[#d7e2de]">{activeNodesCount} / {providers.length}</strong> active</span>
+            <span className="text-[#3a4441]">·</span>
+            <span>50 bps</span>
           </div>
-
           <button
             onClick={() => {
               setIsRegisterModalOpen(true);
               setRegSuccessData(null);
             }}
-            className="hero-btn hero-btn--primary !py-2 !px-3 font-mono text-[11px] flex items-center gap-1.5 shadow-md"
+            className="flex items-center gap-1.5 border border-[#b8f6dd]/25 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#b8f6dd] transition hover:border-[#b8f6dd]/60 hover:bg-[#b8f6dd]/[0.04]"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Submit Provider Registration</span>
+            <Plus className="h-3 w-3" />
+            <span>Register provider</span>
           </button>
         </div>
       </div>
 
-      {/* Network Fleet Notice & Scope Banner */}
-      <div className="bg-[#0a0e17] border border-blue-500/25 rounded-[3px] p-2.5 sm:p-3 text-xs text-slate-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-[1px] bg-emerald-400 animate-pulse shrink-0" />
-          <div className="text-[11px] leading-relaxed">
-            <span className="text-white font-semibold">Active Fleet Scope:</span>{" "}
-            Currently live with our self-hosted Prague bare-metal cluster (Bulbasaur) and official bridges to Xiaomi Mi MIMO 2.6 Flash & DeepSeek V4.1 Flash. Independent compute hosts can register endpoints below.
-          </div>
-        </div>
-        <div className="text-[10px] text-blue-400 font-mono shrink-0 flex items-center gap-2">
-          <span className="bg-blue-500/10 px-2 py-0.5 rounded-[2px] border border-blue-500/20">
-            Take: 50 bps
-          </span>
-        </div>
-      </div>
-
+      <div className="space-y-4 px-6 py-4">
       {/* Filter and Search Bar */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[3px] p-2 sm:p-2.5 flex flex-col md:flex-row gap-2.5 items-center justify-between">
+      <div className="flex flex-col items-center justify-between gap-2 border-b border-white/[0.07] pb-3 md:flex-row">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search cluster, location, hardware, model..."
+            placeholder="Search providers…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] pl-9 pr-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
@@ -266,7 +230,7 @@ export const Registry: React.FC<RegistryProps> = ({
       </div>
 
       {/* Providers Table */}
-      <div className="bg-[#0a0e17] border border-blue-500/20 rounded-[4px] overflow-hidden shadow-xl">
+      <div className="overflow-hidden border border-white/[0.07] bg-[#0b1117]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-mono">
             <thead>
@@ -660,6 +624,7 @@ export const Registry: React.FC<RegistryProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

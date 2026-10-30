@@ -203,7 +203,7 @@ export default function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(
     "0x14f10A865e277C0B1949e18Dd9856602DB11742b" // Šimon Havlík's lead address
   );
-  const isProductRoute = ["chat", "playground", "registry"].includes(activeTab);
+  const isProductRoute = ["chat", "playground", "registry", "console"].includes(activeTab);
 
   // Sync tab changes with browser URL
   const handleTabChange = (tab: string) => {
@@ -297,38 +297,37 @@ export default function App() {
               </Suspense>
             </div>
           ) : isProductRoute ? (
-            <main className="flex-1 min-h-0 w-full relative z-10 flex flex-col">
-              {activeTab === "chat" ? (
-                <TabErrorBoundary activeTab={activeTab}>
-                  <Suspense fallback={<TabLoadingFallback />}>
-                    <Chat onNavigate={handleTabChange} />
-                  </Suspense>
-                </TabErrorBoundary>
-              ) : (
-                <div className="flex flex-1 min-h-0">
-                  <ProductRail
-                    activeTab={activeTab}
-                    onNavigate={handleTabChange}
-                    walletAddress={walletAddress}
-                    onConnectWallet={handleConnectWallet}
-                  />
-                  <div className="min-w-0 flex-1 overflow-y-auto">
-                    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
-                      <TabErrorBoundary activeTab={activeTab}>
-                        <Suspense fallback={<TabLoadingFallback />}>
-                          {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
-                          {activeTab === "registry" && (
-                            <Registry
-                              walletAddress={walletAddress}
-                              onConnectWallet={handleConnectWallet}
-                            />
-                          )}
-                        </Suspense>
-                      </TabErrorBoundary>
-                    </div>
+            <main className="relative z-10 flex min-h-0 w-full flex-1">
+              <ProductRail
+                activeTab={activeTab}
+                onNavigate={handleTabChange}
+                walletAddress={walletAddress}
+                onConnectWallet={handleConnectWallet}
+              />
+              <div key={activeTab} className="product-view flex min-h-0 min-w-0 flex-1 flex-col">
+                {activeTab === "chat" ? (
+                  <TabErrorBoundary activeTab={activeTab}>
+                    <Suspense fallback={<TabLoadingFallback />}>
+                      <Chat onNavigate={handleTabChange} />
+                    </Suspense>
+                  </TabErrorBoundary>
+                ) : (
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    <TabErrorBoundary activeTab={activeTab}>
+                      <Suspense fallback={<TabLoadingFallback />}>
+                        {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
+                        {activeTab === "registry" && (
+                          <Registry
+                            walletAddress={walletAddress}
+                            onConnectWallet={handleConnectWallet}
+                          />
+                        )}
+                        {activeTab === "console" && <Console />}
+                      </Suspense>
+                    </TabErrorBoundary>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </main>
           ) : (
             <main className="flex-1 max-w-7xl w-full min-w-0 overflow-x-hidden mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">

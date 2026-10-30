@@ -27,7 +27,6 @@ import {
   ChevronRight,
   Settings,
   Coins,
-  Terminal,
   Menu,
   Cpu,
   X,
@@ -47,7 +46,6 @@ import {
   FileText,
   Pencil,
   PanelLeft,
-  KeyRound,
 } from "lucide-react";
 
 marked.setOptions({
@@ -1910,59 +1908,22 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           sidebarOpen ? "w-[84vw] max-w-[320px] lg:w-[248px]" : "w-0"
         } transition-all duration-200 shrink-0 border-r border-white/[0.07] bg-[#080c10] flex flex-col overflow-hidden select-none z-40 max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:h-full max-lg:shadow-2xl`}
       >
-        {/* App brand */}
-        <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-white/[0.07] px-3">
-          <button
-            type="button"
-            onClick={() => onNavigate?.("overview")}
-            className="flex min-w-0 items-center gap-2 text-left"
-            title="Verxl home"
-          >
-            <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden="true">
-              <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
-              <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
-            </svg>
-            <span className="truncate text-[13.5px] font-semibold tracking-[-0.02em] text-white">Verxl</span>
-            <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">chat</span>
-          </button>
+        {/* The product rail owns global navigation; this panel is the chat context. */}
+        <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.07] px-3">
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#8b989e]">Chats</span>
+            <span className="font-mono text-[8px] text-[#65737b]">{sessions.length}</span>
+          </div>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto p-1.5 text-[#65737b] transition hover:text-white"
+            className="p-1.5 text-[#65737b] transition hover:text-white"
             title="Hide sidebar"
             aria-label="Hide sidebar"
           >
             <PanelLeft className="h-3.5 w-3.5" />
           </button>
         </div>
-
-        {/* Product menu: the site menu lives in the header; this is the app menu. */}
-        <nav className="grid shrink-0 grid-cols-2 gap-0.5 border-b border-white/[0.07] p-1.5">
-          {[
-            { id: "chat", label: "Chat", Icon: MessageSquare },
-            { id: "playground", label: "Playground", Icon: Terminal },
-            { id: "registry", label: "Registry", Icon: Server },
-            { id: "console", label: "API", Icon: KeyRound },
-          ].map(({ id, label, Icon }) => {
-            const active = id === "chat";
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => onNavigate?.(id)}
-                className={`flex h-9 items-center gap-1.5 border px-2 text-left transition ${
-                  active
-                    ? "border-[#b8f6dd]/25 bg-[#b8f6dd]/[0.06] text-[#b8f6dd]"
-                    : "border-transparent text-[#65737b] hover:bg-white/[0.025] hover:text-[#9aa7ad]"
-                }`}
-                title={label}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate font-mono text-[7.5px] uppercase tracking-[0.1em]">{label}</span>
-              </button>
-            );
-          })}
-        </nav>
 
         {/* New chat */}
         <div className="border-b border-white/[0.07] p-2">
@@ -3464,7 +3425,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   type="button"
                   onClick={() => {
                     setShowSettingsModal(false);
-                    onNavigate("api");
+                    onNavigate("console");
                   }}
                   className="text-[#b8f6dd] hover:text-[#d7f8ec] underline text-[11px] font-semibold"
                 >
