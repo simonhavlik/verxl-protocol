@@ -360,54 +360,27 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   const runSearch = async (query: string): Promise<SearchSource[]> => {
     const q = query.slice(0, 400);
-    if (searchProvider === "brave") {
-      if (!searchKey) throw new Error("Brave Search API key is missing.");
-      const r = await fetch(
-        `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=5`,
-        { headers: { Accept: "application/json", "X-Subscription-Token": searchKey } }
-      );
-      const d = (await r.json()) as any;
-      return (d.web?.results || [])
-        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || "").replace(/\s+/g, " ") }))
-        .filter((x: SearchSource) => x.url);
-    }
-    if (searchProvider === "exa") {
-      if (!searchKey) throw new Error("Exa API key is missing.");
-      const r = await fetch("https://api.exa.ai/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": searchKey },
-        body: JSON.stringify({ query: q, numResults: 5, contents: { text: { maxCharacters: 1000 } } }),
-      });
-      const d = (await r.json()) as any;
-      return (d.results || [])
-        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.text || "").replace(/\s+/g, " ") }))
-        .filter((x: SearchSource) => x.url);
-    }
-    if (searchProvider === "custom") {
-      if (!searchBaseUrl) throw new Error("Custom search base URL is missing.");
-      const r = await fetch(searchBaseUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(searchKey ? { Authorization: `Bearer ${searchKey}` } : {}),
-        },
-        body: JSON.stringify({ query: q, limit: 5 }),
-      });
-      const d = (await r.json()) as any;
-      const arr = d.data?.web || d.web?.results || d.results || d.web || d.data || [];
-      return (Array.isArray(arr) ? arr : [])
-        .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || x.text || "").replace(/\s+/g, " ") }))
-        .filter((x: SearchSource) => x.url);
-    }
-    const r = await fetch("https://api.firecrawl.dev/v2/search", {
+    const res = await fetch("/api/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: q, limit: 5 }),
+      body: JSON.stringify({
+        provider: searchProvider,
+        query: q,
+        key: searchKey,
+        baseUrl: searchBaseUrl,
+      }),
     });
-    const d = (await r.json()) as any;
-    return (d.data?.web || [])
-      .slice(0, 5)
-      .map((x: any) => ({ title: String(x.title || x.url || ""), url: String(x.url || ""), description: String(x.description || "").replace(/\s+/g, " ") }))
+    const data = (await res.json().catch(() => null)) as any;
+    if (!res.ok || !data || data.error) {
+      throw new Error(data?.error || `Search provider returned HTTP ${res.status}.`);
+    }
+    const rows = Array.isArray(data.results) ? data.results : [];
+    return rows
+      .map((x: any) => ({
+        title: String(x?.title || x?.url || ""),
+        url: String(x?.url || ""),
+        description: String(x?.description || "").replace(/\s+/g, " "),
+      }))
       .filter((x: SearchSource) => x.url);
   };
   const [isSearching, setIsSearching] = useState(false);
@@ -1485,8 +1458,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           searchDigest = parts.join("\n\n");
         }
         if (sources.length === 0) setSearchError("No web results returned; answering without sources.");
-      } catch {
-        setSearchError("Web search unavailable; answering without sources.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "unknown search error";
+        setSearchError(`Web search failed: ${message}. Answering without sources.`);
       } finally {
         setIsSearching(false);
         setSearchEnabled(false);
