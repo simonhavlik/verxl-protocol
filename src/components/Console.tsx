@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Portal } from "./Portal";
-import { openMetaMaskOnMobile } from "../lib/wallet";
+import { connectMetaMask } from "../lib/wallet";
 
 export interface ProviderModelConfig {
   id: string;
@@ -979,20 +979,12 @@ export const Console: React.FC = () => {
       setDepositStatus("Minimum deposit is $0.10 USD.");
       return;
     }
-    if (typeof window === "undefined" || !(window as any).ethereum) {
-      if (openMetaMaskOnMobile()) {
-        setDepositStatus("Opening MetaMask… complete the deposit there.");
-        return;
-      }
-      setDepositStatus("MetaMask or Web3 wallet not detected. Switch to Manual tab or install MetaMask.");
-      return;
-    }
-
     setIsDepositingWeb3(true);
     setDepositStatus("Connecting MetaMask...");
     try {
+      const accounts = await connectMetaMask();
       const eth = (window as any).ethereum;
-      const [account] = await eth.request({ method: "eth_requestAccounts" });
+      const account = accounts?.[0];
 
       // Verify network is Arbitrum One (Chain ID 42161 = 0xa4b1)
       const chainId = await eth.request({ method: "eth_chainId" });
@@ -1336,28 +1328,22 @@ main();`,
               <button
                 type="button"
                 onClick={async () => {
-                  if (typeof window !== "undefined" && !(window as any).ethereum) {
-                    if (openMetaMaskOnMobile()) {
-                      setStatusMsg({ type: "info", text: "Opening MetaMask… finish connecting there." });
-                      return;
-                    }
-                    setStatusMsg({ type: "error", text: "MetaMask not detected. On a phone, open this page inside MetaMask." });
-                    return;
-                  }
                   try {
                     setStatusMsg({ type: "info", text: "Connecting MetaMask..." });
-                    const eth = (window as any).ethereum;
-                    const [account] = await eth.request({ method: "eth_requestAccounts" });
-                    if (account) {
-                      const res = await loginWithWallet(account);
-                      if (res.success) {
-                        setStatusMsg({
-                          type: "success",
-                          text: `Connected MetaMask wallet ${account.slice(0, 6)}...${account.slice(-4)}. Welcome!`,
-                        });
-                      } else {
-                        setStatusMsg({ type: "error", text: res.error || "Wallet authentication failed." });
-                      }
+                    const accounts = await connectMetaMask();
+                    const account = accounts?.[0];
+                    if (!account) {
+                      setStatusMsg({ type: "error", text: "MetaMask did not return an account." });
+                      return;
+                    }
+                    const res = await loginWithWallet(account);
+                    if (res.success) {
+                      setStatusMsg({
+                        type: "success",
+                        text: `Connected MetaMask wallet ${account.slice(0, 6)}...${account.slice(-4)}. Welcome!`,
+                      });
+                    } else {
+                      setStatusMsg({ type: "error", text: res.error || "Wallet authentication failed." });
                     }
                   } catch (err: any) {
                     setStatusMsg({ type: "error", text: err.message || "MetaMask connect cancelled." });
@@ -1636,15 +1622,12 @@ main();`,
                   <button
                     type="button"
                     onClick={async () => {
-                      if (typeof window !== "undefined" && !(window as any).ethereum) {
-                        if (openMetaMaskOnMobile()) return;
-                        return;
-                      }
                       try {
-                        const eth = (window as any).ethereum;
-                        const [account] = await eth.request({ method: "eth_requestAccounts" });
-                        if (account) await loginWithWallet(account);
-                      } catch {}
+                        const accounts = await connectMetaMask();
+                        if (accounts?.[0]) await loginWithWallet(accounts[0]);
+                      } catch (err) {
+                        console.warn("Wallet connect error:", err);
+                      }
                     }}
                     className="flex items-center gap-1 font-mono text-[10.5px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-[2px] hover:bg-emerald-500/20 transition cursor-pointer"
                     title="Connect MetaMask to link your Web3 wallet to this account"

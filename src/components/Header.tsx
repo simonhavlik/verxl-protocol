@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ExternalLink, Wallet, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { openMetaMaskOnMobile } from "../lib/wallet";
+import { connectMetaMask } from "../lib/wallet";
 import { preloadRoute } from "../lib/routePreload";
 
 interface HeaderProps {
@@ -23,28 +23,18 @@ export const Header: React.FC<HeaderProps> = ({
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
 
   const handleConnectWalletClick = async () => {
-    if (typeof window !== "undefined" && !(window as any).ethereum) {
-      if (openMetaMaskOnMobile()) return;
-      onConnectWallet();
-      return;
-    }
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      try {
-        setConnectingWallet(true);
-        const eth = (window as any).ethereum;
-        const accounts = await eth.request({ method: "eth_requestAccounts" });
-        if (accounts && accounts.length > 0) {
-          await loginWithWallet(accounts[0]);
-          onConnectWallet();
-          return;
-        }
-      } catch (err) {
-        console.warn("Wallet connect error:", err);
-      } finally {
-        setConnectingWallet(false);
+    setConnectingWallet(true);
+    try {
+      const accounts = await connectMetaMask();
+      if (accounts?.[0]) {
+        await loginWithWallet(accounts[0]);
+        onConnectWallet();
       }
+    } catch (err) {
+      console.warn("Wallet connect error:", err);
+    } finally {
+      setConnectingWallet(false);
     }
-    onConnectWallet();
   };
 
   useEffect(() => {

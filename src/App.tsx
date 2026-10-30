@@ -6,6 +6,7 @@ const Hero = lazy(() => import("./components/Hero").then((m) => ({ default: m.He
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 import { preloadRoute } from "./lib/routePreload";
+import { connectMetaMask } from "./lib/wallet";
 import { ProductRail } from "./components/ProductRail";
 import { MobileAppNav } from "./components/MobileAppNav";
 
@@ -201,9 +202,7 @@ function getLegalSubTab(): "privacy" | "terms" | "mica" | "charter" {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>(getTabFromPath);
-  const [walletAddress, setWalletAddress] = useState<string | null>(
-    "0x14f10A865e277C0B1949e18Dd9856602DB11742b" // Šimon Havlík's lead address
-  );
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [appMode] = useState(() => {
     if (typeof window === "undefined") return false;
     const fromQuery = new URLSearchParams(window.location.search).get("app") === "1";
@@ -256,37 +255,25 @@ export default function App() {
   }, []);
 
   const handleConnectWallet = async () => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    try {
+      const accounts = await connectMetaMask();
+      const account = accounts?.[0];
+      if (!account) return;
+      setWalletAddress(account);
       try {
-        const accounts = await (window as any).ethereum.request({
-          method: "eth_requestAccounts",
+        const res = await fetch("/api/auth/wallet-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet_address: account }),
         });
-        if (accounts && accounts.length > 0) {
-          const account = accounts[0];
-          setWalletAddress(account);
-          try {
-            const res = await fetch("/api/auth/wallet-login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ wallet_address: account }),
-            });
-            const data = (await res.json()) as any;
-            if (data.success && data.token) {
-              localStorage.setItem("vrxl_auth_token", data.token);
-              window.dispatchEvent(new Event("storage"));
-            }
-          } catch {}
-          return;
+        const data = (await res.json()) as any;
+        if (data.success && data.token) {
+          localStorage.setItem("vrxl_auth_token", data.token);
+          window.dispatchEvent(new Event("storage"));
         }
-      } catch (err) {
-        console.warn("User rejected Web3 connection or error occurred:", err);
-      }
-    }
-    // Fallback toggle for demo if no browser extension installed
-    if (!walletAddress) {
-      setWalletAddress("0x14f10A865e277C0B1949e18Dd9856602DB11742b");
-    } else {
-      setWalletAddress(null);
+      } catch {}
+    } catch (err) {
+      console.warn("Wallet connect error:", err);
     }
   };
 

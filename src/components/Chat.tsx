@@ -10,7 +10,7 @@ import {
   clearChatKeyCache,
   type ChatPlaintext,
 } from "../lib/chatCrypto";
-import { openMetaMaskOnMobile } from "../lib/wallet";
+import { connectMetaMask } from "../lib/wallet";
 import { Portal } from "./Portal";
 import {
   Plus,
@@ -1003,16 +1003,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       setDepositStatus("Minimum deposit is $0.10 USD.");
       return;
     }
-    if (typeof window === "undefined" || !(window as any).ethereum) {
-      setDepositStatus("MetaMask or Web3 wallet not detected. Switch to Manual tab or install MetaMask.");
-      return;
-    }
-
     setIsDepositingWeb3(true);
     setDepositStatus("Connecting MetaMask...");
     try {
+      const accounts = await connectMetaMask();
       const eth = (window as any).ethereum;
-      const [account] = await eth.request({ method: "eth_requestAccounts" });
+      const account = accounts?.[0];
 
       // Verify network is Arbitrum One (Chain ID 42161 = 0xa4b1)
       const chainId = await eth.request({ method: "eth_chainId" });
@@ -3726,37 +3722,26 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                 <button
                   type="button"
                   onClick={async () => {
-                    if (typeof window !== "undefined" && !(window as any).ethereum) {
-                      if (openMetaMaskOnMobile()) {
-                        setAuthError(null);
-                        setAuthSuccess("Opening MetaMask… finish connecting there.");
+                    try {
+                      setAuthError(null);
+                      setAuthSuccess("Connecting MetaMask…");
+                      const accounts = await connectMetaMask();
+                      const account = accounts?.[0];
+                      if (!account) {
+                        setAuthError("MetaMask did not return an account.");
                         return;
                       }
-                      setAuthError("Open this page inside MetaMask on your phone, or install the extension.");
-                      return;
-                    }
-                    if (typeof window !== "undefined" && (window as any).ethereum) {
-                      try {
-                        setAuthError(null);
-                        setAuthSuccess("Connecting MetaMask...");
-                        const eth = (window as any).ethereum;
-                        const [account] = await eth.request({ method: "eth_requestAccounts" });
-                        if (account) {
-                          const res = await loginWithWallet(account);
-                          if (res.success) {
-                            setAuthSuccess(`Welcome! Connected wallet ${account.slice(0, 6)}...${account.slice(-4)}.`);
-                            setTimeout(() => setShowAuthModal(false), 1200);
-                          } else {
-                            setAuthError(res.error || "Wallet authentication failed.");
-                            setAuthSuccess(null);
-                          }
-                        }
-                      } catch (err: any) {
-                        setAuthError(err.message || "MetaMask connection was cancelled.");
+                      const res = await loginWithWallet(account);
+                      if (res.success) {
+                        setAuthSuccess(`Welcome! Connected wallet ${account.slice(0, 6)}...${account.slice(-4)}.`);
+                        setTimeout(() => setShowAuthModal(false), 1200);
+                      } else {
+                        setAuthError(res.error || "Wallet authentication failed.");
                         setAuthSuccess(null);
                       }
-                    } else {
-                      setAuthError("MetaMask extension not detected in this browser.");
+                    } catch (err: any) {
+                      setAuthError(err.message || "MetaMask connection was cancelled.");
+                      setAuthSuccess(null);
                     }
                   }}
                   className="w-full py-2.5 bg-[#5f8a7a] hover:bg-[#7fae9d] text-white font-bold tracking-wider uppercase text-xs rounded-[3px] transition flex items-center justify-center gap-2 shadow-lg shadow-black/30 active:scale-[0.98]"
