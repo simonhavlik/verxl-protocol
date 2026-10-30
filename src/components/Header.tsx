@@ -46,6 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const coreItems = [
     { id: "overview", label: "Overview" },
+    { id: "products", label: "Products" },
     { id: "playground", label: "Playground" },
     { id: "chat", label: "Chat" },
     { id: "console", label: "API" },

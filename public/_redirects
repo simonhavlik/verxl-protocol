@@ -1,4 +1,6 @@
 /assets/* /404.html 404
+/products /index.html 200
+/products/ /index.html 200
 /whitepaper /whitepaper/index.html 200
 /whitepaper/ /whitepaper/index.html 200
 /about /vision/index.html 200

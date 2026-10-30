@@ -49,6 +49,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           <div className="md:col-span-2">
             <div className={columnHead}>Protocol</div>
+            <a href="/products" onClick={go("products")} className={link}>Products</a>
             <a href="/playground" onClick={go("playground")} className={link}>Playground</a>
             <a href="/chat" onClick={go("chat")} className={link}>Chat</a>
             <a href="/api" onClick={go("console")} className={link}>Developer API</a>

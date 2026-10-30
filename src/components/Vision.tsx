@@ -570,6 +570,9 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
                 Read the API
               </button>
             </div>
+            <p className="mt-4 border-t border-white/10 pt-3 font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">
+              Next / built-in coding agent in the desktop apps
+            </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-[9.5px]">
               <a href="mailto:me@simonhavlik.com" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
                 <Mail className="h-3 w-3" /> me@simonhavlik.com
