@@ -155,6 +155,14 @@ interface ChatSession {
   updatedAt: number;
 }
 
+interface ActiveStream {
+  controller: AbortController;
+  content: string;
+  reasoning: string;
+  searching: boolean;
+  startedAt: number;
+}
+
 const CHAT_STORAGE_KEY = "vrxl_chat_sessions_v2";
 
 const readLocalChatSessions = (): ChatSession[] => {
@@ -383,7 +391,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       }))
       .filter((x: SearchSource) => x.url);
   };
-  const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
@@ -776,14 +783,31 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   // Streaming & Message Generation State
   const [inputPrompt, setInputPrompt] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
+  const [activeStreams, setActiveStreams] = useState<Record<string, ActiveStream>>({});
   const [finishedSessionIds, setFinishedSessionIds] = useState<Set<string>>(new Set());
-  const [queuedPrompt, setQueuedPrompt] = useState<{ text: string; sessionId: string } | null>(null);
-  const activeStreaming = isStreaming && streamingSessionId === activeSessionId;
-  const [streamingContent, setStreamingContent] = useState("");
-  const [streamingReasoning, setStreamingReasoning] = useState("");
+  const activeStream = activeStreams[activeSessionId];
+  const activeStreaming = Boolean(activeStream);
+  const streamingContent = activeStream?.content || "";
+  const streamingReasoning = activeStream?.reasoning || "";
+  const isSearching = activeStream?.searching || false;
   const [expandedReasoningIds, setExpandedReasoningIds] = useState<Record<string, boolean>>({});
+
+  const updateStream = (sessionId: string, patch: Partial<ActiveStream>) => {
+    setActiveStreams((prev) => {
+      const current = prev[sessionId];
+      if (!current) return prev;
+      return { ...prev, [sessionId]: { ...current, ...patch } };
+    });
+  };
+
+  const removeStream = (sessionId: string) => {
+    setActiveStreams((prev) => {
+      if (!prev[sessionId]) return prev;
+      const next = { ...prev };
+      delete next[sessionId];
+      return next;
+    });
+  };
 
   // UI States
   const [sidebarOpen, setSidebarOpen] = useState(() =>
@@ -810,7 +834,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Refresh user profile & balance
   useEffect(() => {
@@ -843,10 +866,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   useEffect(() => {
-    if (scrollContainerRef.current && isStreaming && autoScrollRef.current) {
+    if (scrollContainerRef.current && activeStreaming && autoScrollRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
-  }, [streamingContent, streamingReasoning, isStreaming]);
+  }, [streamingContent, streamingReasoning, activeStreaming]);
 
   useEffect(() => {
     autoScrollRef.current = true;
@@ -897,6 +920,28 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     if (window.innerWidth < 1024) setSidebarOpen(false);
     syncSessionToDb(newSession);
   };
+
+  // Keyboard shortcuts: ⌘/Ctrl+Shift+O new chat, ⌘/Ctrl+K focus composer.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (e.shiftKey && key === "o") {
+        e.preventDefault();
+        createNewSession();
+        return;
+      }
+      if (!e.shiftKey && key === "k") {
+        e.preventDefault();
+        textareaRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // createNewSession intentionally follows the active model; re-register only when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSession?.model]);
 
   // Delete Chat Session
   const deleteSession = async (id: string, e: React.MouseEvent) => {
@@ -1279,7 +1324,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       return next;
     });
     const promptText = (promptOverride || inputPrompt).trim();
-    if (!promptText || isStreaming || isParsing) return;
+    if (!promptText || activeStreams[targetSession.id] || isParsing) return;
     const attachmentText = attachments.map((a) => `[File: ${a.name}]\n${a.text}`).join("\n\n");
     const textToSend = attachmentText ? `${promptText}\n\nAttachments:\n${attachmentText}` : promptText;
 
@@ -1337,10 +1382,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
     setInputPrompt("");
     setAttachments([]);
-    setStreamingSessionId(targetSession.id);
-    setIsStreaming(true);
-    setStreamingContent("");
-    setStreamingReasoning("");
+    const controller = new AbortController();
+    setActiveStreams((prev) => ({
+      ...prev,
+      [targetSession.id]: { controller, content: "", reasoning: "", searching: false, startedAt: Date.now() },
+    }));
 
     // Small-context models get an LLM-compacted search digest, never truncated snippets.
     let searchDigest = "";
@@ -1352,7 +1398,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       currentModelConfig.contextTokens >= 40_000 &&
       (searchToolEnabled || chartToolEnabled)
     ) {
-      setIsSearching(true);
+      updateStream(targetSession.id, { searching: true });
       try {
         const tools: any[] = [];
         if (searchToolEnabled) {
@@ -1416,12 +1462,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
           }
         }
       } catch {}
-      setIsSearching(false);
+      updateStream(targetSession.id, { searching: false });
     }
 
     // Search from the browser IP, so the keyless Firecrawl limit applies per user.
     if (searchEnabled) {
-      setIsSearching(true);
+      updateStream(targetSession.id, { searching: true });
       setSearchError(null);
       try {
         sources = await runSearch(textToSend);
@@ -1462,13 +1508,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         const message = err instanceof Error ? err.message : "unknown search error";
         setSearchError(`Web search failed: ${message}. Answering without sources.`);
       } finally {
-        setIsSearching(false);
+        updateStream(targetSession.id, { searching: false });
         setSearchEnabled(false);
       }
     }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
 
     const startTime = performance.now();
     let firstTokenTime = 0;
@@ -1580,13 +1623,13 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
                 if (reasoningChunk) {
                   accumulatedReasoning += reasoningChunk;
-                  setStreamingReasoning(accumulatedReasoning);
+                  updateStream(targetSession.id, { reasoning: accumulatedReasoning });
                   tokenCount++;
                 }
 
                 if (contentChunk) {
                   accumulatedContent += contentChunk;
-                  setStreamingContent(accumulatedContent);
+                  updateStream(targetSession.id, { content: accumulatedContent });
                   tokenCount++;
                 }
               } catch {}
@@ -1713,20 +1756,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       // Refresh balance from backend
       setTimeout(() => refreshSession(), 1000);
 
-      setIsStreaming(false);
-      setStreamingSessionId(null);
+      removeStream(targetSession.id);
       setFinishedSessionIds((prev) => new Set(prev).add(targetSession.id));
-      setStreamingContent("");
-      setStreamingReasoning("");
     }
   };
 
   // Halt generation
   const handleStopGeneration = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    setIsStreaming(false);
+    activeStream?.controller.abort();
+    removeStream(activeSessionId);
   };
 
   const saveChatSettings = (patch: Partial<ChatSession>) => {
@@ -1797,7 +1835,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   };
 
   const regenerateFrom = (assistantId: string) => {
-    if (isStreaming) return;
+    if (activeStreams[activeSession.id]) return;
     const idx = activeSession.messages.findIndex((m) => m.id === assistantId);
     if (idx < 1) return;
     const kept = activeSession.messages.slice(0, idx);
@@ -1835,15 +1873,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
     syncSessionToDb(updated);
   };
-
-  useEffect(() => {
-    if (isStreaming || !queuedPrompt) return;
-    const q = queuedPrompt;
-    setQueuedPrompt(null);
-    const target = sessions.find((s) => s.id === q.sessionId) || activeSession;
-    void handleSendMessage(q.text, { session: target });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isStreaming, queuedPrompt]);
 
   return (
     <div
@@ -1908,9 +1937,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
             }}
             className="flex w-full items-center gap-2 px-2.5 py-2 text-[11px] font-medium text-[#07110d] transition active:scale-[0.99]"
             style={{ background: "#b8f6dd" }}
+            title="New chat (⌘⇧O)"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>New chat</span>
+            <span className="ml-auto font-mono text-[8px] font-normal text-[#07110d]/55">⌘⇧O</span>
           </button>
         </div>
 
@@ -1954,7 +1985,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                   ) : (
                     <span className="truncate text-[11.5px] font-medium">{session.title}</span>
                   )}
-                  {isStreaming && streamingSessionId === session.id ? (
+                  {activeStreams[session.id] ? (
                     <span
                       className="h-2 w-2 shrink-0 animate-spin rounded-full border-2 border-[#b8f6dd] border-t-transparent"
                       title="Working"
@@ -2726,20 +2757,6 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
         {/* Composer: one input, no status dashboard. */}
         <div className="shrink-0 bg-[#070a0f] px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-2 sm:px-6 sm:pb-4">
           <div className="mx-auto w-full max-w-3xl">
-            {isStreaming && !activeStreaming && (
-              <div className="px-1 pb-1 font-mono text-[9px] text-[#65737b]">
-                Another chat is still finishing in the background.
-              </div>
-            )}
-
-            {queuedPrompt && (
-              <div className="flex items-center gap-2 px-1 pb-1 font-mono text-[9px] text-[#8b989e]">
-                <span className="text-[#b8f6dd]">Queued</span>
-                <span className="max-w-[70%] truncate">{queuedPrompt.text}</span>
-                <button onClick={() => setQueuedPrompt(null)} className="text-[#65737b] hover:text-[#d99a9a]" title="Cancel queued message">×</button>
-              </div>
-            )}
-
             {(attachments.length > 0 || isParsing || attachmentError) && (
               <div className="flex flex-wrap items-center gap-1.5 px-1 pb-1.5 font-mono text-[9px]">
                 {attachments.map((a, i) => (
@@ -2784,15 +2801,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    if (isStreaming) {
-                      const text = inputPrompt.trim();
-                      if (text) {
-                        setQueuedPrompt({ text, sessionId: activeSessionId });
-                        setInputPrompt("");
-                      }
-                    } else {
-                      handleSendMessage();
-                    }
+                    handleSendMessage();
                   }
                 }}
                 placeholder="Message Verxl…"
@@ -2836,7 +2845,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
               ) : (
                 <button
                   onClick={() => handleSendMessage()}
-                  disabled={!inputPrompt.trim() || isStreaming}
+                  disabled={!inputPrompt.trim() || activeStreaming}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center transition ${
                     inputPrompt.trim()
                       ? "bg-[#b8f6dd] text-[#07110d] hover:bg-[#d7f8ec]"
