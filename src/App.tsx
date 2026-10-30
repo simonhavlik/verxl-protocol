@@ -6,6 +6,7 @@ const Hero = lazy(() => import("./components/Hero").then((m) => ({ default: m.He
 import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 import { preloadRoute } from "./lib/routePreload";
+import { ProductRail } from "./components/ProductRail";
 
 // Code-split interior tabs for instant mobile initial page loads & sub-200ms TTI
 const Chat = lazy(() => import("./components/Chat").then((m) => ({ default: m.Chat })));
@@ -202,6 +203,7 @@ export default function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(
     "0x14f10A865e277C0B1949e18Dd9856602DB11742b" // Šimon Havlík's lead address
   );
+  const isProductRoute = ["chat", "playground", "registry"].includes(activeTab);
 
   // Sync tab changes with browser URL
   const handleTabChange = (tab: string) => {
@@ -273,17 +275,19 @@ export default function App() {
   return (
     <GlobalErrorBoundary>
       <AuthProvider>
-        <div className="min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative">
-          {/* Shmack OS Shifting Dynamic Background for all interior tabs */}
-          {activeTab !== "overview" && <ShmackBackground activeTab={activeTab} />}
+        <div className={`min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-[#b8f6dd] selection:text-[#07110d] relative ${isProductRoute ? "lg:h-[100dvh] lg:overflow-hidden" : ""}`}>
+          {/* Shmack OS Shifting Dynamic Background for all marketing tabs */}
+          {activeTab !== "overview" && !isProductRoute && <ShmackBackground activeTab={activeTab} />}
 
-          {/* Sticky Institutional Header */}
-          <Header
-            activeTab={activeTab}
-            setActiveTab={handleTabChange}
-            walletAddress={walletAddress}
-            onConnectWallet={handleConnectWallet}
-          />
+          {/* Marketing header; product routes use their own app chrome on desktop. */}
+          <div className={isProductRoute ? "lg:hidden" : ""}>
+            <Header
+              activeTab={activeTab}
+              setActiveTab={handleTabChange}
+              walletAddress={walletAddress}
+              onConnectWallet={handleConnectWallet}
+            />
+          </div>
 
           {/* Main Content Area */}
           {activeTab === "overview" ? (
@@ -292,18 +296,44 @@ export default function App() {
                 <Hero onNavigate={handleTabChange} />
               </Suspense>
             </div>
+          ) : isProductRoute ? (
+            <main className="flex-1 min-h-0 w-full relative z-10 flex flex-col">
+              {activeTab === "chat" ? (
+                <TabErrorBoundary activeTab={activeTab}>
+                  <Suspense fallback={<TabLoadingFallback />}>
+                    <Chat onNavigate={handleTabChange} />
+                  </Suspense>
+                </TabErrorBoundary>
+              ) : (
+                <div className="flex flex-1 min-h-0">
+                  <ProductRail
+                    activeTab={activeTab}
+                    onNavigate={handleTabChange}
+                    walletAddress={walletAddress}
+                    onConnectWallet={handleConnectWallet}
+                  />
+                  <div className="min-w-0 flex-1 overflow-y-auto">
+                    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
+                      <TabErrorBoundary activeTab={activeTab}>
+                        <Suspense fallback={<TabLoadingFallback />}>
+                          {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
+                          {activeTab === "registry" && (
+                            <Registry
+                              walletAddress={walletAddress}
+                              onConnectWallet={handleConnectWallet}
+                            />
+                          )}
+                        </Suspense>
+                      </TabErrorBoundary>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
           ) : (
             <main className="flex-1 max-w-7xl w-full min-w-0 overflow-x-hidden mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 relative z-10">
               <TabErrorBoundary activeTab={activeTab}>
                 <Suspense fallback={<TabLoadingFallback />}>
-                  {activeTab === "chat" && <Chat onNavigate={handleTabChange} />}
-                  {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
-                  {activeTab === "registry" && (
-                    <Registry
-                      walletAddress={walletAddress}
-                      onConnectWallet={handleConnectWallet}
-                    />
-                  )}
                   {activeTab === "oracle" && <Oracle />}
                   {activeTab === "whitepaper" && <Whitepaper />}
                   {activeTab === "governance" && <Governance />}
@@ -325,8 +355,8 @@ export default function App() {
             </main>
           )}
 
-          {/* Institutional Footer */}
-          <Footer onNavigate={handleTabChange} />
+          {/* Institutional footer: marketing only. Product routes reclaim the viewport. */}
+          {!isProductRoute && <Footer onNavigate={handleTabChange} />}
         </div>
       </AuthProvider>
     </GlobalErrorBoundary>

@@ -1123,3 +1123,71 @@ td, th, .tabular, .font-mono {
     border-radius: 2px !important;
   }
 }
+
+/* =============================================================
+   Chat thread prose — readable sans, mint accents, no bubble card
+   ============================================================= */
+.chat-prose {
+  color: #dfe9e4;
+  font-family: "Helvetica Neue", Inter, Arial, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  letter-spacing: -0.005em;
+}
+.chat-prose p { margin: 0 0 0.7rem; }
+.chat-prose p:last-child { margin-bottom: 0; }
+.chat-prose h1,
+.chat-prose h2,
+.chat-prose h3,
+.chat-prose h4 {
+  color: #f3f6f5;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 1.1rem 0 0.45rem;
+}
+.chat-prose h1 { font-size: 17px; }
+.chat-prose h2 { font-size: 15px; }
+.chat-prose h3 { font-size: 13.5px; }
+.chat-prose h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #b8f6dd; }
+.chat-prose strong { color: #ffffff; font-weight: 600; }
+.chat-prose em { color: #c9d4d8; }
+.chat-prose ul { list-style: none; padding-left: 0; margin: 0 0 0.75rem; }
+.chat-prose ul > li { position: relative; padding-left: 1.1rem; margin-bottom: 0.3rem; }
+.chat-prose ul > li::before { content: "—"; position: absolute; left: 0; color: #7fae9d; }
+.chat-prose ol { list-style: decimal; padding-left: 1.25rem; margin: 0 0 0.75rem; }
+.chat-prose ol > li { margin-bottom: 0.3rem; padding-left: 0.2rem; }
+.chat-prose ol > li::marker { color: #7fae9d; }
+.chat-prose code {
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 11.5px;
+  color: #b8f6dd;
+  background: #0b1117;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+}
+.chat-prose pre {
+  background: #080c10;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.85rem 1rem;
+  margin: 0.85rem 0;
+  overflow-x: auto;
+}
+.chat-prose pre code { background: transparent; border: 0; padding: 0; color: #d7e2de; }
+.chat-prose blockquote {
+  border-left: 2px solid rgba(184, 246, 221, 0.35);
+  padding-left: 0.9rem;
+  margin: 0.75rem 0;
+  color: #9aa7ad;
+}
+.chat-prose table { width: 100%; border-collapse: collapse; margin: 0.85rem 0; font-size: 12px; }
+.chat-prose th {
+  background: rgba(184, 246, 221, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 8px;
+  text-align: left;
+  color: #d7f8ec;
+  font-weight: 600;
+}
+.chat-prose td { border: 1px solid rgba(255, 255, 255, 0.06); padding: 5px 8px; color: #c9d4d8; }
+.chat-prose a { color: #b8f6dd; text-decoration: underline; text-underline-offset: 3px; }
+.chat-prose hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 1rem 0; }
