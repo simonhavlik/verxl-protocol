@@ -8,6 +8,7 @@ interface ProductRailProps {
   onNavigate: (tab: string) => void;
   walletAddress?: string | null;
   onConnectWallet?: () => void;
+  appMode?: boolean;
 }
 
 const items = [
@@ -22,26 +23,36 @@ export const ProductRail: React.FC<ProductRailProps> = ({
   onNavigate,
   walletAddress,
   onConnectWallet,
+  appMode = false,
 }) => {
   const { user } = useAuth();
   const account = user?.wallet_address || walletAddress;
 
   return (
     <aside className="relative z-30 hidden h-dvh w-16 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#080c10] lg:flex">
-      <button
-        type="button"
-        onClick={() => onNavigate("overview")}
-        className="group relative flex h-[52px] w-full items-center justify-center border-b border-white/[0.07] text-[#b8f6dd] transition hover:bg-white/[0.025]"
-        aria-label="Verxl home"
-      >
-        <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" fill="none" aria-hidden="true">
-          <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
-          <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
-        </svg>
-        <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
-          Verxl home
-        </span>
-      </button>
+      {appMode ? (
+        <div className="flex h-[52px] w-full items-center justify-center border-b border-white/[0.07] text-[#b8f6dd]" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" fill="none">
+            <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
+            <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
+          </svg>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onNavigate("overview")}
+          className="group relative flex h-[52px] w-full items-center justify-center border-b border-white/[0.07] text-[#b8f6dd] transition hover:bg-white/[0.025]"
+          aria-label="Verxl home"
+        >
+          <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" fill="none" aria-hidden="true">
+            <path d="M3 4l9 16 9-16" stroke="#b8f6dd" strokeWidth="2" />
+            <path d="M7.5 4L12 12l4.5-8" stroke="#ffffff" strokeWidth="1" opacity="0.55" />
+          </svg>
+          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+            Verxl home
+          </span>
+        </button>
+      )}
 
       <nav className="flex w-full flex-col items-center gap-1 py-2">
         {items.map((item) => {
@@ -97,17 +108,19 @@ export const ProductRail: React.FC<ProductRailProps> = ({
             </span>
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={() => onNavigate("overview")}
-          className="group relative flex h-9 w-9 items-center justify-center text-[#65737b] transition hover:text-white"
-          aria-label="Back to site"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
-            Back to site
-          </span>
-        </button>
+        {!appMode && (
+          <button
+            type="button"
+            onClick={() => onNavigate("overview")}
+            className="group relative flex h-9 w-9 items-center justify-center text-[#65737b] transition hover:text-white"
+            aria-label="Back to site"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap border border-white/[0.1] bg-[#0b1117] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#d7e2de] opacity-0 shadow-xl transition group-hover:opacity-100">
+              Back to site
+            </span>
+          </button>
+        )}
       </div>
     </aside>
   );

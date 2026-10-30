@@ -1,0 +1,26 @@
+{
+  "name": "Verxl",
+  "short_name": "Verxl",
+  "description": "Verxl — the clearing layer for AI inference. Chat, playground, registry and API in one workspace.",
+  "id": "/chat?app=1",
+  "start_url": "/chat?app=1",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#070a0f",
+  "theme_color": "#070a0f",
+  "categories": ["developer", "productivity", "utilities"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Chat", "short_name": "Chat", "url": "/chat?app=1" },
+    { "name": "Playground", "short_name": "Playground", "url": "/playground?app=1" },
+    { "name": "Registry", "short_name": "Registry", "url": "/registry?app=1" },
+    { "name": "API", "short_name": "API", "url": "/console?app=1" }
+  ]
+}

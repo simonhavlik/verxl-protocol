@@ -7,6 +7,7 @@ import { Footer } from "./components/Footer";
 import { ShmackBackground } from "./components/ShmackBackground";
 import { preloadRoute } from "./lib/routePreload";
 import { ProductRail } from "./components/ProductRail";
+import { MobileAppNav } from "./components/MobileAppNav";
 
 // Code-split interior tabs for instant mobile initial page loads & sub-200ms TTI
 const Chat = lazy(() => import("./components/Chat").then((m) => ({ default: m.Chat })));
@@ -203,6 +204,15 @@ export default function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(
     "0x14f10A865e277C0B1949e18Dd9856602DB11742b" // Šimon Havlík's lead address
   );
+  const [appMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const fromQuery = new URLSearchParams(window.location.search).get("app") === "1";
+    if (fromQuery) {
+      try { sessionStorage.setItem("vrxl_app_mode", "1"); } catch {}
+      return true;
+    }
+    try { return sessionStorage.getItem("vrxl_app_mode") === "1"; } catch { return false; }
+  });
   const isProductRoute = ["chat", "playground", "registry", "console"].includes(activeTab);
 
   // Sync tab changes with browser URL
@@ -211,12 +221,20 @@ export default function App() {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const targetPath = tab === "overview" ? "/" : `/${tab}`;
-      if (window.location.pathname !== targetPath) {
-        window.history.pushState(null, "", targetPath);
+      const targetUrl = appMode ? `${targetPath}?app=1` : targetPath;
+      if (window.location.pathname !== targetPath || (appMode && new URLSearchParams(window.location.search).get("app") !== "1")) {
+        window.history.pushState(null, "", targetUrl);
       }
       window.scrollTo({ top: 0, behavior: "instant" });
     }
   };
+
+  // App installs expose only the four product routes; no marketing home.
+  useEffect(() => {
+    if (appMode && !isProductRoute) {
+      handleTabChange("chat");
+    }
+  }, [appMode, isProductRoute]);
 
   // Warm the interactive surface. On Chat/Playground, don't download the other route.
   useEffect(() => {
@@ -275,19 +293,21 @@ export default function App() {
   return (
     <GlobalErrorBoundary>
       <AuthProvider>
-        <div className={`min-h-screen bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-[#b8f6dd] selection:text-[#07110d] relative ${isProductRoute ? "lg:h-[100dvh] lg:overflow-hidden" : ""}`}>
+        <div className={`${appMode ? "h-[100dvh] overflow-hidden" : "min-h-screen"} bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-[#b8f6dd] selection:text-[#07110d] relative ${isProductRoute && !appMode ? "lg:h-[100dvh] lg:overflow-hidden" : ""}`}>
           {/* Shmack OS Shifting Dynamic Background for all marketing tabs */}
           {activeTab !== "overview" && !isProductRoute && <ShmackBackground activeTab={activeTab} />}
 
           {/* Marketing header; product routes use their own app chrome on desktop. */}
-          <div className={isProductRoute ? "lg:hidden" : ""}>
-            <Header
-              activeTab={activeTab}
-              setActiveTab={handleTabChange}
-              walletAddress={walletAddress}
-              onConnectWallet={handleConnectWallet}
-            />
-          </div>
+          {!appMode && (
+            <div className={isProductRoute ? "lg:hidden" : ""}>
+              <Header
+                activeTab={activeTab}
+                setActiveTab={handleTabChange}
+                walletAddress={walletAddress}
+                onConnectWallet={handleConnectWallet}
+              />
+            </div>
+          )}
 
           {/* Main Content Area */}
           {activeTab === "overview" ? (
@@ -303,16 +323,17 @@ export default function App() {
                 onNavigate={handleTabChange}
                 walletAddress={walletAddress}
                 onConnectWallet={handleConnectWallet}
+                appMode={appMode}
               />
               <div key={activeTab} className="product-view flex min-h-0 min-w-0 flex-1 flex-col">
                 {activeTab === "chat" ? (
                   <TabErrorBoundary activeTab={activeTab}>
                     <Suspense fallback={<TabLoadingFallback />}>
-                      <Chat onNavigate={handleTabChange} />
+                      <Chat onNavigate={handleTabChange} appMode={appMode} />
                     </Suspense>
                   </TabErrorBoundary>
                 ) : (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  <div className={`min-h-0 flex-1 overflow-y-auto ${appMode ? "pb-14 lg:pb-0" : ""}`}>
                     <TabErrorBoundary activeTab={activeTab}>
                       <Suspense fallback={<TabLoadingFallback />}>
                         {activeTab === "playground" && <Playground onNavigate={handleTabChange} />}
@@ -355,7 +376,12 @@ export default function App() {
           )}
 
           {/* Institutional footer: marketing only. Product routes reclaim the viewport. */}
-          {!isProductRoute && <Footer onNavigate={handleTabChange} />}
+          {!appMode && !isProductRoute && <Footer onNavigate={handleTabChange} />}
+
+          {/* Installed app chrome: four-tab navigation, no marketing home. */}
+          {appMode && isProductRoute && (
+            <MobileAppNav activeTab={activeTab} onNavigate={handleTabChange} />
+          )}
         </div>
       </AuthProvider>
     </GlobalErrorBoundary>

@@ -297,9 +297,10 @@ const TREASURY_WALLET = "0x14f10A865e277C0B1949e18Dd9856602DB11742b";
 
 interface ChatProps {
   onNavigate?: (tab: string) => void;
+  appMode?: boolean;
 }
 
-export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
+export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
   // Shared Auth State across Chat & API
   const {
     token: authToken,
@@ -1885,7 +1886,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
 
   return (
     <div
-      className="relative flex h-[calc(100dvh-121px)] min-h-0 w-full min-w-0 overflow-hidden bg-[#070a0f] font-sans text-slate-100 max-lg:mx-0 max-lg:mt-0 max-lg:mb-0 lg:h-dvh lg:min-h-0"
+      className={`relative flex min-h-0 w-full min-w-0 overflow-hidden bg-[#070a0f] font-sans text-slate-100 max-lg:mx-0 max-lg:mt-0 max-lg:mb-0 lg:h-dvh lg:min-h-0 ${
+        appMode ? "h-[calc(100dvh-56px)]" : "h-[calc(100dvh-121px)]"
+      }`}
       onDragOver={(e) => {
         e.preventDefault();
         setDragActive(true);
