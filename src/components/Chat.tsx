@@ -46,6 +46,9 @@ import {
   FileText,
   Pencil,
   PanelLeft,
+  User,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 marked.setOptions({
@@ -341,8 +344,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchToolEnabled, setSearchToolEnabled] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("vrxl_search_tool") === "1";
+    if (typeof window === "undefined") return true;
+    const stored = localStorage.getItem("vrxl_search_tool");
+    return stored === null ? true : stored === "1";
   });
   const [temperature, setTemperature] = useState(0.7);
   const [searchProvider, setSearchProvider] = useState(() => {
@@ -468,8 +472,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
     setTemperature(
       activeSession.temperature ?? (Number.isFinite(savedTemp) ? savedTemp : 0.7)
     );
+    const storedSearchTool = localStorage.getItem("vrxl_search_tool");
     setSearchToolEnabled(
-      activeSession.searchTool ?? localStorage.getItem("vrxl_search_tool") === "1"
+      activeSession.searchTool ?? (storedSearchTool === null ? true : storedSearchTool === "1")
     );
     setSearchProvider(
       activeSession.searchProvider ?? localStorage.getItem("vrxl_search_provider") ?? "firecrawl"
@@ -816,6 +821,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"general" | "search" | "mcp" | "account">("general");
+  const [showSearchKey, setShowSearchKey] = useState(false);
+  const [mcpManualName, setMcpManualName] = useState("");
+  const [mcpManualUrl, setMcpManualUrl] = useState("");
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [editTitleText, setEditTitleText] = useState("");
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -3075,361 +3084,561 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate }) => {
       )}
 
       {/* ============================================================== */}
-      {/* 4. SETTINGS & PERSONA MODAL                                    */}
-      {/* ============================================================== */}
+      {/* 4. SETTINGS */}
       {showSettingsModal && (
-        
-        <Portal><div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none">
-          <div className="bg-[#0a0f15] border border-[#b8f6dd]/40 rounded-[4px] max-w-lg w-full max-h-[90dvh] overflow-y-auto p-5 space-y-4 shadow-2xl relative font-mono text-xs">
-            <button
-              onClick={() => setShowSettingsModal(false)}
-              className="absolute top-3 right-3 text-slate-400 hover:text-white p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 text-white">
-              <Settings className="w-4 h-4 text-[#b8f6dd]" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">
-                Chat account
-              </h3>
-            </div>
-
-            <div className="space-y-1.5 pt-2 border-t border-slate-800">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400">Thinking</div>
-              <div className="grid grid-cols-4 gap-1">
-                {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => updateThinkLevel(level)}
-                    className={`py-1.5 rounded-[2px] border text-[10px] font-mono uppercase transition ${
-                      (activeSession.think || "medium") === level
-                        ? "bg-[#b8f6dd]/15 border-[#b8f6dd]/40 text-[#dff8ef]"
-                        : "bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[9px] text-slate-500 leading-relaxed">Higher thinking spends more output tokens. This is the same setting as the desktop Think row.</p>
-            </div>
-
-            <div className="space-y-2 pt-2 border-t border-slate-800">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400">Signed in</div>
-              <div className="text-xs text-white break-all">
-                {user?.email || (user as any)?.wallet_address || "Not signed in"}
-              </div>
-              {(user as any)?.wallet_address && (
-                <div className="text-[9px] text-slate-500 font-mono break-all">
-                  {(user as any).wallet_address}
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-0 backdrop-blur-sm select-none sm:p-6">
+            <div className="flex h-[100dvh] w-full flex-col overflow-hidden border border-white/[0.08] bg-[#080c10] shadow-2xl sm:h-[min(760px,88dvh)] sm:w-[min(960px,94vw)] md:flex-row">
+              <aside className="flex shrink-0 flex-col border-b border-white/[0.07] bg-[#070a0f] md:w-[208px] md:border-b-0 md:border-r">
+                <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-white/[0.07] px-4">
+                  <Settings className="h-3.5 w-3.5 text-[#b8f6dd]" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#c9d4d8]">Settings</span>
                 </div>
-              )}
-              <div className="flex items-center justify-between text-[9.5px] text-slate-400">
-                <span>Chat encryption</span>
-                <span className={cryptoStatus === "ready" ? "text-[#dff8ef]" : "text-[#e3b8b8]"}>
-                  {cryptoStatus === "ready"
-                    ? "AES-256-GCM · wallet key"
-                    : cryptoStatus === "unavailable"
-                    ? "local only"
-                    : "sync off"}
-                </span>
-              </div>
-              {currentModelConfig.contextTokens >= 40_000 && (
-                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                      Web search tool
-                    </div>
-                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
-                      Let the model call web search when it needs current information. 1M-context models only.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const next = !searchToolEnabled;
-                      setSearchToolEnabled(next);
-                      localStorage.setItem("vrxl_search_tool", next ? "1" : "0");
-                      saveChatSettings({ searchTool: next });
-                    }}
-                    aria-pressed={searchToolEnabled}
-                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
-                      searchToolEnabled
-                        ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
-                        : "bg-[#070a0f] border-slate-700 text-slate-500"
-                    }`}
-                  >
-                    {searchToolEnabled ? "ON" : "OFF"}
-                  </button>
-                </div>
-              )}
-              <div className="space-y-1 pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>Temperature</span>
-                  <span className="font-mono text-[#b8f6dd]">{temperature.toFixed(2)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={temperature}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setTemperature(v);
-                    localStorage.setItem("vrxl_chat_temperature", String(v));
-                    saveChatSettings({ temperature: v });
-                  }}
-                  className="w-full accent-[#b8f6dd] bg-slate-800 h-1 cursor-pointer"
-                />
-              </div>
-              <div className="space-y-1.5 pt-2 border-t border-slate-800">
-                <div className="text-[10px] uppercase tracking-wider text-slate-400">Search provider</div>
-                <select
-                  value={searchProvider}
-                  onChange={(e) => {
-                    setSearchProvider(e.target.value);
-                    localStorage.setItem("vrxl_search_provider", e.target.value);
-                    saveChatSettings({ searchProvider: e.target.value });
-                  }}
-                  className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-[#b8f6dd] font-mono"
-                >
-                  <option value="firecrawl">Firecrawl (keyless, browser IP)</option>
-                  <option value="brave">Brave Search (own key)</option>
-                  <option value="exa">Exa (own key)</option>
-                  <option value="custom">Custom base URL + key</option>
-                </select>
-                {searchProvider !== "firecrawl" && (
-                  <input
-                    type="password"
-                    placeholder={searchProvider === "brave" ? "Brave API key" : searchProvider === "exa" ? "Exa API key" : "API key (optional)"}
-                    value={searchKey}
-                    onChange={(e) => {
-                      setSearchKey(e.target.value);
-                      localStorage.setItem("vrxl_search_key", e.target.value);
-                      saveChatSettings({ searchKey: e.target.value });
-                    }}
-                    className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-[#b8f6dd] font-mono"
-                  />
-                )}
-                {searchProvider === "custom" && (
-                  <input
-                    type="url"
-                    placeholder="https://your-search.example/search"
-                    value={searchBaseUrl}
-                    onChange={(e) => {
-                      setSearchBaseUrl(e.target.value);
-                      localStorage.setItem("vrxl_search_base", e.target.value);
-                      saveChatSettings({ searchBaseUrl: e.target.value });
-                    }}
-                    className="w-full bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-[#b8f6dd] font-mono"
-                  />
-                )}
-                <p className="text-[8.5px] text-slate-500 leading-relaxed">
-                  Keys stay in this browser. Custom expects POST {"{query, limit}"} and returns data.web or results.
-                </p>
-              </div>
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-800">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-400">Search context</div>
-                  <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">Token budget for web results.</p>
-                </div>
-                {currentModelConfig.contextTokens < 40_000 ? (
-                  <select
-                    value={activeSession.searchBudget ?? 512}
-                    onChange={(e) => {
-                      const budget = Number(e.target.value);
-                      const updated = { ...activeSession, searchBudget: budget, updatedAt: Date.now() };
-                      setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
-                      syncSessionToDb(updated);
-                    }}
-                    className="border border-slate-700 bg-[#070a0f] px-1.5 py-1 font-mono text-[9px] text-slate-300 outline-none focus:border-[#b8f6dd]"
-                  >
-                    {[256, 512, 1024, 2048, -1].map((n) => (
-                      <option key={n} value={n}>{n === -1 ? "Max" : `${n} tokens`}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="font-mono text-[9px] text-slate-500">full</span>
-                )}
-              </div>
-              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                    Show force PDF OCR toggle
-                  </div>
-                  <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
-                    Reveals the force OCR switch for PDF attachments.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    const next = !showForcePdfOcrToggle;
-                    setShowForcePdfOcrToggle(next);
-                    localStorage.setItem("vrxl_show_force_pdf_ocr", next ? "1" : "0");
-                    saveChatSettings({ showForcePdfOcrToggle: next });
-                  }}
-                  aria-pressed={showForcePdfOcrToggle}
-                  className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
-                    showForcePdfOcrToggle
-                      ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
-                      : "bg-[#070a0f] border-slate-700 text-slate-500"
-                  }`}
-                >
-                  {showForcePdfOcrToggle ? "ON" : "OFF"}
-                </button>
-              </div>
-              {showForcePdfOcrToggle && (
-                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                      Force PDF OCR
-                    </div>
-                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
-                      OCR every PDF page, including pages with a text layer. Slower.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const next = !forcePdfOcr;
-                      setForcePdfOcr(next);
-                      localStorage.setItem("vrxl_force_pdf_ocr", next ? "1" : "0");
-                      saveChatSettings({ forcePdfOcr: next });
-                    }}
-                    aria-pressed={forcePdfOcr}
-                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
-                      forcePdfOcr
-                        ? "bg-[#d99a9a]/10 border-[#d99a9a]/30 text-[#e3b8b8]"
-                        : "bg-[#070a0f] border-slate-700 text-slate-500"
-                    }`}
-                  >
-                    {forcePdfOcr ? "ON" : "OFF"}
-                  </button>
-                </div>
-              )}
-              {currentModelConfig.contextTokens >= 40_000 && (
-                <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-800">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                      Vega-Lite charts
-                    </div>
-                    <p className="text-[9px] text-slate-500 leading-relaxed mt-0.5">
-                      Lets the model render charts inline. Tool returns usage info and renders the spec. Off by default.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const next = !chartToolEnabled;
-                      setChartToolEnabled(next);
-                      localStorage.setItem("vrxl_chart_tool", next ? "1" : "0");
-                      saveChatSettings({ chartTool: next });
-                    }}
-                    aria-pressed={chartToolEnabled}
-                    className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold border ${
-                      chartToolEnabled
-                        ? "bg-[#5f8a7a]/20 border-[#b8f6dd]/30 text-[#dff8ef]"
-                        : "bg-[#070a0f] border-slate-700 text-slate-500"
-                    }`}
-                  >
-                    {chartToolEnabled ? "ON" : "OFF"}
-                  </button>
-                </div>
-              )}
-              <div className="space-y-1.5 pt-2 border-t border-slate-800">
-                <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                  MCP registry
-                </div>
-                <div className="flex gap-1">
-                  <input
-                    value={mcpQuery}
-                    onChange={(e) => setMcpQuery(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") void searchMcpRegistry(); }}
-                    placeholder="Search registry.modelcontextprotocol.io"
-                    className="flex-1 bg-[#070a0f] border border-slate-800 rounded-[3px] px-2 py-1 text-[10px] text-white outline-none focus:border-[#b8f6dd] font-mono"
-                  />
-                  <button
-                    onClick={() => void searchMcpRegistry()}
-                    className="px-2 py-1 rounded-[2px] bg-[#5f8a7a]/80 hover:bg-[#8fa39b] text-white text-[9px] font-mono"
-                  >
-                    Search
-                  </button>
-                </div>
-                {mcpLoading && <div className="text-[9px] text-[#d99a9a]">Searching registry...</div>}
-                {mcpError && <div className="text-[9px] text-rose-400">{mcpError}</div>}
-                <div className="max-h-44 overflow-y-auto space-y-1">
-                  {mcpResults.map((entry: any, i) => {
-                    const srv = entry.server;
-                    const remote = srv?.remotes?.find((r: any) => r.type === "streamable-http");
+                <nav className="grid grid-cols-4 gap-1 border-b border-white/[0.06] p-2 md:flex md:flex-col md:border-b-0">
+                  {([
+                    { id: "general", label: "General", Icon: Settings },
+                    { id: "search", label: "Web search", Icon: Globe },
+                    { id: "mcp", label: "MCP servers", Icon: Server },
+                    { id: "account", label: "Account", Icon: User },
+                  ] as const).map(({ id, label, Icon }) => {
+                    const active = settingsTab === id;
                     return (
-                      <div key={`${srv?.name}_${i}`} className="border border-slate-800 bg-[#070a0f] p-1.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-[9px] text-slate-300 font-mono break-all">{srv?.name}</span>
-                          {remote ? (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setSettingsTab(id)}
+                        className={`flex flex-col items-center justify-center gap-1 border-l-2 px-1 py-2 text-center transition md:flex-row md:justify-start md:gap-2 md:px-3 md:text-left ${
+                          active
+                            ? "border-[#b8f6dd] bg-white/[0.045] text-white"
+                            : "border-transparent text-[#8b989e] hover:bg-white/[0.025] hover:text-white"
+                        }`}
+                      >
+                        <Icon className={`h-3.5 w-3.5 ${active ? "text-[#b8f6dd]" : "text-[#65737b]"}`} />
+                        <span className="font-mono text-[7px] uppercase tracking-[0.06em] md:text-[9px] md:tracking-[0.1em]">{label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+                <div className="mt-auto hidden border-t border-white/[0.07] px-4 py-3 md:block">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">Current chat</div>
+                  <div className="mt-1 truncate text-[10px] text-[#9aa7ad]">{activeSession.title}</div>
+                  <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.12em] text-[#65737b]">50 bps · Sepolia</div>
+                </div>
+              </aside>
+
+              <section className="flex min-h-0 flex-1 flex-col">
+                <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.07] px-5">
+                  <h2 className="text-[14px] font-medium text-white">
+                    {settingsTab === "general" ? "General" : settingsTab === "search" ? "Web search" : settingsTab === "mcp" ? "MCP servers" : "Account"}
+                  </h2>
+                  <button
+                    onClick={() => setShowSettingsModal(false)}
+                    className="p-1.5 text-[#8b989e] transition hover:text-white"
+                    aria-label="Close settings"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+                  <div className="max-w-2xl">
+                    {settingsTab === "general" && (
+                      <div className="space-y-7">
+                        <div>
+                          <div className="flex items-baseline justify-between gap-3">
+                            <div>
+                              <div className="text-[13px] font-medium text-white">Thinking level</div>
+                              <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">How much reasoning the model spends before answering. Higher costs more output tokens.</p>
+                            </div>
+                            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#b8f6dd]">{activeSession.think || "medium"}</span>
+                          </div>
+                          <div className="mt-3 grid grid-cols-4 gap-1">
+                            {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
+                              <button
+                                key={level}
+                                type="button"
+                                onClick={() => updateThinkLevel(level)}
+                                className={`border py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] transition ${
+                                  (activeSession.think || "medium") === level
+                                    ? "border-[#b8f6dd]/35 bg-[#b8f6dd]/[0.08] text-[#dff8ef]"
+                                    : "border-white/[0.07] text-[#8b989e] hover:border-white/15 hover:text-white"
+                                }`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-[13px] font-medium text-white">Temperature</div>
+                              <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">Lower is more deterministic; higher is more varied.</p>
+                            </div>
+                            <span className="font-mono text-[10px] text-[#b8f6dd]">{temperature.toFixed(2)}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={temperature}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              setTemperature(v);
+                              localStorage.setItem("vrxl_chat_temperature", String(v));
+                              saveChatSettings({ temperature: v });
+                            }}
+                            className="mt-3 h-1 w-full cursor-pointer bg-white/10 accent-[#b8f6dd]"
+                          />
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="mb-3 text-[13px] font-medium text-white">Attachments</div>
+                          <div className="flex items-start justify-between gap-4 py-2">
+                            <div>
+                              <div className="text-[11.5px] text-[#c9d4d8]">Show force OCR toggle</div>
+                              <p className="mt-0.5 text-[10px] leading-relaxed text-[#65737b]">Reveals the OCR switch for PDF attachments.</p>
+                            </div>
                             <button
-                              onClick={() => addMcpServer(srv.name, remote.url)}
-                              className="shrink-0 px-1.5 py-0.5 border border-[#b8f6dd]/40 text-[#d7f8ec] text-[8px] font-mono"
+                              type="button"
+                              onClick={() => {
+                                const next = !showForcePdfOcrToggle;
+                                setShowForcePdfOcrToggle(next);
+                                localStorage.setItem("vrxl_show_force_pdf_ocr", next ? "1" : "0");
+                                saveChatSettings({ showForcePdfOcrToggle: next });
+                              }}
+                              aria-pressed={showForcePdfOcrToggle}
+                              className={`shrink-0 border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] ${
+                                showForcePdfOcrToggle ? "border-[#b8f6dd]/30 bg-[#b8f6dd]/[0.08] text-[#b8f6dd]" : "border-white/[0.08] text-[#8b989e]"
+                              }`}
+                            >
+                              {showForcePdfOcrToggle ? "On" : "Off"}
+                            </button>
+                          </div>
+                          {showForcePdfOcrToggle && (
+                            <div className="flex items-start justify-between gap-4 border-t border-white/[0.06] py-2">
+                              <div>
+                                <div className="text-[11.5px] text-[#c9d4d8]">Force PDF OCR</div>
+                                <p className="mt-0.5 text-[10px] leading-relaxed text-[#65737b]">OCR every page, including pages with a text layer. Slower.</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = !forcePdfOcr;
+                                  setForcePdfOcr(next);
+                                  localStorage.setItem("vrxl_force_pdf_ocr", next ? "1" : "0");
+                                  saveChatSettings({ forcePdfOcr: next });
+                                }}
+                                aria-pressed={forcePdfOcr}
+                                className={`shrink-0 border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] ${
+                                  forcePdfOcr ? "border-[#d99a9a]/30 bg-[#d99a9a]/[0.08] text-[#e3b8b8]" : "border-white/[0.08] text-[#8b989e]"
+                                }`}
+                              >
+                                {forcePdfOcr ? "On" : "Off"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="text-[13px] font-medium text-white">Current session</div>
+                          <div className="mt-3 grid grid-cols-2 gap-4">
+                            <div>
+                              <div className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">Model</div>
+                              <div className="mt-1 text-[11px] text-[#c9d4d8]">{currentModelConfig.name}</div>
+                            </div>
+                            <div>
+                              <div className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#65737b]">Messages</div>
+                              <div className="mt-1 text-[11px] text-[#c9d4d8]">{activeSession.messages.length}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="text-[13px] font-medium text-white">Keyboard</div>
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center justify-between gap-3 text-[11px] text-[#8b989e]">
+                              <span>New chat</span>
+                              <kbd className="border border-white/[0.09] px-1.5 py-0.5 font-mono text-[9px] text-[#c9d4d8]">⌘ / Ctrl ⇧ O</kbd>
+                            </div>
+                            <div className="flex items-center justify-between gap-3 text-[11px] text-[#8b989e]">
+                              <span>Focus composer</span>
+                              <kbd className="border border-white/[0.09] px-1.5 py-0.5 font-mono text-[9px] text-[#c9d4d8]">⌘ / Ctrl K</kbd>
+                            </div>
+                          </div>
+                        </div>
+
+                        {currentModelConfig.contextTokens >= 40_000 && (
+                          <div className="border-t border-white/[0.07] pt-5">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <div className="text-[13px] font-medium text-white">Vega-Lite charts</div>
+                                <p className="mt-0.5 max-w-lg text-[11px] leading-relaxed text-[#8b989e]">Lets the model render charts inline. The tool returns usage info and renders the spec.</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = !chartToolEnabled;
+                                  setChartToolEnabled(next);
+                                  localStorage.setItem("vrxl_chart_tool", next ? "1" : "0");
+                                  saveChatSettings({ chartTool: next });
+                                }}
+                                aria-pressed={chartToolEnabled}
+                                className={`shrink-0 border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] ${
+                                  chartToolEnabled ? "border-[#b8f6dd]/30 bg-[#b8f6dd]/[0.08] text-[#b8f6dd]" : "border-white/[0.08] text-[#8b989e]"
+                                }`}
+                              >
+                                {chartToolEnabled ? "On" : "Off"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {settingsTab === "search" && (
+                      <div className="space-y-7">
+                        <div className="flex items-start justify-between gap-5">
+                          <div>
+                            <div className="text-[13px] font-medium text-white">Web search tool</div>
+                            <p className="mt-1 max-w-lg text-[11px] leading-relaxed text-[#8b989e]">
+                              On by default. On 1M-context models the model calls search when it needs current information. The globe in the composer searches this message on any model.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = !searchToolEnabled;
+                              setSearchToolEnabled(next);
+                              localStorage.setItem("vrxl_search_tool", next ? "1" : "0");
+                              saveChatSettings({ searchTool: next });
+                            }}
+                            aria-pressed={searchToolEnabled}
+                            className={`mt-0.5 shrink-0 border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] ${
+                              searchToolEnabled ? "border-[#b8f6dd]/30 bg-[#b8f6dd]/[0.08] text-[#b8f6dd]" : "border-white/[0.08] text-[#8b989e]"
+                            }`}
+                          >
+                            {searchToolEnabled ? "On" : "Off"}
+                          </button>
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="text-[13px] font-medium text-white">Provider</div>
+                          <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">Requests go through Verxl's server-side proxy, so browser CORS does not block the provider.</p>
+                          <select
+                            value={searchProvider}
+                            onChange={(e) => {
+                              setSearchProvider(e.target.value);
+                              localStorage.setItem("vrxl_search_provider", e.target.value);
+                              saveChatSettings({ searchProvider: e.target.value });
+                            }}
+                            className="mt-3 w-full border border-white/[0.09] bg-[#0b1117] px-3 py-2 text-[11.5px] text-white outline-none focus:border-[#b8f6dd]/50"
+                          >
+                            <option value="firecrawl">Firecrawl — keyless via Verxl</option>
+                            <option value="exa">Exa — own key</option>
+                            <option value="brave">Brave Search — own key</option>
+                            <option value="custom">Custom endpoint — own key</option>
+                          </select>
+                        </div>
+
+                        {searchProvider !== "firecrawl" && (
+                          <div className="border-t border-white/[0.07] pt-5">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <div className="text-[13px] font-medium text-white">{searchProvider === "exa" ? "Exa API key" : searchProvider === "brave" ? "Brave API key" : "API key"}</div>
+                                <p className="mt-0.5 text-[11px] text-[#8b989e]">Stored in this conversation's settings; sent only to the Verxl search proxy.</p>
+                              </div>
+                            </div>
+                            <div className="relative mt-3">
+                              <input
+                                type={showSearchKey ? "text" : "password"}
+                                placeholder={searchProvider === "exa" ? "Exa API key" : searchProvider === "brave" ? "Brave Search API key" : "Bearer token (optional)"}
+                                value={searchKey}
+                                onChange={(e) => {
+                                  setSearchKey(e.target.value);
+                                  localStorage.setItem("vrxl_search_key", e.target.value);
+                                  saveChatSettings({ searchKey: e.target.value });
+                                }}
+                                className="w-full border border-white/[0.09] bg-[#0b1117] px-3 py-2 pr-9 text-[11.5px] text-white placeholder-[#65737b] outline-none focus:border-[#b8f6dd]/50"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowSearchKey((v) => !v)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#65737b] transition hover:text-white"
+                                title={showSearchKey ? "Hide key" : "Show key"}
+                              >
+                                {showSearchKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {searchProvider === "custom" && (
+                          <div className="border-t border-white/[0.07] pt-5">
+                            <div className="text-[13px] font-medium text-white">Custom endpoint</div>
+                            <input
+                              type="url"
+                              placeholder="https://your-search.example/search"
+                              value={searchBaseUrl}
+                              onChange={(e) => {
+                                setSearchBaseUrl(e.target.value);
+                                localStorage.setItem("vrxl_search_base", e.target.value);
+                                saveChatSettings({ searchBaseUrl: e.target.value });
+                              }}
+                              className="mt-3 w-full border border-white/[0.09] bg-[#0b1117] px-3 py-2 text-[11.5px] text-white placeholder-[#65737b] outline-none focus:border-[#b8f6dd]/50"
+                            />
+                            <p className="mt-2 text-[10px] leading-relaxed text-[#65737b]">POST {"{query, limit}"}; return a JSON array or an object with results/web.</p>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] pt-5">
+                          <div>
+                            <div className="text-[13px] font-medium text-white">Search context</div>
+                            <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">How much retrieved text is passed to the model.</p>
+                          </div>
+                          {currentModelConfig.contextTokens < 40_000 ? (
+                            <select
+                              value={activeSession.searchBudget ?? 512}
+                              onChange={(e) => {
+                                const budget = Number(e.target.value);
+                                const updated = { ...activeSession, searchBudget: budget, updatedAt: Date.now() };
+                                setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
+                                syncSessionToDb(updated);
+                              }}
+                              className="shrink-0 border border-white/[0.09] bg-[#0b1117] px-2 py-1.5 font-mono text-[9px] text-[#c9d4d8] outline-none focus:border-[#b8f6dd]/50"
+                            >
+                              {[256, 512, 1024, 2048, -1].map((n) => (
+                                <option key={n} value={n}>{n === -1 ? "Max" : `${n} tokens`}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.1em] text-[#65737b]">Full context</span>
+                          )}
+                        </div>
+
+                        <p className="border-l-2 border-[#b8f6dd]/25 pl-3 text-[10px] leading-relaxed text-[#65737b]">
+                          The proxy is <span className="text-[#c9d4d8]">/api/search</span>. It supports Exa, Brave, Firecrawl and public HTTPS custom endpoints. Keys are not logged.
+                        </p>
+                      </div>
+                    )}
+
+                    {settingsTab === "mcp" && (
+                      <div className="space-y-7">
+                        <div>
+                          <div className="text-[13px] font-medium text-white">Connected MCP servers</div>
+                          <p className="mt-1 max-w-lg text-[11px] leading-relaxed text-[#8b989e]">
+                            Remote Streamable HTTP servers available to this conversation. Add one from the official registry or by URL.
+                          </p>
+                          <div className="mt-3 space-y-1.5">
+                            {mcpConnections.length === 0 ? (
+                              <div className="border border-dashed border-white/[0.09] px-4 py-5 text-center">
+                                <Server className="mx-auto h-4 w-4 text-[#65737b]" />
+                                <p className="mt-2 text-[11px] text-[#8b989e]">No MCP servers connected yet.</p>
+                              </div>
+                            ) : (
+                              mcpConnections.map((c) => (
+                                <div key={c.url} className="flex items-center justify-between gap-3 border border-white/[0.07] bg-[#0b1117] px-3 py-2.5">
+                                  <div className="min-w-0">
+                                    <div className="truncate text-[11.5px] text-[#d7e2de]">{c.name}</div>
+                                    <div className="truncate font-mono text-[9px] text-[#65737b]">{c.url}</div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeMcpServer(c.url)}
+                                    className="shrink-0 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8b989e] transition hover:text-[#d99a9a]"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="text-[13px] font-medium text-white">Add by URL</div>
+                          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1.6fr_auto]">
+                            <input
+                              value={mcpManualName}
+                              onChange={(e) => setMcpManualName(e.target.value)}
+                              placeholder="Name (optional)"
+                              className="border border-white/[0.09] bg-[#0b1117] px-3 py-2 text-[11px] text-white placeholder-[#65737b] outline-none focus:border-[#b8f6dd]/50"
+                            />
+                            <input
+                              value={mcpManualUrl}
+                              onChange={(e) => setMcpManualUrl(e.target.value)}
+                              placeholder="https://mcp.example.com/mcp"
+                              className="border border-white/[0.09] bg-[#0b1117] px-3 py-2 text-[11px] text-white placeholder-[#65737b] outline-none focus:border-[#b8f6dd]/50"
+                            />
+                            <button
+                              type="button"
+                              disabled={!/^https?:\/\//.test(mcpManualUrl.trim())}
+                              onClick={() => {
+                                const url = mcpManualUrl.trim();
+                                if (!/^https?:\/\//.test(url)) return;
+                                addMcpServer(mcpManualName.trim() || url, url);
+                                setMcpManualName("");
+                                setMcpManualUrl("");
+                              }}
+                              className="border border-[#b8f6dd]/25 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#b8f6dd] transition hover:border-[#b8f6dd]/60 disabled:cursor-not-allowed disabled:border-white/[0.06] disabled:text-[#65737b]"
                             >
                               Add
                             </button>
-                          ) : (
-                            <span className="text-[8px] text-slate-500 shrink-0">no remote</span>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <div>
+                              <div className="text-[13px] font-medium text-white">Registry search</div>
+                              <p className="mt-0.5 text-[11px] text-[#8b989e]">Search the official MCP registry by name, package or description.</p>
+                            </div>
+                            <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-[#65737b]">registry.modelcontextprotocol.io</span>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <input
+                              value={mcpQuery}
+                              onChange={(e) => setMcpQuery(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") void searchMcpRegistry(); }}
+                              placeholder="filesystem, github, postgres…"
+                              className="min-w-0 flex-1 border border-white/[0.09] bg-[#0b1117] px-3 py-2 text-[11px] text-white placeholder-[#65737b] outline-none focus:border-[#b8f6dd]/50"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void searchMcpRegistry()}
+                              className="border border-[#b8f6dd]/25 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#b8f6dd] transition hover:border-[#b8f6dd]/60"
+                            >
+                              Search
+                            </button>
+                          </div>
+                          {mcpLoading && <div className="mt-2 font-mono text-[9px] text-[#8b989e]">Searching registry…</div>}
+                          {mcpError && <div className="mt-2 font-mono text-[9px] text-[#d99a9a]">{mcpError}</div>}
+                          {mcpResults.length > 0 && (
+                            <div className="mt-3 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
+                              {mcpResults.map((entry: any, i: number) => {
+                                const srv = entry.server;
+                                const remote = srv?.remotes?.find((r: any) => r.type === "streamable-http");
+                                return (
+                                  <div key={`${srv?.name}_${i}`} className="border border-white/[0.07] bg-[#0b1117] p-2.5">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <div className="truncate text-[11.5px] text-[#d7e2de]">{srv?.name}</div>
+                                        {srv?.description && <div className="mt-0.5 line-clamp-2 text-[10px] leading-relaxed text-[#8b989e]">{srv.description}</div>}
+                                        {remote?.url && <div className="mt-1 truncate font-mono text-[8px] text-[#65737b]">{remote.url}</div>}
+                                      </div>
+                                      {remote ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => addMcpServer(srv.name, remote.url)}
+                                          className="shrink-0 border border-[#b8f6dd]/25 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-[#b8f6dd] transition hover:border-[#b8f6dd]/60"
+                                        >
+                                          Add
+                                        </button>
+                                      ) : (
+                                        <span className="shrink-0 font-mono text-[8px] text-[#65737b]">No remote</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {!mcpLoading && !mcpError && mcpResults.length === 0 && (
+                            <div className="mt-3 text-[10px] text-[#65737b]">Search the registry to see available remote servers.</div>
                           )}
                         </div>
-                        {srv?.description && (
-                          <div className="text-[8px] text-slate-500 line-clamp-2 mt-0.5">{srv.description}</div>
-                        )}
-                        {remote?.url && <div className="text-[8px] text-slate-600 font-mono break-all mt-0.5">{remote.url}</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-                {mcpConnections.length > 0 && (
-                  <div className="pt-1 border-t border-slate-800 space-y-1">
-                    <div className="text-[9px] text-slate-500 uppercase tracking-wider">Added</div>
-                    {mcpConnections.map((c) => (
-                      <div key={c.url} className="flex items-center justify-between gap-2 text-[8px] font-mono">
-                        <span className="text-slate-300 truncate">{c.name}</span>
-                        <button onClick={() => removeMcpServer(c.url)} className="text-slate-500 hover:text-rose-400 shrink-0">remove</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <p className="text-[8px] text-slate-500">Adds remote Streamable HTTP servers. MCP execution proxy is not wired yet.</p>
-              </div>
-              <p className="text-[9px] text-slate-500 leading-relaxed">
-                API keys are for external endpoints. Chat uses the signed-in session only.
-              </p>
-            </div>
 
-            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
-              {onNavigate ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSettingsModal(false);
-                    onNavigate("console");
-                  }}
-                  className="text-[#b8f6dd] hover:text-[#d7f8ec] underline text-[11px] font-semibold"
-                >
-                  Manage API Keys &rarr;
-                </button>
-              ) : (
-                <div />
-              )}
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="px-4 py-1.5 bg-[#5f8a7a] hover:bg-[#8fa39b] text-white rounded-[3px] font-bold tracking-wider"
-              >
-                Close
-              </button>
+                        <p className="text-[10px] leading-relaxed text-[#65737b]">MCP execution proxy is not wired yet: adding a server stores the connection for the next release.</p>
+                      </div>
+                    )}
+
+                    {settingsTab === "account" && (
+                      <div className="space-y-7">
+                        <div>
+                          <div className="text-[13px] font-medium text-white">Signed in</div>
+                          {user ? (
+                            <div className="mt-2 border border-white/[0.07] bg-[#0b1117] p-3">
+                              <div className="break-all text-[11.5px] text-[#d7e2de]">{user.email || user.id}</div>
+                              {user.wallet_address && <div className="mt-1 break-all font-mono text-[9px] text-[#65737b]">{user.wallet_address}</div>}
+                            </div>
+                          ) : (
+                            <div className="mt-2">
+                              <p className="text-[11px] text-[#8b989e]">Not signed in. Sign in to sync conversations and use the API console.</p>
+                              <button
+                                type="button"
+                                onClick={() => { setShowSettingsModal(false); setShowAuthModal(true); }}
+                                className="mt-3 border border-[#b8f6dd]/25 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#b8f6dd]"
+                              >
+                                Sign in
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="border-t border-white/[0.07] pt-5">
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <div className="text-[13px] font-medium text-white">Chat encryption</div>
+                              <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">
+                                {cryptoStatus === "ready" ? "AES-256-GCM with a wallet-derived key." : cryptoStatus === "unavailable" ? "No wallet provider in this browser; messages stay local." : "Sync is off. Messages stay on this device."}
+                              </p>
+                              {cryptoError && <div className="mt-1 text-[9.5px] text-[#d99a9a]">{cryptoError}</div>}
+                            </div>
+                            {cryptoStatus === "locked" && (
+                              <button
+                                type="button"
+                                onClick={unlockChatSync}
+                                className="shrink-0 border border-[#b8f6dd]/25 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-[#b8f6dd]"
+                              >
+                                Enable
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] pt-5">
+                          <div>
+                            <div className="text-[13px] font-medium text-white">Balance</div>
+                            <p className="mt-0.5 text-[11px] text-[#8b989e]">Prepaid inference balance on Arbitrum.</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-mono text-[14px] text-[#b8f6dd]">${balanceUsd.toFixed(4)}</div>
+                            <button type="button" onClick={() => { setShowSettingsModal(false); setShowDepositModal(true); }} className="mt-1 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8b989e] hover:text-white">Deposit</button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] pt-5">
+                          {onNavigate && (
+                            <button
+                              type="button"
+                              onClick={() => { setShowSettingsModal(false); onNavigate("console"); }}
+                              className="border border-white/[0.09] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#c9d4d8] transition hover:border-white/20 hover:text-white"
+                            >
+                              API keys
+                            </button>
+                          )}
+                          {user && (
+                            <button
+                              type="button"
+                              onClick={() => { setShowSettingsModal(false); logout(); }}
+                              className="border border-[#d99a9a]/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#d99a9a] transition hover:border-[#d99a9a]/50"
+                            >
+                              Sign out
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
-        </div>
         </Portal>
       )}
 
-      {/* ============================================================== */}
       {/* 5. SHARED AUTH & LOGIN MODAL (API KEY & EMAIL OTP)            */}
       {/* ============================================================== */}
       {showAuthModal && (
