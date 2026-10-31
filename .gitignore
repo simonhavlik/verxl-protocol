@@ -62,5 +62,7 @@ HANDOVER.md
 # Generated presentation outputs and raster deck assets
 deck/assets/
 deck/*.pptx
+deck/*.py
+deck/*.mjs
 
 release/
