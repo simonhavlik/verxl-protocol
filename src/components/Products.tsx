@@ -67,10 +67,47 @@ const downloads = [
   },
 ];
 
+type Platform = "macos" | "windows" | "linux" | "android" | "web" | "unknown";
+
+const detectPlatform = (): Platform => {
+  if (typeof navigator === "undefined") return "unknown";
+  const ua = navigator.userAgent || "";
+  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+  const label = `${nav.userAgentData?.platform || ""} ${navigator.platform || ""} ${ua}`.toLowerCase();
+
+  if (/android/i.test(ua)) return "android";
+  if (/iphone|ipad|ipod/i.test(ua)) return "web";
+  if (/cros/i.test(ua)) return "web";
+  if (navigator.maxTouchPoints > 1 && /macintosh/i.test(ua)) return "web";
+  if (/windows|win32|win64|winnt/i.test(label)) return "windows";
+  if (/macintosh|mac os x|macintel|macppc/i.test(label)) return "macos";
+  if (/linux|x11|ubuntu|fedora|debian/i.test(label)) return "linux";
+  return "unknown";
+};
+
+const primaryFor = (platform: Platform) => {
+  switch (platform) {
+    case "windows":
+      return { label: "Download for Windows", detail: "Windows 10/11 · x64", href: `${RELEASE}/Verxl-0.1.0-win-x64.exe` };
+    case "linux":
+      return { label: "Download for Linux", detail: "AppImage · x86_64", href: `${RELEASE}/Verxl-0.1.0-linux-x86_64.AppImage` };
+    case "android":
+      return { label: "Download for Android", detail: "debug APK · Android 7+", href: `${RELEASE}/Verxl-0.1.0-android.apk` };
+    case "web":
+      return { label: "Install the web app", detail: "PWA · iOS / browser", href: "/chat?app=1" };
+    case "macos":
+      return { label: "Download for macOS", detail: "Apple Silicon · macOS 12+", href: `${RELEASE}/Verxl-0.1.0-mac-arm64.dmg` };
+    default:
+      return { label: "Choose your platform", detail: "macOS · Windows · Linux · Android", href: "#downloads" };
+  }
+};
+
 const routes = ["Chat", "Playground", "Registry", "API"];
 
 export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
   const [copied, setCopied] = useState<string | null>(null);
+  const [platform] = useState<Platform>(() => detectPlatform());
+  const primary = primaryFor(platform);
 
   const copy = async (key: string, value: string) => {
     try {
@@ -102,11 +139,11 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
 
             <div className="mt-8 flex flex-wrap items-center gap-2.5">
               <a
-                href={`${RELEASE}/Verxl-0.1.0-mac-arm64.dmg`}
+                href={primary.href}
                 className="group inline-flex items-center gap-2 border border-[#b8f6dd]/35 bg-[#b8f6dd] px-4 py-2.5 text-[11px] font-medium text-[#07110d] transition hover:bg-[#d7f8ec]"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Download for macOS</span>
+                <span>{primary.label}</span>
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
               </a>
               <a
@@ -129,7 +166,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
             <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#65737b]">
               <span className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-[#b8f6dd]" />
-                4 platforms
+                {platform === "unknown" ? "Choose a build" : `Detected: ${primary.detail}`}
               </span>
               <span>·</span>
               <span>1 codebase</span>
@@ -204,7 +241,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
       </section>
 
       {/* Downloads */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="downloads" className="mx-auto max-w-7xl scroll-mt-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-3 border-b border-white/[0.09] pb-4 sm:flex-row sm:items-end">
           <div>
             <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#b8f6dd]">01 / Native</div>
@@ -224,17 +261,26 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
         </div>
 
         <div className="divide-y divide-white/[0.07] border-b border-white/[0.07]">
-          {downloads.map(({ id, platform, detail, format, size, href, note, Icon }) => (
+          {downloads.map(({ id, platform: rowPlatform, detail, format, size, href, note, Icon }) => (
             <div
               key={id}
-              className="group grid grid-cols-1 items-center gap-4 py-4 transition hover:bg-white/[0.02] sm:grid-cols-12 sm:gap-3"
+              className={`group grid grid-cols-1 items-center gap-4 py-4 transition hover:bg-white/[0.02] sm:grid-cols-12 sm:gap-3 ${
+                platform === id ? "bg-[#b8f6dd]/[0.025]" : ""
+              }`}
             >
               <div className="sm:col-span-5 flex items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/[0.08] text-[#b8f6dd]">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div>
-                  <div className="text-[13px] font-medium text-white">{platform}</div>
+                  <div className="flex items-center gap-2 text-[13px] font-medium text-white">
+                    <span>{rowPlatform}</span>
+                    {platform === id && (
+                      <span className="border border-[#b8f6dd]/25 bg-[#b8f6dd]/[0.06] px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.1em] text-[#b8f6dd]">
+                        your build
+                      </span>
+                    )}
+                  </div>
                   <div className="mt-0.5 font-mono text-[9px] text-[#65737b]">{detail}</div>
                 </div>
               </div>
