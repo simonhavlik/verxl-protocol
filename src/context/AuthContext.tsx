@@ -117,8 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = (await res.json()) as any;
         setUser(normalizeUser(data.user));
         setKeys(normalizeKeys(data.keys));
-      } else {
-        // Token expired or invalid
+      } else if (res.status === 401 || res.status === 403) {
+        // Only a real auth rejection signs the device out. A transient 5xx or
+        // edge error must not make the installed app ask for MetaMask again.
         if (typeof window !== "undefined") {
           localStorage.removeItem("vrxl_auth_token");
         }

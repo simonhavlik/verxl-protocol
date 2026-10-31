@@ -56,6 +56,7 @@ export const hasWalletProvider = (): boolean =>
 
 export const clearChatKeyCache = (): void => {
   KEY_CACHE.clear();
+  void clearPersistedChatKeys();
 };
 
 export const getCachedChatKey = (wallet: string, userId: string): CryptoKey | null =>
@@ -119,6 +120,7 @@ export async function deriveChatKey(wallet: string, userId: string): Promise<Cry
   );
 
   KEY_CACHE.set(cacheId, key);
+  await persistChatKey(wallet, userId, key);
   return key;
 }
 
@@ -158,4 +160,83 @@ export async function decryptChatPayload<T = ChatPlaintext>(
   );
   const plaintext = parts[0] === "v2" ? await gunzip(decrypted) : decrypted;
   return JSON.parse(decoder.decode(plaintext)) as T;
+}
+
+/* ------------------------------------------------------------------
+   Device key persistence
+   A non-extractable CryptoKey can be stored in IndexedDB and reused by
+   this origin. The raw key cannot be exported by JavaScript, so this is
+   safer than writing key material to localStorage/cookies. One MetaMask
+   signature unlocks chat on this device; subsequent launches reuse the key.
+   ------------------------------------------------------------------ */
+
+const KEY_DB = "verxl-chat-keys";
+const KEY_STORE = "keys";
+const KEY_DB_VERSION = 1;
+
+const openKeyDb = (): Promise<IDBDatabase> =>
+  new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("IndexedDB is unavailable."));
+      return;
+    }
+    const req = indexedDB.open(KEY_DB, KEY_DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(KEY_STORE)) db.createObjectStore(KEY_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("Could not open key storage."));
+  });
+
+const keyId = (wallet: string, userId: string) => `${wallet.toLowerCase()}:${userId}`;
+
+export async function persistChatKey(wallet: string, userId: string, key: CryptoKey): Promise<void> {
+  try {
+    const db = await openKeyDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(KEY_STORE, "readwrite");
+      tx.objectStore(KEY_STORE).put(key, keyId(wallet, userId));
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("Could not persist chat key."));
+    });
+    db.close();
+  } catch (err) {
+    // Private mode / storage unavailable: keep the key in memory only.
+    console.warn("Chat key cannot be remembered on this device:", err);
+  }
+}
+
+export async function getPersistedChatKey(wallet: string, userId: string): Promise<CryptoKey | null> {
+  try {
+    const db = await openKeyDb();
+    return await new Promise<CryptoKey | null>((resolve, reject) => {
+      const tx = db.transaction(KEY_STORE, "readonly");
+      const req = tx.objectStore(KEY_STORE).get(keyId(wallet, userId));
+      req.onsuccess = () => {
+        const value = req.result;
+        resolve(value instanceof CryptoKey ? value : null);
+      };
+      req.onerror = () => reject(req.error || new Error("Could not read chat key."));
+      tx.oncomplete = () => db.close();
+    });
+  } catch (err) {
+    console.warn("Chat key cache unavailable:", err);
+    return null;
+  }
+}
+
+export async function clearPersistedChatKeys(): Promise<void> {
+  try {
+    const db = await openKeyDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(KEY_STORE, "readwrite");
+      tx.objectStore(KEY_STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("Could not clear chat keys."));
+    });
+    db.close();
+  } catch {
+    // Nothing to clear.
+  }
 }

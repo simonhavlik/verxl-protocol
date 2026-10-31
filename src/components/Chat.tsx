@@ -7,6 +7,7 @@ import {
   decryptChatPayload,
   hasWalletProvider,
   getCachedChatKey,
+  getPersistedChatKey,
   clearChatKeyCache,
   type ChatPlaintext,
 } from "../lib/chatCrypto";
@@ -705,24 +706,48 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       setCryptoError("Link a wallet to enable encrypted cloud sync.");
       return;
     }
-    if (!hasWalletProvider()) {
-      setChatKey(null);
-      setCryptoStatus("locked");
-      setCryptoError("MetaMask is not available. Enable it in this browser, then press Enable.");
-      return;
-    }
 
-    const cached = getCachedChatKey(wallet, user.id);
-    if (cached) {
-      setChatKey(cached);
-      setCryptoStatus("ready");
-      setCryptoError(null);
-      void syncLocalSessions(cached);
-    } else {
+    let cancelled = false;
+
+    const hydrateChatKey = async () => {
+      const cached = getCachedChatKey(wallet, user.id);
+      if (cached) {
+        if (cancelled) return;
+        setChatKey(cached);
+        setCryptoStatus("ready");
+        setCryptoError(null);
+        void syncLocalSessions(cached);
+        return;
+      }
+
+      // A non-extractable CryptoKey is remembered in IndexedDB. Reopening the
+      // app or refreshing the page must not prompt MetaMask again.
+      const persisted = await getPersistedChatKey(wallet, user.id);
+      if (cancelled) return;
+      if (persisted) {
+        setChatKey(persisted);
+        setCryptoStatus("ready");
+        setCryptoError(null);
+        void syncLocalSessions(persisted);
+        return;
+      }
+
+      if (!hasWalletProvider()) {
+        setChatKey(null);
+        setCryptoStatus("locked");
+        setCryptoError("Connect MetaMask once to unlock encrypted chat on this device.");
+        return;
+      }
+
       // Login authenticates the account; the chat key is a separate wallet
       // signature. Request it immediately instead of presenting a dead lock.
       void unlockChatSync();
-    }
+    };
+
+    void hydrateChatKey();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken, user?.id, (user as any)?.wallet_address]);
 
@@ -3581,7 +3606,11 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                             <div>
                               <div className="text-[13px] font-medium text-white">Chat encryption</div>
                               <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">
-                                {cryptoStatus === "ready" ? "AES-256-GCM with a wallet-derived key." : cryptoStatus === "unavailable" ? "No wallet provider in this browser; messages stay local." : "Sync is off. Messages stay on this device."}
+                                {cryptoStatus === "ready"
+                                  ? "AES-256-GCM with a wallet-derived key. The key is remembered on this device; the server stores ciphertext only."
+                                  : cryptoStatus === "unavailable"
+                                  ? "No wallet provider in this browser; messages stay local."
+                                  : "Sync is off. Messages stay on this device."}
                               </p>
                               {cryptoError && <div className="mt-1 text-[9.5px] text-[#d99a9a]">{cryptoError}</div>}
                             </div>
