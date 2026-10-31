@@ -135,25 +135,107 @@
       .pwa{align-items:flex-start;flex-direction:column}.pwa a{align-self:flex-start}.meta{gap:6px 10px}.section{padding-top:34px}
     }
     @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.preview .body{grid-template-columns:34px 1fr}.preview .main{padding:12px}.api .inner,.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
+
+    /* Site header: mirrors the shared React Header exactly. */
+    .site-head{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(7,10,15,.85);backdrop-filter:blur(24px)}
+    .testnet{display:flex;align-items:center;justify-content:center;gap:8px;height:24px;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.05);background:#0b1016;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(184,246,221,.7)}
+    .testnet-dot{width:4px;height:4px;background:var(--mint)}
+    .topbar{max-width:1280px;margin:0 auto;height:68px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:-.02em;color:#fff;flex:none}
+    .brand svg{width:20px;height:20px}
+    .desktop-nav{display:flex;align-items:center;gap:24px}
+    .desktop-nav>a,.desktop-nav .protocol>button{border:0;border-bottom:1px solid transparent;padding:0 0 5px;font-size:12px;color:#8b989e;background:none;font-family:var(--sans);cursor:pointer;transition:color .15s,border-color .15s}
+    .desktop-nav>a:hover,.desktop-nav .protocol>button:hover{color:#fff}
+    .desktop-nav>a.active{border-color:var(--mint);color:#fff}
+    .protocol{position:relative}
+    .protocol>button{display:flex;align-items:center;gap:4px}
+    .protocol>button svg{width:12px;height:12px;transition:transform .15s}
+    .protocol.open>button svg{transform:rotate(180deg)}
+    .protocol-menu{display:none;position:absolute;right:0;top:100%;padding-top:8px;width:176px;z-index:60}
+    .protocol.open .protocol-menu{display:block}
+    .protocol-menu a{display:block;padding:6px 8px;font-size:11px;color:#9aa7ad;background:#0b1016;border:1px solid rgba(255,255,255,.1);border-top:0}
+    .protocol-menu a:first-child{border-top:1px solid rgba(255,255,255,.1)}
+    .protocol-menu a:hover{color:#fff}
+    .actions{display:flex;align-items:center;gap:8px;flex:none}
+    .balance{display:none;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.1);padding:6px 10px;font-family:var(--mono);font-size:10px;color:#c9d4d8;transition:border-color .15s}
+    .balance:hover{border-color:rgba(255,255,255,.25)}
+    .balance .dot{width:6px;height:6px}
+    .balance b{color:#fff;font-weight:400}
+    .balance span:last-child{color:#77858b}
+    .connect{display:flex;align-items:center;gap:6px;border:1px solid rgba(184,246,221,.3);padding:6px 10px;font-size:11px;color:#dff8ef;background:none;font-family:var(--sans);cursor:pointer;transition:border-color .15s}
+    .connect:hover{border-color:rgba(184,246,221,.7)}
+    .connect:disabled{opacity:.5;cursor:wait}
+    .connect svg{width:14px;height:14px}
+    .wallet{display:none;align-items:center;gap:6px;border:1px solid rgba(184,246,221,.25);padding:6px 10px;font-family:var(--mono);font-size:10px;color:#d7f8ec}
+    .wallet .dot{width:6px;height:6px}
+    .actions .hidden{display:none!important}
+    .aragon{padding:6px;color:#77858b;transition:color .15s}
+    .aragon:hover{color:#fff}
+    .aragon svg{width:14px;height:14px;display:block}
+    .mobile-nav{display:none}
+    @media(max-width:767px){
+      .site-head{position:static}
+      .topbar{height:54px;padding:0 16px}
+      .desktop-nav{display:none}
+      .mobile-nav{display:flex;gap:20px;overflow-x:auto;position:sticky;top:0;z-index:50;border-top:1px solid rgba(255,255,255,.05);background:rgba(7,10,15,.95);padding:10px 16px;backdrop-filter:blur(24px);scrollbar-width:none}
+      .mobile-nav::-webkit-scrollbar{display:none}
+      .mobile-nav a{flex:none;border-bottom:1px solid transparent;padding-bottom:4px;font-size:11px;color:#8b989e;transition:color .15s,border-color .15s}
+      .mobile-nav a:hover{color:#fff}
+      .mobile-nav a.active{border-color:var(--mint);color:#fff}
+    }
   </style>
 </head>
 <body>
-  <header class="head">
-    <div class="shell bar">
+  <header class="site-head">
+    <div class="testnet"><span class="testnet-dot"></span><span>Sepolia test run</span></div>
+    <div class="topbar">
       <a class="brand" href="/" aria-label="Verxl home">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>
         <span>Verxl</span>
       </a>
-      <nav class="nav" aria-label="Site">
+      <nav class="desktop-nav" aria-label="Site">
         <a href="/">Overview</a>
         <a class="active" href="/products">Products</a>
         <a href="/playground">Playground</a>
         <a href="/chat">Chat</a>
         <a href="/api">API</a>
+        <a href="/governance">Governance</a>
         <a href="/about">About</a>
+        <div class="protocol">
+          <button id="protocolBtn" type="button" aria-expanded="false">Protocol
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6"/></svg>
+          </button>
+          <div class="protocol-menu" id="protocolMenu">
+            <a href="/registry">Registry</a>
+            <a href="/oracle">Oracle</a>
+            <a href="/whitepaper">Whitepaper</a>
+          </div>
+        </div>
       </nav>
-      <a class="open" href="/chat?app=1">Open app ↗</a>
+      <div class="actions">
+        <a class="balance hidden" id="balance" href="/api" title="Balance"><span class="dot"></span><b id="balanceValue">$0.00</b><span>USD</span></a>
+        <button class="connect" id="connectBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 016.5 5H18a2 2 0 012 2v10a2 2 0 01-2 2H6.5A2.5 2.5 0 014 16.5v-9z" stroke="currentColor" stroke-width="1.5"/><path d="M16 12h4v3h-4a1.5 1.5 0 010-3z" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span>Connect</span>
+        </button>
+        <div class="wallet hidden" id="wallet"><span class="dot"></span><span id="walletValue">Connected</span></div>
+        <a class="aragon" href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a" target="_blank" rel="noopener noreferrer" title="Aragon DAO">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9" stroke="currentColor" stroke-width="1.5"/><path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.5"/></svg>
+        </a>
+      </div>
     </div>
+    <nav class="mobile-nav" aria-label="Site mobile">
+      <a href="/">Overview</a>
+      <a class="active" href="/products">Products</a>
+      <a href="/playground">Playground</a>
+      <a href="/chat">Chat</a>
+      <a href="/api">API</a>
+      <a href="/governance">Governance</a>
+      <a href="/about">About</a>
+      <a href="/registry">Registry</a>
+      <a href="/oracle">Oracle</a>
+      <a href="/whitepaper">Whitepaper</a>
+    </nav>
   </header>
 
   <main class="shell">
@@ -309,6 +391,35 @@
       reveal.forEach(function(el){el.classList.add('in')});
       var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{rootMargin:'120px 0px'});
       reveal.forEach(function(el){el.classList.remove('in');io.observe(el)});
+    }
+
+    // Shared-header interactions
+    var protocol=document.querySelector('.protocol'), protocolBtn=document.getElementById('protocolBtn');
+    if(protocolBtn){
+      protocolBtn.addEventListener('click',function(e){e.stopPropagation();var open=protocol.classList.toggle('open');protocolBtn.setAttribute('aria-expanded',open?'true':'false')});
+      document.addEventListener('click',function(e){if(!protocol.contains(e.target)){protocol.classList.remove('open');protocolBtn.setAttribute('aria-expanded','false')}});
+    }
+    var token=localStorage.getItem('vrxl_auth_token');
+    function paintHeader(user){
+      if(!user)return;
+      var balance=document.getElementById('balance'), wallet=document.getElementById('wallet'), connect=document.getElementById('connectBtn');
+      if(user.balance_usd!==undefined&&user.balance_usd!==null){document.getElementById('balanceValue').textContent='$'+Number(user.balance_usd||0).toFixed(2);balance.classList.remove('hidden');}
+      if(user.wallet_address&&String(user.wallet_address).length>=10){document.getElementById('walletValue').textContent=String(user.wallet_address).slice(0,6)+'...'+String(user.wallet_address).slice(-4);wallet.classList.remove('hidden');if(connect)connect.classList.add('hidden');}
+    }
+    if(token){fetch('/api/auth/me',{headers:{Authorization:'Bearer '+token}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.user)paintHeader(d.user)}).catch(function(){});}
+    var connectBtn=document.getElementById('connectBtn');
+    if(connectBtn){
+      connectBtn.addEventListener('click',function(){
+        if(!window.ethereum){window.location.href='/chat?app=1';return;}
+        connectBtn.disabled=true;connectBtn.querySelector('span').textContent='Connecting';
+        window.ethereum.request({method:'eth_requestAccounts'}).then(function(accounts){
+          var account=accounts&&accounts[0]; if(!account)throw new Error('No account');
+          return fetch('/api/auth/wallet-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet_address:account})});
+        }).then(function(r){return r.json()}).then(function(d){
+          if(d&&d.token){localStorage.setItem('vrxl_auth_token',d.token);window.location.reload();}
+          else throw new Error('Login failed');
+        }).catch(function(){connectBtn.disabled=false;connectBtn.querySelector('span').textContent='Connect';});
+      });
     }
   })();
   </script>
