@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { resetMetaMaskSdk } from "../lib/wallet";
 
 export interface UserProfile {
   id: string;
@@ -243,6 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    void resetMetaMaskSdk();
     if (typeof window !== "undefined") {
       localStorage.removeItem("vrxl_auth_token");
       localStorage.removeItem("vrxl_custom_api_key");

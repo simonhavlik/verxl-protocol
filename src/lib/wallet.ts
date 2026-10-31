@@ -50,6 +50,40 @@ export const isAppMode = (): boolean => {
 };
 
 let sdkPromise: Promise<any> | null = null;
+let sdkInstance: any = null;
+let sdkProvider: any = null;
+
+const withTimeout = <T>(promise: Promise<T>, ms: number, message: string): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        window.clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+
+export async function resetMetaMaskSdk(): Promise<void> {
+  try {
+    await Promise.race([
+      Promise.resolve(sdkInstance?.terminate?.()),
+      new Promise((resolve) => window.setTimeout(resolve, 1500)),
+    ]);
+  } catch {}
+  sdkInstance = null;
+  sdkPromise = null;
+  if (sdkProvider && typeof window !== "undefined" && (window as any).ethereum === sdkProvider) {
+    try {
+      delete (window as any).ethereum;
+    } catch {}
+  }
+  sdkProvider = null;
+}
 
 const getMetaMaskSdk = (): Promise<any> => {
   if (!sdkPromise) {
@@ -69,6 +103,7 @@ const getMetaMaskSdk = (): Promise<any> => {
           enableAnalytics: false,
         });
         await sdk.init();
+        sdkInstance = sdk;
         return sdk;
       })
       .catch((err) => {
@@ -90,19 +125,42 @@ export async function connectMetaMask(): Promise<string[]> {
   }
 
   const injected = (window as any).ethereum;
-  if (injected?.request) {
-    const accounts = await injected.request({ method: "eth_requestAccounts" });
-    if (Array.isArray(accounts) && accounts.length > 0) return accounts;
+  const injectedIsStaleSdk = Boolean(sdkProvider && injected === sdkProvider);
+  let injectedError: any = null;
+
+  if (injected?.request && !injectedIsStaleSdk) {
+    try {
+      const accounts = await withTimeout(
+        injected.request({ method: "eth_requestAccounts" }),
+        12000,
+        "MetaMask did not respond. Unlock MetaMask, then retry."
+      );
+      if (Array.isArray(accounts) && accounts.length > 0) return accounts;
+    } catch (err: any) {
+      // A user rejection is final; do not open a second wallet flow on top.
+      if (err?.code === 4001) throw err;
+      injectedError = err;
+    }
   }
 
-  if (isAppMode()) {
+  const timedOut = Boolean(injectedError && /did not respond|timed out|timeout/i.test(String(injectedError.message || "")));
+
+  if (isAppMode() || timedOut) {
+    // A stale SDK provider can accept a request and never answer. Start a
+    // fresh SDK session in app mode so the QR/deeplink appears again.
+    if (isAppMode()) await resetMetaMaskSdk();
     const sdk = await getMetaMaskSdk();
-    const accounts = (await sdk.connect()) || [];
+    const accounts = await withTimeout(
+      Promise.resolve(sdk.connect()),
+      45000,
+      "MetaMask did not complete the connection. Open MetaMask, approve Verxl, then retry."
+    );
     const provider = sdk.getProvider();
     if (provider) {
+      sdkProvider = provider;
       (window as any).ethereum = provider;
     }
-    if (accounts.length > 0) return accounts;
+    if (Array.isArray(accounts) && accounts.length > 0) return accounts;
     throw new Error("MetaMask did not return an account.");
   }
 
@@ -110,5 +168,7 @@ export async function connectMetaMask(): Promise<string[]> {
     throw new Error("Continue in MetaMask, then return to Verxl.");
   }
 
+  if (injectedError) throw injectedError;
   throw new Error("MetaMask was not detected. Install it or open Verxl inside MetaMask.");
 }
+
