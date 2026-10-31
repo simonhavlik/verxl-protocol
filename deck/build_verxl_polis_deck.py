@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Build the Verxl term project proposal in the VŠE FIR / Polis white-mint system."""
+"""LEGACY 14-slide generator. The final deck is build_verxl_final_deck.py.
+This script is retained for reference and writes to a separate legacy file."""
 import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -11,7 +12,7 @@ from pptx.enum.chart import XL_CHART_TYPE
 from pptx.oxml.ns import qn
 
 ASSETS = os.path.join(os.path.dirname(__file__), "assets")
-OUT = os.path.join(os.path.dirname(__file__), "Verxl_Term_Project_Proposal.pptx")
+OUT = os.path.join(os.path.dirname(__file__), "Verxl_Term_Project_Proposal_legacy.pptx")
 
 INK   = RGBColor(0x0B, 0x11, 0x17)
 DEEP  = RGBColor(0x1E, 0x5B, 0x45)
