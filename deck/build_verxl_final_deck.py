@@ -428,71 +428,47 @@ footer(s, 5, "GOAL & FUNCTIONS")
 notes(s, "The product has six functions: route, registry, encryption, verification, settlement and metering. The pitch is a clearing layer, not a model. The architecture is the current Sepolia pilot. Access policy is explicit: approved providers only, uncensored routes under 20B, frontier work to safety-aligned providers.")
 
 # =====================================================================
-# 6. EVALUATION
+# 6. TIMEFRAME
 # =====================================================================
 s = slide()
-question(s, "How will you evaluate if the project was successful?", 26)
-tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: paid design partners; measure CAC and usage. Long term: 0.04% of OpenRouter's 5.1M users.", 8.0, SAGE, FONT, spacing=1.15)
-goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
-goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "Design partners, no paid ads", "Onboard first paid design partners. Measure actual deposit, monthly usage and CAC. Do not extrapolate a funnel from zero.")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "2,000 funded = 0.04% of OpenRouter", "Base revenue $360k; high $810k; low $90k. Czech cost CZK 45k/mo. No paid scale until unit economics are measured.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  REVENUE GROWTH FROM OPENROUTER USER BASE", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, 0.65, 3.18, 7.4, 0.18, "Annual revenue ($k) at 0.012% / 0.04% / 0.059% of OpenRouter's 5.1M users. Scenario, not forecast.", 7.2, SAGE, FONT, spacing=1.1)
-financial_chart(s, 0.65, 3.40, 7.35, 2.70)
-kpis = [
-    ("2031 REVENUE", "$360k", "range $90k–$810k"),
-    ("BASE FUNDED CUSTOMERS", "2,000", "0.04% of 5.1M users"),
-    ("CZECH FIXED COST", "CZK 45k/mo", "≈$26k/year"),
-    ("GROSS MARGIN", "80%", "0.5% take × 80%"),
-    ("PAID ADS", "$0", "until measured LTV/CAC >3×"),
-    ("FIRST COHORT", "Design partners", "measure deposit + usage"),
+tb(s, 0.65, 0.55, 12.0, 0.8, "What is the expected timeframe of the project?", 29, INK, FONT, bold=True, spacing=0.98)
+line(s, 0.65, 1.22, 12.68, 1.22, LINE, 0.8)
+# timeline
+line(s, 0.9, 3.08, 12.25, 3.08, LINE, 1.2)
+circle(s, 0.82, 3.00, 0.16, DEEP, DEEP, 0.6)
+circle(s, 7.2, 3.00, 0.16, MINT, DEEP, 0.8)
+# December
+tb(s, 0.65, 1.55, 5.3, 0.2, "DECEMBER 2026", 7.0, SAGE, MONO, caps=True, spacing=1)
+tb(s, 0.65, 1.85, 5.9, 0.55, "Legal + product.", 27, INK, FONT, bold=True, spacing=0.96)
+tb(s, 0.65, 2.42, 5.6, 0.55, "Set the legal structure. Resolve the MiCA / EU law position. Finish and test the project before any ads.", 8.5, GRAY, FONT, spacing=1.3)
+# January
+tb(s, 7.2, 1.55, 5.2, 0.2, "JANUARY 2027 →", 7.0, SAGE, MONO, caps=True, spacing=1)
+tb(s, 7.2, 1.85, 5.3, 0.55, "Ads + measurement.", 27, INK, FONT, bold=True, spacing=0.96)
+tb(s, 7.2, 2.42, 5.2, 0.55, "Start the ad test. Measure leads, conversion rate, revenue per user range, gross margin and net working capital.", 8.5, GRAY, FONT, spacing=1.3)
+# bottom detail: no submission, no chart
+line(s, 0.65, 4.18, 12.68, 4.18, LINE, 0.8)
+tb(s, 0.65, 4.42, 4.1, 0.2, "WHAT WE MEASURE", 6.5, DEEP, MONO, caps=True, spacing=1)
+metrics = [
+    ("AD LEADS", "88", "2,427 clicks / $10k"),
+    ("CONVERSION", "5–10%", "4–9 funded"),
+    ("REVENUE / USER", "$6–$60", "per year"),
+    ("GROSS MARGIN", "80%", "77–85% SaaS range"),
+    ("NET WORKING CAPITAL", "$0.4k–$9k", "1 month prepaid"),
 ]
-for i, (label, value, sub) in enumerate(kpis):
-    col, row = i % 2, i // 2
-    kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.18, 7.4, 0.22, "Assumptions: revenue = funded customers × 12 × monthly usage × 0.5%. Czech cost: contractor 25k + legal/accounting 8k + software 5k + office 7k.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Users: OpenRouter 5.1M (a16z State of AI, 2025). Funded customers 600/2,000/3,000 = 0.012%/0.04%/0.059%; average monthly usage $2.5k/$3k/$4.5k; revenue = customers × 12 × usage × 0.5%. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. Scenario, not forecast.", 6.42)
-footer(s, 6, "EVALUATION")
-notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product. Mid term: onboard paid design partners; measure actual deposit, monthly usage and CAC; no paid ads yet. Long term: revenue growth scenarios anchored to OpenRouter's 5.1M users, not arbitrary customer counts. Low/base/high 2031: 600/2,000/3,000 funded = 0.012%/0.04%/0.059% of OpenRouter users; average monthly usage $2.5k/$3k/$4.5k; revenue = customers x 12 x usage x 0.5% = $90k/$360k/$810k. Czech fixed cost CZK 45k/mo = $26k/year. Gross margin 80%. No paid ads until measured LTV/CAC >3x. No external round; founder unpaid. Sources: https://a16z.com/state-of-ai/ ; https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
+for i, (label, value, sub) in enumerate(metrics):
+    x = 0.65 + i * 2.42
+    tb(s, x, 4.68, 2.2, 0.18, label, 6.2, INK, MONO, caps=True, spacing=1)
+    tb(s, x, 4.86, 2.2, 0.3, value, 12.5, DEEP, FONT, bold=True, spacing=0.95)
+    tb(s, x, 5.18, 2.2, 0.18, sub, 6.4, GRAY, FONT, spacing=1.1)
+    line(s, x, 5.42, x + 2.20, 5.42, LINE, 0.7)
+# expectation + sequence
+tb(s, 0.65, 5.62, 12.0, 0.3, "Expected ad return 0.002–0.043×: paid ads do not pay back at 0.5%. Run a capped test, measure, and stay organic/design-partner led.", 8.6, DEEP, FONT, spacing=1.15)
+tb(s, 0.65, 5.96, 12.0, 0.28, "Sequence: legal structure and finished product first; ads and measurement from January 2027.", 8.2, GRAY, FONT, spacing=1.1)
+source(s, "Sources: RockingWeb 2025 (B2B tech CPC $4.12, CVR 3.64%); B2B SaaS lead-to-close 5–10%; OpenRouter $8M monthly customer spend / 5.1M users (2025); SaaS Capital 2025 (77% median / 85% top gross margin); CNB CZK/USD ≈20.8. Ranges, not a forecast.", 6.35)
+footer(s, 7, "TIMEFRAME")
+notes(s, "Timeframe expectations: December 2026 is legal structure, MiCA/EU position and finishing/testing the product. January 2027 onward is ads and measurement. Expected ad leads: $10k at $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads. Lead-to-funded conversion 5-10% = 4-9 funded; CAC $1,111-$2,500. Revenue per user: $100-$1,000 monthly inference x 0.5% = $6-$60/year; gross margin 80% = $4.80-$48 GP/user/year. Cohort GP $19-$432; ad return 0.002x-0.043x, so paid ads are a capped test, not a growth channel. NWC from one month prepaid usage: $0.4k-$9k. Czech fixed cost CZK 45k/mo. No internal submission dates are presented. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://thunderbit.com/blog/lead-conversion-rate-statistics-benchmarks ; https://developer.puter.com/encyclopedia/openrouter/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/")
 
-# 7. DEADLINE
-# =====================================================================
-# 7. DEADLINE
-# =====================================================================
-s = slide()
-question(s, "What is the expected timeframe of the project?", 28)
-tb(s, 0.65, 1.38, 12.0, 0.28, "Submission 15 December 2026; final 13 January 2027.", 10.5, SAGE, FONT, spacing=1.15)
-tb(s, 0.65, 1.74, 11.9, 0.55, "The deck is submitted on 15 December 2026. From 16 December to 13 January 2027 the public repository and this deck are revised against feedback. The final version is due 13 January 2027.", 8.8, GRAY, FONT, spacing=1.28)
-phases = [
- ("01  /  15 DEC 2026", "Submission", "This deck is delivered; the live Sepolia pilot is linked."),
- ("02  /  16 DEC 2026 – 13 JAN 2027", "Improvement window", "Feedback, deck edits and repository checks; no new scope."),
- ("03  /  13 JAN 2027", "Final deadline", "Final deck and repository."),
-]
-for i, (label, title, body) in enumerate(phases):
-    yy = 2.45 + i * 1.16
-    tb(s, 0.65, yy, 2.55, 0.18, label, 6.2, DEEP, MONO, caps=True, spacing=1)
-    tb(s, 3.18, yy - 0.02, 3.3, 0.28, title, 11.6, INK, FONT, bold=True, spacing=1)
-    tb(s, 3.18, yy + 0.26, 3.25, 0.52, body, 7.8, GRAY, FONT, spacing=1.22)
-    line(s, 0.65, yy + 0.91, 6.45, yy + 0.91, LINE, 0.7)
-tx, ty, tw = 7.0, 2.12, 5.7
-line(s, tx, ty, tx + tw, ty, MINT, 1.2)
-tb(s, tx, ty + 0.14, tw, 0.2, "DELIVERY WINDOW  /  THIS PRESENTATION", 6.2, SAGE, MONO, caps=True, spacing=1)
-tb(s, tx, ty + 0.52, 1.6, 0.3, "15 DEC 2026", 15.5, DEEP, FONT, bold=True, spacing=0.95)
-tb(s, tx + 4.0, ty + 0.52, 1.7, 0.3, "13 JAN 2027", 15.5, DEEP, FONT, bold=True, spacing=0.95)
-tb(s, tx, ty + 0.86, 1.6, 0.18, "SUBMISSION", 5.8, SAGE, MONO, caps=True, spacing=1)
-tb(s, tx + 4.0, ty + 0.86, 1.7, 0.18, "FINAL", 5.8, SAGE, MONO, caps=True, spacing=1)
-rect(s, tx, ty + 1.28, tw, 0.16, PALE)
-rect(s, tx, ty + 1.28, tw, 0.16, MINT)
-circle(s, tx - 0.06, ty + 1.25, 0.22, DEEP, DEEP, 0.6)
-circle(s, tx + tw - 0.16, ty + 1.25, 0.22, DEEP, DEEP, 0.6)
-tb(s, tx + 1.65, ty + 1.55, 2.4, 0.18, "4-WEEK IMPROVEMENT WINDOW", 6.0, DEEP, MONO, caps=True, spacing=1)
-tb(s, tx + 1.65, ty + 1.76, 2.4, 0.18, "28 days · feedback only", 6.0, SAGE, FONT)
-line(s, tx, ty + 2.48, tx + tw, ty + 2.48, LINE, 0.7)
-tb(s, tx, ty + 2.62, tw, 0.55, "Only this presentation is in scope. Dated rollout, mainnet and SLA are outside this deliverable.", 7.4, GRAY, FONT, spacing=1.2)
-footer(s, 7, "DEADLINE")
-notes(s, "Submission 15 December 2026; final 13 January 2027. The improvement window is four weeks for feedback, deck edits and repository checks, not new scope. No dated product rollout, mainnet or SLA is claimed.")
-
-# =====================================================================
+# 8. CLOSING
 # 8. CLOSING
 # =====================================================================
 s = slide()
