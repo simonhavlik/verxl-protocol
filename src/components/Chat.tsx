@@ -661,15 +661,14 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       setCryptoError("Link a wallet to enable encrypted cloud sync.");
       return;
     }
-    if (!hasWalletProvider()) {
-      setCryptoStatus("locked");
-      setCryptoError("MetaMask is not available. Enable it in this browser, then press Enable.");
-      return;
-    }
-
     setCryptoStatus("unlocking");
     setCryptoError(null);
     try {
+      // In the installed app there is no injected extension. Connect through
+      // MetaMask SDK first; it injects the provider used for the key signature.
+      if (!hasWalletProvider()) {
+        await connectMetaMask();
+      }
       const key = await deriveChatKey(wallet, user.id);
       setChatKey(key);
       setCryptoStatus("ready");
