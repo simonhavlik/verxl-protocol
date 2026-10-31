@@ -574,8 +574,8 @@ export const Vision: React.FC<VisionProps> = ({ onNavigate }) => {
               Next / built-in coding agent in the desktop apps
             </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-[9.5px]">
-              <a href="mailto:me@simonhavlik.com" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
-                <Mail className="h-3 w-3" /> me@simonhavlik.com
+              <a href="mailto:support@verxl.com" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
+                <Mail className="h-3 w-3" /> support@verxl.com
               </a>
               <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#9aa7ad] hover:text-white">
                 <Github className="h-3 w-3" /> Repository <ArrowUpRight className="h-3 w-3" />

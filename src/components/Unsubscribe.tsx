@@ -89,7 +89,7 @@ export const Unsubscribe: React.FC = () => {
       )}
 
       <p className="mt-6 text-[10.5px] leading-relaxed text-[#65737b]">
-        Account deletion and data-rights requests: <a className="text-[#b8f6dd] underline underline-offset-2" href="mailto:me@simonhavlik.com">me@simonhavlik.com</a>.
+        Account deletion and data-rights requests: <a className="text-[#b8f6dd] underline underline-offset-2" href="mailto:support@verxl.com">support@verxl.com</a>.
         See the <a className="text-[#b8f6dd] underline underline-offset-2" href="/privacy">Privacy Policy</a>.
       </p>
     </div>

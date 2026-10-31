@@ -9,12 +9,31 @@ export async function ensureConsentTable(): Promise<void> {
   await db
     .prepare(
       `CREATE TABLE IF NOT EXISTS user_legal_consents (
-        user_id UUID PRIMARY KEY,
+        user_id VARCHAR(64) PRIMARY KEY,
         age_confirmed BOOLEAN NOT NULL DEFAULT FALSE,
         terms_accepted BOOLEAN NOT NULL DEFAULT FALSE,
         terms_version VARCHAR(32) NOT NULL,
         accepted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`
+    )
+    .run();
+  // users.id is VARCHAR (e.g. 'usr_simonhavlik'), never UUID. An earlier version of
+  // this table declared user_id UUID, which made every read and write fail with
+  // "invalid input syntax for type uuid" - the gate could never be passed.
+  await db
+    .prepare(
+      `DO $$
+       BEGIN
+         IF EXISTS (
+           SELECT 1 FROM information_schema.columns
+           WHERE table_schema = current_schema()
+             AND table_name = 'user_legal_consents'
+             AND data_type = 'uuid'
+         ) THEN
+           ALTER TABLE user_legal_consents
+             ALTER COLUMN user_id TYPE VARCHAR(64) USING user_id::text;
+         END IF;
+       END $$`
     )
     .run();
   ready = true;

@@ -57,8 +57,8 @@ export const TestRunNotice: React.FC = () => (
       <a href="/privacy" className="inline-flex items-center gap-2 border border-white/[0.1] px-3 py-2 text-[10px] text-[#c9d4d8] transition hover:border-white/25 hover:text-white">
         <FileText className="h-3.5 w-3.5" /> Privacy
       </a>
-      <a href="mailto:me@simonhavlik.com" className="inline-flex items-center gap-2 px-3 py-2 text-[10px] text-[#9aa7ad] transition hover:text-white">
-        <Mail className="h-3.5 w-3.5" /> me@simonhavlik.com
+      <a href="mailto:support@verxl.com" className="inline-flex items-center gap-2 px-3 py-2 text-[10px] text-[#9aa7ad] transition hover:text-white">
+        <Mail className="h-3.5 w-3.5" /> support@verxl.com
       </a>
       <a href="/" className="ml-auto inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#b8f6dd]">
         <ArrowLeft className="h-3 w-3" /> Back to site

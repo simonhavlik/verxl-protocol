@@ -157,7 +157,7 @@ export const LegalGate: React.FC = () => {
           </button>
 
           <p className="mt-3 font-mono text-[8px] leading-relaxed text-[#65737b]">
-            Version {LEGAL_VERSION}. You can withdraw by deleting your account. Questions: me@simonhavlik.com.
+            Version {LEGAL_VERSION}. You can withdraw by deleting your account. Questions: support@verxl.com.
           </p>
         </div>
       </div>

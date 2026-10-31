@@ -117,13 +117,13 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Data Controller & Contact Information</span>
               </h2>
               <p>
-                The Data Controller for processing under the EU General Data Protection Regulation (GDPR) is the Verxl Protocol project, operated by Simon Havlík in Prague, Czech Republic. Verxl is established in the European Union; no separate EU representative is therefore appointed. Data-protection contact: me@simonhavlik.com.
+                The Data Controller for processing under the EU General Data Protection Regulation (GDPR) is the Verxl Protocol project, operated by Simon Havlík in Prague, Czech Republic. Verxl is established in the European Union; no separate EU representative is therefore appointed. Data-protection contact: support@verxl.com.
               </p>
               <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 font-mono text-[11px] text-slate-300 space-y-0.5">
                 <div><strong>Entity / Representation:</strong> Verxl Protocol Research & Development</div>
                 <div><strong>Lead Architect / Contact:</strong> Simon Havlík</div>
                 <div><strong>Jurisdiction:</strong> Prague, Czech Republic (European Union)</div>
-                <div><strong>Data Protection Queries:</strong> me@simonhavlik.com</div>
+                <div><strong>Data Protection Queries:</strong> support@verxl.com</div>
                 <div><strong>Supervisory Authority:</strong> Office for Personal Data Protection (<em>Úřad pro ochranu osobních údajů - ÚOOÚ</em>), Pplk. Sochora 27, 170 00 Prague 7, Czech Republic.</div>
               </div>
             </div>
@@ -249,7 +249,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 </div>
               </div>
               <p className="text-[11px] text-slate-400 pt-1">
-                To exercise any of these rights, email <code className="text-cyan-300">me@simonhavlik.com</code>. Requests are verified cryptographically and answered within 30 days without charge.
+                To exercise any of these rights, email <code className="text-cyan-300">support@verxl.com</code>. Requests are verified cryptographically and answered within 30 days without charge.
               </p>
             </div>
 
@@ -321,7 +321,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 Some providers process data outside the European Economic Area. Where required, transfers rely on
                 appropriate safeguards such as the European Commission's Standard Contractual Clauses and the
                 providers' data-processing terms. You can request more information about the safeguards at
-                <code className="text-cyan-300"> me@simonhavlik.com</code>.
+                <code className="text-cyan-300"> support@verxl.com</code>.
               </p>
             </div>
 
@@ -342,7 +342,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               <p>
                 We use TLS in transit, access controls, hashed API keys, salted password hashing, TOTP 2FA where
                 enabled, client-side AES-256-GCM chat encryption and a non-extractable device key. No system is
-                perfectly secure; report a suspected incident to <code className="text-cyan-300">me@simonhavlik.com</code>.
+                perfectly secure; report a suspected incident to <code className="text-cyan-300">support@verxl.com</code>.
               </p>
             </div>
 
@@ -391,7 +391,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               <p>
                 You may lodge a complaint with the Czech Office for Personal Data Protection (ÚOOÚ), Pplk. Sochora 27,
                 170 00 Prague 7, or with the supervisory authority in your EU member state. You can also contact us
-                first at <code className="text-cyan-300">me@simonhavlik.com</code>; we aim to respond within 30 days.
+                first at <code className="text-cyan-300">support@verxl.com</code>; we aim to respond within 30 days.
               </p>
             </div>
           </div>
@@ -525,7 +525,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 contract. You may not use Verxl on behalf of a person under 18. You are responsible for the accuracy of
                 your account information, for keeping your wallet, email account, password, 2FA device and recovery
                 codes secure, and for all activity under your account or API keys. Notify us immediately at
-                <code className="text-cyan-300"> me@simonhavlik.com</code> if you suspect unauthorised access. We may
+                <code className="text-cyan-300"> support@verxl.com</code> if you suspect unauthorised access. We may
                 suspend accounts that are compromised, fraudulent, sanctionable or used to harm the service or third
                 parties.
               </p>
@@ -559,7 +559,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 a paid inference request, you request immediate performance and acknowledge that, to the extent permitted
                 by law, the statutory 14-day withdrawal right for distance contracts does not apply once the digital
                 service has been fully performed. This does not affect your rights in respect of defective digital
-                content or services. Complaints can be sent to <code className="text-cyan-300">me@simonhavlik.com</code>;
+                content or services. Complaints can be sent to <code className="text-cyan-300">support@verxl.com</code>;
                 we will respond within 30 days.
               </p>
             </div>
@@ -604,7 +604,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </h2>
               <p>
                 You may stop using Verxl at any time and request account deletion at
-                <code className="text-cyan-300"> me@simonhavlik.com</code>. We may suspend or terminate access for
+                <code className="text-cyan-300"> support@verxl.com</code>. We may suspend or terminate access for
                 material breach, illegal use, fraud, sanctions exposure, security risk, non-payment or abuse of
                 providers. Where reasonable, we will give notice and an opportunity to cure. On termination we delete
                 or anonymise personal data subject to legal retention, fraud-prevention and accounting obligations;
@@ -635,7 +635,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Contact, Complaints & Alternative Dispute Resolution</span>
               </h2>
               <p>
-                Questions about these Terms: <code className="text-cyan-300">me@simonhavlik.com</code>. Consumers may
+                Questions about these Terms: <code className="text-cyan-300">support@verxl.com</code>. Consumers may
                 also use the European Commission's Online Dispute Resolution platform at
                 <a className="text-cyan-300 underline" href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer"> ec.europa.eu/consumers/odr</a>.
                 We are not obliged to participate in ADR but will consider a good-faith resolution first. The Czech
