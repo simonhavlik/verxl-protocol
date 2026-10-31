@@ -6,6 +6,8 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.chart.data import CategoryChartData
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_MARKER_STYLE
 from pptx.oxml.ns import qn
 
 ASSETS = os.path.join(os.path.dirname(__file__), "assets")
@@ -130,7 +132,7 @@ def source(s, text, y=6.52):
 def footer(s, page, section="TERM PROJECT PROPOSAL", show_logo=True):
     if show_logo: logo(s)
     tb(s, 2.22, 7.03, 7.2, 0.18, f"VERXL PROTOCOL  ·  {section}", 6.8, SOFT, MONO, caps=True, spacing=1)
-    tb(s, 10.9, 7.03, 1.78, 0.18, f"{page:02d} / 08", 6.8, SOFT, MONO, align=PP_ALIGN.RIGHT, spacing=1)
+    tb(s, 10.9, 7.03, 1.78, 0.18, f"{page:02d} / 09", 6.8, SOFT, MONO, align=PP_ALIGN.RIGHT, spacing=1)
 
 def question(s, q, size=28):
     tb(s, 0.65, 0.55, 12.15, 0.9, q, size, INK, FONT, bold=True, spacing=0.98)
@@ -142,6 +144,106 @@ def card(s, x, y, w, h, label, big, note, accent=DEEP, big_size=24):
     tb(s, x + 0.16, y + 0.16, w - 0.32, 0.18, label, 6.3, SAGE, MONO, caps=True, spacing=1)
     tb(s, x + 0.16, y + 0.38, w - 0.32, 0.48, big, big_size, accent, FONT, bold=True, spacing=0.9)
     tb(s, x + 0.16, y + 0.95, w - 0.32, 0.62, note, 8.2, GRAY, FONT, spacing=1.25)
+
+def goal_block(s, x, y, w, h, label, title, body, accent=DEEP):
+    rect(s, x, y, w, h, OFF, LINE, 0.8)
+    spectrum(s, x, y, w, 0.04)
+    tb(s, x + 0.16, y + 0.13, w - 0.3, 0.16, label, 5.8, SAGE, MONO, caps=True, spacing=1)
+    tb(s, x + 0.16, y + 0.32, w - 0.3, 0.24, title, 9.4, accent, FONT, bold=True, spacing=1)
+    tb(s, x + 0.16, y + 0.60, w - 0.3, 0.55, body, 7.0, GRAY, FONT, spacing=1.2)
+
+def kpi(s, x, y, w, h, label, value, sub=""):
+    rect(s, x, y, w, h, WHITE, LINE, 0.7)
+    rect(s, x, y, 0.035, h, MINT)
+    tb(s, x + 0.12, y + 0.09, w - 0.2, 0.14, label, 5.4, SAGE, MONO, caps=True, spacing=1)
+    tb(s, x + 0.12, y + 0.25, w - 0.2, 0.28, value, 12.2, DEEP, FONT, bold=True, spacing=0.95)
+    if sub:
+        tb(s, x + 0.12, y + 0.57, w - 0.2, 0.2, sub, 5.8, GRAY, FONT, spacing=1.1)
+
+def financial_chart(s, x, y, w, h):
+    data = CategoryChartData()
+    data.categories = ("2027", "2028", "2029", "2030", "2031")
+    data.add_series("Revenue", (0.015, 0.090, 0.360, 1.200, 4.800))
+    data.add_series("Gross profit", (0.012, 0.072, 0.288, 0.960, 3.840))
+    data.add_series("Free cash flow", (-0.198, -0.275, -0.301, -0.004, 2.166))
+    gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
+    ch = gf.chart
+    ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
+    ch.has_title = False
+    ch.has_legend = True
+    ch.legend.position = XL_LEGEND_POSITION.BOTTOM
+    ch.legend.include_in_layout = False
+    ch.legend.font.size = Pt(6.5); ch.legend.font.name = FONT
+    va = ch.value_axis
+    va.has_major_gridlines = True
+    va.major_gridlines.format.line.color.rgb = LINE
+    va.major_gridlines.format.line.width = Pt(0.5)
+    va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
+    va.tick_labels.number_format = '"$"0.0"M"'; va.tick_labels.number_format_is_linked = False
+    va.minimum_scale = -0.5; va.maximum_scale = 5.2; va.major_unit = 1.0
+    va.format.line.color.rgb = LINE
+    ca = ch.category_axis
+    ca.tick_labels.font.size = Pt(6.8); ca.tick_labels.font.name = MONO
+    ca.format.line.color.rgb = LINE
+    colors = [DEEP, SAGE, ROSE]
+    for i, series in enumerate(ch.series):
+        series.smooth = False
+        series.format.line.color.rgb = colors[i]
+        series.format.line.width = Pt(2.0)
+        series.marker.style = XL_MARKER_STYLE.CIRCLE
+        series.marker.size = 5
+        series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = colors[i]
+        series.marker.format.line.color.rgb = WHITE
+
+def financial_table(s, x, y, w, h):
+    rows = [
+        ("Paying accounts", "100", "500", "1,500", "4,000", "10,000"),
+        ("GMV / account / mo", "$2.5k", "$3.0k", "$4.0k", "$5.0k", "$8.0k"),
+        ("GMV ($M)", "3.0", "18.0", "72.0", "240.0", "960.0"),
+        ("Revenue ($k)", "15", "90", "360", "1,200", "4,800"),
+        ("Gross profit ($k)", "12", "72", "288", "960", "3,840"),
+        ("Opex ($k)", "210", "350", "600", "1,000", "1,500"),
+        ("EBITDA ($k)", "(198)", "(278)", "(312)", "(40)", "2,340"),
+        ("Tax ($k)", "0", "0", "0", "0", "(318)"),
+        ("Capex + ΔNWC ($k)", "(0.5)", "(2.7)", "(10.8)", "(36)", "(144)"),
+        ("Free cash flow ($k)", "(198)", "(275)", "(301)", "(4)", "2,166"),
+        ("Cumulative FCF ($k)", "(198)", "(473)", "(774)", "(778)", "1,388"),
+    ]
+    shape = s.shapes.add_table(len(rows) + 1, 6, Inches(x), Inches(y), Inches(w), Inches(h))
+    t = shape.table
+    t.columns[0].width = Inches(1.72)
+    for i in range(1, 6):
+        t.columns[i].width = Inches((w - 1.72) / 5)
+    t.rows[0].height = Inches(0.33)
+    for i in range(1, len(rows) + 1):
+        t.rows[i].height = Inches((h - 0.33) / len(rows))
+    heads = ["METRIC", "2027", "2028", "2029", "2030", "2031"]
+    for j, head in enumerate(heads):
+        c = t.cell(0, j)
+        c.text = head
+        c.fill.solid(); c.fill.fore_color.rgb = DEEP
+        c.margin_left = c.margin_right = Inches(0.04)
+        c.margin_top = c.margin_bottom = Inches(0.01)
+        c.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = c.text_frame.paragraphs[0]
+        p.alignment = PP_ALIGN.LEFT if j == 0 else PP_ALIGN.RIGHT
+        for r in p.runs:
+            r.font.name = MONO; r.font.size = Pt(6.2); r.font.bold = True; r.font.color.rgb = WHITE
+    for i, row in enumerate(rows, 1):
+        for j, val in enumerate(row):
+            c = t.cell(i, j)
+            c.text = val
+            c.fill.solid(); c.fill.fore_color.rgb = WHITE if i % 2 else OFF
+            c.margin_left = c.margin_right = Inches(0.04)
+            c.margin_top = c.margin_bottom = Inches(0.01)
+            c.vertical_anchor = MSO_ANCHOR.MIDDLE
+            p = c.text_frame.paragraphs[0]
+            p.alignment = PP_ALIGN.LEFT if j == 0 else PP_ALIGN.RIGHT
+            for r in p.runs:
+                r.font.name = FONT if j == 0 else MONO
+                r.font.size = Pt(6.6)
+                r.font.color.rgb = GRAY if j == 0 else (ROSE if val.startswith("(") else INK)
+                r.font.bold = j == 0
 
 # =====================================================================
 # 1. COVER
@@ -216,7 +318,7 @@ question(s, "What problem does your project solve?", 29)
 runs(s, 0.65, 1.38, 12.2, 0.45, [
     ("OpenRouter charges ", 15.5, INK, False, FONT),
     ("5%", 15.5, ROSE, True, FONT),
-    (" of every token. Verxl charges ", 15.5, INK, False, FONT),
+    (" on usage. Verxl charges ", 15.5, INK, False, FONT),
     ("0.5%", 15.5, DEEP, True, FONT),
     (".", 15.5, INK, False, FONT),
 ], spacing=1.1)
@@ -262,7 +364,7 @@ for i, (head, body) in enumerate(claims):
     rect(s, x, y, 0.035, 1.56, MINT)
     tb(s, x + 0.16, y + 0.16, 2.5, 0.18, head, 6.2, SAGE, MONO, caps=True, spacing=1)
     tb(s, x + 0.16, y + 0.42, 2.5, 0.85, body, 8.6, GRAY, FONT, spacing=1.3)
-source(s, "OpenRouter publishes a 5% fee. Verxl charges 0.5%. Fee difference: 5.0% − 0.5% = 4.5 percentage points. At equal provider token prices the total-bill reduction is ≈4.3%. Wallet-only access; hosting and providers still process network metadata.")
+source(s, "OpenRouter publishes a 5% usage fee (5.5% on card top-ups). Verxl charges 0.5%. Fee difference: 5.0% − 0.5% = 4.5 percentage points. At equal provider token prices the total-bill reduction is ≈4.3%. Wallet-only access; hosting and providers still process network metadata.")
 footer(s, 2, "PROBLEM")
 notes(s, "The problem is access pricing and access policy, not model quality. OpenRouter takes 5% of every token; Verxl takes 0.5%. That is a 4.5 percentage-point lower fee and about a 4.3% lower total bill at identical provider prices. Verxl's difference is wallet-first pseudonymous access, public source, bounded uncensored access under 20B, and an encrypted pay-per-use Chat with no subscription.")
 
@@ -298,17 +400,20 @@ s = slide()
 question(s, "What are our roles?", 29)
 tb(s, 0.65, 1.38, 12.0, 0.3, "Three members cover the protocol, verification and compliance.", 10.5, SAGE, FONT, spacing=1.15)
 team = [
- ("simon.jpg", "Šimon Havlík", "FOUNDER / LEAD ARCHITECT", "Protocol, product and infrastructure: edge router, clearing switch, Prague Qwen host, encrypted Chat."),
- ("daniel.jpg", "Daniel Kolárovský", "HEAD OF VERIFICATION / SLA", "Canary probes, SLA measurement and the process checks behind each release."),
- ("miroslava.jpg", "Miroslava Valová", "HEAD OF COMPLIANCE / RESEARCH", "MiCA/GDPR scope, market research, partner diligence and institutional governance."),
+ ("simon.jpg", "faculty-economics.png", "Šimon Havlík", "FOUNDER / LEAD ARCHITECT", "Protocol, product and infrastructure: edge router, clearing switch, Prague Qwen host, encrypted Chat."),
+ ("daniel.jpg", "faculty-international-relations.jpg", "Daniel Kolárovský", "HEAD OF VERIFICATION / SLA", "Canary probes, SLA measurement and the process checks behind each release."),
+ ("miroslava.jpg", "bratislava-business-university.jpg", "Miroslava Valová", "HEAD OF COMPLIANCE / RESEARCH", "MiCA/GDPR scope, market research, partner diligence and institutional governance."),
 ]
-for i, (img, name, role, bio) in enumerate(team):
+for i, (img, logo_img, name, role, bio) in enumerate(team):
     x = 0.65 + i * 4.0
     line(s, x, 1.82, x + 3.58, 1.82, MINT, 1.2)
-    s.shapes.add_picture(os.path.join(ASSETS, img), Inches(x + 0.32), Inches(1.96), width=Inches(2.9), height=Inches(3.625))
-    tb(s, x + 0.32, 5.72, 2.9, 0.28, name, 11.4, INK, FONT, bold=True, spacing=1)
-    tb(s, x + 0.32, 6.03, 2.9, 0.2, role, 6.3, DEEP, MONO, caps=True, spacing=1)
-    tb(s, x + 0.32, 6.30, 2.9, 0.52, bio, 7.7, GRAY, FONT, spacing=1.2)
+    s.shapes.add_picture(os.path.join(ASSETS, img), Inches(x + 0.32), Inches(1.90), width=Inches(2.70), height=Inches(3.375))
+    s.shapes.add_picture(os.path.join(ASSETS, logo_img), Inches(x + 0.32), Inches(5.31), height=Inches(0.52))
+    if i == 2:
+        tb(s, x + 1.16, 5.42, 1.72, 0.2, "UNIVERSITY OF ECONOMICS\nIN BRATISLAVA", 5.2, SAGE, MONO, caps=True, spacing=1.05)
+    tb(s, x + 0.32, 5.90, 2.90, 0.28, name, 11.4, INK, FONT, bold=True, spacing=1)
+    tb(s, x + 0.32, 6.19, 2.90, 0.2, role, 6.2, DEEP, MONO, caps=True, spacing=1)
+    tb(s, x + 0.32, 6.43, 2.90, 0.5, bio, 7.2, GRAY, FONT, spacing=1.16)
 footer(s, 4, "TEAM")
 notes(s, "Three people. Simon Havlík is the founder and lead architect: edge router, clearing switch, Prague Qwen host and encrypted Chat. Daniel Kolárovský leads verification: canary probes, SLA measurement and process checks. Miroslava Valová leads compliance and research: MiCA/GDPR, market research and institutional governance. The portraits are at their native aspect ratio.")
 
@@ -376,52 +481,57 @@ notes(s, "The product has six functions: route, registry, encryption, verificati
 # 6. EVALUATION
 # =====================================================================
 s = slide()
-question(s, "How will you evaluate if the project was successful?", 27)
-tb(s, 0.65, 1.38, 12.0, 0.28, "Cost, latency, verification and privacy on the Sepolia pilot.", 10.2, SAGE, FONT, spacing=1.15)
-tb(s, 0.65, 1.74, 11.9, 0.3, "The pilot passes when all four targets are met; no mainnet or SLA is claimed.", 8.8, GRAY, FONT, spacing=1.2)
-y = 2.55
-w = 2.95
-# Card 1 fee/cost
-x = 0.65
-card(s, x, y, w, 3.55, "FEE / COST", "4.5 pts", "Percentage points lower fee than OpenRouter. At identical token prices the total bill is ≈4.3% lower.", DEEP, 25)
-rect(s, x + 0.16, y + 1.85, w - 0.32, 0.12, RGBColor(0xF7, 0xE9, 0xE9))
-rect(s, x + 0.16, y + 1.85, (w - 0.32), 0.12, ROSE)
-tb(s, x + 0.16, y + 2.05, 1.4, 0.16, "OpenRouter 5.0%", 6.2, ROSE, MONO)
-rect(s, x + 0.16, y + 2.30, w - 0.32, 0.12, PALE)
-rect(s, x + 0.16, y + 2.30, (w - 0.32) * 0.1, 0.12, DEEP)
-tb(s, x + 0.16, y + 2.50, 1.4, 0.16, "Verxl 0.5%", 6.2, DEEP, MONO)
-tb(s, x + 0.16, y + 2.85, w - 0.32, 0.45, "Target: no fee above 0.5%; 100% of the fee visible.", 6.8, DEEP, MONO, spacing=1.1)
-# Card 2 latency
-x = 3.76
-card(s, x, y, w, 3.55, "LATENCY", "38 / 85 / 92", "ms P50 TTFT: Qwen / MiMo / DeepSeek on the Sepolia pilot.", DEEP, 22)
-for i, (lab, val, col) in enumerate([("Qwen", 38, DEEP), ("MiMo", 85, SAGE), ("DeepSeek", 92, DEEP)]):
-    yy = y + 1.78 + i * 0.38
-    tb(s, x + 0.16, yy, 0.75, 0.16, lab, 6.6, GRAY, MONO)
-    rect(s, x + 0.94, yy + 0.055, 1.2, 0.11, LINE)
-    rect(s, x + 0.94, yy + 0.055, 1.2 * (val / 100), 0.11, col)
-    tb(s, x + 2.18, yy, 0.6, 0.16, f"{val}", 6.6, DEEP, MONO, align=PP_ALIGN.RIGHT)
-tb(s, x + 0.16, y + 2.85, w - 0.32, 0.45, "Target: ≤100ms P50; canary success ≥99.5%.", 6.8, DEEP, MONO, spacing=1.1)
-# Card 3 verification
-x = 6.87
-card(s, x, y, w, 3.55, "VERIFICATION", "99.8%", "Oracle fidelity on the demo telemetry. Seed 42; every 30 minutes; automatic fallback.", DEEP, 24)
-circle(s, x + 1.42 - 0.43, y + 1.78, 0.86, PALE, LINE, 0.6)
-circle(s, x + 1.42 - 0.43, y + 1.78, 0.86, None, MINT, 3.2)
-tb(s, x + 1.0, y + 2.04, 0.84, 0.24, "99.8%", 8.0, DEEP, MONO, bold=True, align=PP_ALIGN.CENTER)
-tb(s, x + 0.16, y + 2.85, w - 0.32, 0.45, "Target: zero undetected downgrades.", 6.8, DEEP, MONO, spacing=1.1)
-# Card 4 privacy/econ
-x = 9.98
-card(s, x, y, w, 3.55, "PRIVACY / ECONOMICS", "0 / 50 bps", "Plaintext rows in Chat / protocol fee. API key cannot open chat; providers keep 99.5%.", DEEP, 21)
-for i, lab in enumerate(["browser", "ciphertext", "postgres"]):
-    bx = x + 0.16 + i * 0.87
-    rect(s, bx, y + 1.92, 0.76, 0.3, PALE, LINE, 0.6)
-    tb(s, bx + 0.02, y + 1.99, 0.72, 0.14, lab, 5.4, SAGE, MONO, align=PP_ALIGN.CENTER)
-    if i < 2: line(s, bx + 0.76, y + 2.07, bx + 0.86, y + 2.07, DEEP, 0.8)
-tb(s, x + 0.16, y + 2.85, w - 0.32, 0.45, "Target: zero plaintext rows; 100% payout reconciliation.", 6.8, DEEP, MONO, spacing=1.1)
-source(s, "OpenRouter 5% published fee vs Verxl 0.5%: 4.5 percentage points lower; total-bill reduction at equal token prices ≈4.3%. Latency and oracle fidelity are Sepolia demo measurements, not an SLA. Targets are term-project thresholds.", 6.55)
+question(s, "How will you evaluate if the project was successful?", 26)
+tb(s, 0.65, 1.34, 12.1, 0.24, "Short-term proof, an EU legal path and a financial base case. Two-thirds of this page is the financial success test.", 8.4, SAGE, FONT, spacing=1.15)
+goal_block(s, 0.65, 1.72, 3.92, 1.20, "SHORT TERM / 2027", "100 paying accounts", "GMV $3.0M · 99.8% verification · $0.8M seed. One Prague host and two bridges.")
+goal_block(s, 4.73, 1.72, 3.92, 1.20, "EU / MICA / 2027–28", "Perimeter, not a licence", "MiCA legal opinion; non-custodial, no CASP claim. GDPR + AI Act pack, DPA/SCC, complaints.")
+goal_block(s, 8.81, 1.72, 3.92, 1.20, "LONG TERM / 2031", "10,000 paying accounts", "GMV $960M · revenue $4.8M · FCF $2.17M. Break-even in 2031.")
+tb(s, 0.65, 3.06, 7.4, 0.18, "FINANCIAL SUCCESS  /  BASE CASE 2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
+financial_chart(s, 0.65, 3.26, 7.35, 2.95)
+kpis = [
+    ("2031 REVENUE", "$4.8M", "0.5% of $960M GMV"),
+    ("GROSS MARGIN", "80%", "vs 77% median SaaS"),
+    ("2031 FCF", "$2.17M", "cumulative $1.39M"),
+    ("CAC PAYBACK", "7.5 mo", "blended CAC $240"),
+    ("LTV / CAC", "4.0×", "30-month LTV"),
+    ("PEAK FUNDING", "$0.8M", "no debt"),
+]
+for i, (label, value, sub) in enumerate(kpis):
+    col, row = i % 2, i // 2
+    kpi(s, 8.15 + col * 2.18, 3.26 + row * 0.97, 2.10, 0.88, label, value, sub)
+source(s, "Model: Verxl base case, not a forecast. Sources: Cloudflare Workers pricing (requests $0.30/M; CPU $0.02/M CPU-ms; Hyperdrive included; Pages static/bandwidth free); SaaS Capital 2025 (median gross margin 77%, top quartile 85%); RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; OpenRouter FAQ (5% usage fee, 5.5% card top-up); KPMG Czech Tax Card 2026 (21%).", 6.50)
 footer(s, 6, "EVALUATION")
-notes(s, "The evaluation is an acceptance test, not an SLA. Fee/cost: compare the 5% OpenRouter fee with the 0.5% Verxl fee; that is a 4.5 percentage-point lower fee and about a 4.3% lower total bill at identical token prices. Latency: 38/85/92 ms P50 TTFT; target ≤100ms. Verification: 99.8% oracle fidelity; seed 42; every 30 minutes; target zero undetected downgrades. Privacy/economics: zero plaintext Chat rows, 50 bps and 99.5% provider share; target 100% payout reconciliation. No mainnet or SLA claim.")
+notes(s, "Two-thirds of this slide is financial success. Short term 2027: 100 paying accounts, $3M GMV, 99.8% verification, $0.8M seed. EU/MiCA 2027–28: a legal perimeter opinion, explicitly non-custodial and no CASP licence claim; GDPR/AI Act documentation, DPA/SCC pack, complaints. Long term 2031: 10,000 accounts, $960M GMV, $4.8M revenue, $2.17M FCF. Financial model is a base case, not a forecast: 0.5% take, 80% gross margin, 21% Czech tax, no debt; the chart shows revenue, gross profit and FCF. Sources: Cloudflare Workers pricing; SaaS Capital 2025; RockingWeb Google Ads B2B tech CPC; OpenRouter FAQ; KPMG Tax Card 2026.")
 
+# 7. FINANCIAL MODEL
 # =====================================================================
+s = slide()
+question(s, "How does the model reach financial success?", 27)
+tb(s, 0.65, 1.32, 12.1, 0.24, "Base case 2027–2031: 0.5% take rate, 80% gross margin, no debt. Inputs are explicit; this is a model, not a forecast.", 8.4, SAGE, FONT, spacing=1.15)
+financial_table(s, 0.65, 1.70, 7.55, 4.00)
+# right panel
+rx, ry, rw = 8.43, 1.70, 4.25
+tb(s, rx, ry, rw, 0.18, "UNIT ECONOMICS  /  2031", 6.2, DEEP, MONO, caps=True, spacing=1)
+for i, (label, value) in enumerate([
+    ("Revenue / account / yr", "$480"),
+    ("Gross profit / account / yr", "$384"),
+    ("Blended CAC", "$240"),
+    ("CAC payback", "7.5 months"),
+    ("LTV (30 months) / CAC", "$960 / 4.0×"),
+]):
+    yy = ry + 0.28 + i * 0.36
+    tb(s, rx, yy, 2.35, 0.2, label, 6.5, GRAY, FONT, spacing=1)
+    tb(s, rx + 2.28, yy, 1.9, 0.2, value, 7.2, DEEP, MONO, align=PP_ALIGN.RIGHT, spacing=1)
+line(s, rx, ry + 2.18, rx + rw, ry + 2.18, LINE, 0.7)
+tb(s, rx, ry + 2.31, rw, 0.18, "CLOUDFLARE  /  1B REQUESTS / MO", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, rx, ry + 2.55, rw, 0.62, "$402/mo edge: $5 base + $297 requests + $100 CPU. Static Pages requests and bandwidth $0; Hyperdrive included. Postgres ~$200/mo assumed.", 6.6, GRAY, FONT, spacing=1.2)
+line(s, rx, ry + 3.22, rx + rw, ry + 3.22, LINE, 0.7)
+tb(s, rx, ry + 3.34, rw, 0.18, "ADS  /  CAPITAL", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, rx, ry + 3.56, rw, 0.74, "Paid-only CAC $452 = $113 CPL ÷ 25% close. Blended CAC $240 with 45% inbound. Peak funding $0.8M; no debt; NWC -$240k at 2031.", 6.6, GRAY, FONT, spacing=1.2)
+source(s, "Sources: Cloudflare Workers / Pages pricing; SaaS Capital 2025 (77% median, 85% top quartile); RockingWeb 2025 Google Ads B2B tech CPC $4.12 / CVR 3.64%; OpenRouter FAQ (5% usage; 5.5% top-up); KPMG Czech Tax Card 2026 (21%). Company-specific inputs are Verxl assumptions.", 6.48)
+footer(s, 7, "FINANCIAL MODEL")
+notes(s, "Financial model. 2027–2031 base case: 100/500/1,500/4,000/10,000 paying accounts; average monthly GMV $2.5k/$3k/$4k/$5k/$8k; 0.5% take; revenue $15k/$90k/$360k/$1.2M/$4.8M; gross margin 80%; opex $210k/$350k/$600k/$1.0M/$1.5M; EBITDA $(198)k/$(278)k/$(312)k/$(40)k/$2.34M; Czech tax 21% with loss carryforward; capex 2% revenue; NWC -5% revenue; FCF $(198)k/$(275)k/$(301)k/$(4)k/$2.166M; cumulative $1.388M; peak funding $0.8M. Unit economics: 2031 revenue/account $480, gross profit $384, blended CAC $240, payback 7.5 months, LTV 30 months $960, LTV/CAC 4.0x. Paid-only CAC $452 at $113 CPL and 25% close; blended $240 with 45% inbound. Cloudflare at 1B requests/mo: $5 base + 990M extra requests x $0.30/M = $297 + 5B CPU-ms x $0.02/M = $100; ~$402/mo; Pages static/bandwidth free; Hyperdrive included. Sources: https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
+
 # 7. DEADLINE
 # =====================================================================
 s = slide()
@@ -454,7 +564,7 @@ tb(s, tx + 1.65, ty + 1.55, 2.4, 0.18, "4-WEEK IMPROVEMENT WINDOW", 6.0, DEEP, M
 tb(s, tx + 1.65, ty + 1.76, 2.4, 0.18, "28 days · feedback only", 6.0, SAGE, FONT)
 line(s, tx, ty + 2.48, tx + tw, ty + 2.48, LINE, 0.7)
 tb(s, tx, ty + 2.62, tw, 0.55, "Only this presentation is in scope. Dated rollout, mainnet and SLA are outside this deliverable.", 7.4, GRAY, FONT, spacing=1.2)
-footer(s, 7, "DEADLINE")
+footer(s, 8, "DEADLINE")
 notes(s, "Submission 15 December 2026; final 13 January 2027. The improvement window is four weeks for feedback, deck edits and repository checks, not new scope. No dated product rollout, mainnet or SLA is claimed.")
 
 # =====================================================================
@@ -480,7 +590,7 @@ tb(s, qx + 2.65, qy + 0.42, 1.4, 0.2, "VERXL.COM", 6.4, DEEP, MONO, caps=True, s
 tb(s, qx + 2.65, qy + 0.68, 1.35, 0.5, "Live\nSepolia\npilot", 12.5, INK, FONT, bold=True, spacing=1.0)
 tb(s, qx + 0.25, qy + 2.72, 3.7, 0.3, "Chat · Playground · Registry · API", 7.4, SAGE, FONT, spacing=1.1)
 tb(s, qx + 0.25, qy + 3.00, 3.7, 0.2, "macOS · Linux · Windows · Android", 7.0, GRAY, MONO, spacing=1)
-footer(s, 8, "VŠE PRAHA", False)
+footer(s, 9, "VŠE PRAHA", False)
 notes(s, "Closing. verxl.com is live on Sepolia. The QR opens the site. The contact is me@simonhavlik.com. The final deck is due 13 January 2027.")
 
 prs.save(OUT)
