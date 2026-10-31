@@ -486,7 +486,7 @@ tb(s, 0.65, 1.32, 12.15, 0.22, "Short-term proof, an EU legal path and a low-cap
 goal_block(s, 0.65, 1.68, 3.92, 1.15, "SHORT TERM / 2027", "50 paying accounts", "$10k ads · 88 leads · 22 paid. GMV $0.45M; 99.8% verification.")
 goal_block(s, 4.73, 1.68, 3.92, 1.15, "EU / MICA / 2027–28", "Perimeter, not a licence", "MiCA legal opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints.")
 goal_block(s, 8.81, 1.68, 3.92, 1.15, "LONG TERM / 2031", "1,500 paying accounts", "GMV $45M · revenue $225k · FCF ≈$100k. Break-even 2029.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  BASE CASE, RANGE 2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  FCF RANGE ($k)  /  2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
 financial_chart(s, 0.65, 3.18, 7.35, 2.95)
 kpis = [
     ("2031 REVENUE", "$225k", "range $108k–$422k"),
@@ -499,7 +499,7 @@ kpis = [
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.22, 7.4, 0.2, "Capital-light: $10k initial ads; founder time unpaid through 2028; growth funded from fee cash flow.", 6.0, DEEP, FONT, spacing=1.1)
+tb(s, 0.65, 6.20, 7.4, 0.22, "$10k initial ads; founder time unpaid through 2028; Cloudflare at 1B req/mo ≈$402/mo; growth funded from fee cash flow and prepaid float.", 5.8, DEEP, FONT, spacing=1.1)
 source(s, "Ranges reflect low/base/high account and spend assumptions. Sources: Cloudflare Workers pricing (requests $0.30/M; CPU $0.02/M CPU-ms; Hyperdrive included; Pages static/bandwidth free); SaaS Capital 2025 (median gross margin 77%, top quartile 85%); RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; OpenRouter FAQ (5% usage; 5.5% top-up); KPMG Tax Card 2026 (21%).", 6.48)
 footer(s, 6, "EVALUATION")
 notes(s, "This is a 5-minute deck; there is no separate financial-model slide. Financial success is on the evaluation slide. Start with $10k ads: $4.12 CPC => 2,427 clicks; 3.64% CVR => 88 leads; 25% close => 22 paid accounts. Organic/community doubles the 2027 cohort to 50. Base case accounts: 50/200/500/900/1,500. Average monthly GMV: $750/$900/$1,100/$1,500/$2,500. GMV $0.45M/$2.16M/$6.6M/$16.2M/$45M. Revenue at 0.5%: $2.25k/$10.8k/$33k/$81k/$225k. Gross margin 80%: $1.8k/$8.64k/$26.4k/$64.8k/$180k. Opex: $12k/$10k/$20k/$35k/$55k. FCF base: -$10k/-$1k/$6k/$30k/$100k; peak loss $10k; break-even 2029; no $500k burn. Low/high scenarios are in the chart. Float: assume 40% of GMV prepaid with 45-day average; 2031 monthly GMV $3.75M; float $2.25M; breakage 1% of outstanding prepaid = $22.5k, not included in FCF. Paid CAC $455; blended $120 with 60% organic/community; payback 12 months; LTV/CAC ~2.5x. The model is a range, not a forecast. Sources: https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
