@@ -443,14 +443,14 @@ tb(s, 0.65, 1.85, 5.9, 0.55, "Legal + product.", 27, INK, FONT, bold=True, spaci
 tb(s, 0.65, 2.42, 5.6, 0.55, "Set the legal structure. Resolve the MiCA / EU law position. Finish and test the project before any ads.", 8.5, GRAY, FONT, spacing=1.3)
 # January
 tb(s, 7.2, 1.55, 5.2, 0.2, "JANUARY 2027 →", 7.0, SAGE, MONO, caps=True, spacing=1)
-tb(s, 7.2, 1.85, 5.3, 0.55, "Design partners.", 27, INK, FONT, bold=True, spacing=0.96)
-tb(s, 7.2, 2.42, 5.2, 0.55, "Onboard paid design partners. Measure deposit, usage, conversion, revenue per user, gross margin and net working capital. No paid ads at launch.", 8.5, GRAY, FONT, spacing=1.3)
+tb(s, 7.2, 1.85, 5.3, 0.55, "Launch.", 27, INK, FONT, bold=True, spacing=0.96)
+tb(s, 7.2, 2.42, 5.2, 0.55, "Launch the product. Start paid-ad experiments with a capped budget. Measure leads, conversion rate, revenue per user, gross margin and net working capital.", 8.5, GRAY, FONT, spacing=1.3)
 # bottom detail: no submission, no chart
 line(s, 0.65, 4.18, 12.68, 4.18, LINE, 0.8)
 tb(s, 0.65, 4.42, 4.1, 0.2, "WHAT WE MEASURE", 6.5, DEEP, MONO, caps=True, spacing=1)
 metrics = [
-    ("PAID ADS", "$0", "no paid ads at launch"),
-    ("AD LEADS", "measure", "after product"),
+    ("PAID ADS", "capped test", "after launch"),
+    ("AD LEADS", "measure", "after launch"),
     ("CONVERSION", "measure", "lead → funded"),
     ("REVENUE / USER", "$6–$60/yr", "target API user"),
     ("GROSS MARGIN", "80%", "77–85% SaaS range"),
@@ -463,11 +463,11 @@ for i, (label, value, sub) in enumerate(metrics):
     tb(s, x, 5.18, 1.9, 0.18, sub, 5.8, GRAY, FONT, spacing=1.1)
     line(s, x, 5.42, x + 1.85, 5.42, LINE, 0.7)
 # expectation + sequence
-tb(s, 0.65, 5.62, 12.0, 0.3, "Paid ads at 0.5% take do not pay back. We do not run them. Growth is design-partner and open-source led; we measure real conversion before any spend.", 8.4, DEEP, FONT, spacing=1.15)
-tb(s, 0.65, 5.96, 12.0, 0.28, "Sequence: legal structure and finished product first; design partners and measurement from January 2027.", 8.2, GRAY, FONT, spacing=1.1)
-source(s, "Revenue/user range: target API user with $1.2k–$12k annual inference at 0.5% fee. Gross margin 80% vs SaaS Capital 2025 (77% median / 85% top). OpenRouter $8M monthly customer spend / 5.1M users (2025). Czech cost CZK 45k/mo. No ad funnel is projected from zero.", 6.35)
+tb(s, 0.65, 5.62, 12.0, 0.3, "No ad forecast before launch. Paid ads only with a capped budget and measured CAC payback <12 months.", 8.4, DEEP, FONT, spacing=1.15)
+tb(s, 0.65, 5.96, 12.0, 0.28, "Sequence: legal structure and finished product first; launch, ads and measurement from January 2027.", 8.2, GRAY, FONT, spacing=1.1)
+source(s, "Revenue/user range: target API user with $1.2k–$12k annual inference at 0.5% fee. Gross margin 80% vs SaaS Capital 2025 (77% median / 85% top). OpenRouter $8M monthly customer spend / 5.1M users (2025). Czech cost CZK 45k/mo. No ad forecast is projected from zero.", 6.35)
 footer(s, 7, "TIMEFRAME")
-notes(s, "Timeframe expectations: December 2026 is legal structure, MiCA/EU position and finishing/testing the product. January 2027 onward is paid design partners and measurement, not paid ads. Paid ads at 0.5% take do not pay back; no ad funnel is projected. Measure actual deposit, usage, lead-to-funded conversion, revenue per user, gross margin and net working capital. Target API user: $1.2k-$12k annual inference x 0.5% = $6-$60/year fee revenue. Gross margin 80% is the target against the 77%-85% SaaS benchmark. NWC is the prepaid float and is measured, not forecast. Czech fixed cost CZK 45k/mo. Sources: https://developer.puter.com/encyclopedia/openrouter/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/")
+notes(s, "Timeframe expectations: December 2026 is legal structure, MiCA/EU position and finishing/testing the product. January 2027 onward is launch, paid-ad experiments with a capped budget, and measurement. No ad funnel is projected before launch. Measure actual deposit, usage, lead-to-funded conversion, revenue per user, gross margin and net working capital. Target API user: $1.2k-$12k annual inference x 0.5% = $6-$60/year fee revenue. Gross margin 80% is the target against the 77%-85% SaaS benchmark. NWC is the prepaid float and is measured, not forecast. Czech fixed cost CZK 45k/mo. Sources: https://developer.puter.com/encyclopedia/openrouter/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/")
 
 # 8. CLOSING
 # 8. CLOSING
