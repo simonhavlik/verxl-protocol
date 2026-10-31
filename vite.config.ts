@@ -30,6 +30,7 @@ export default defineConfig({
         oracleDir: path.resolve(__dirname, "oracle/index.html"),
         governanceDir: path.resolve(__dirname, "governance/index.html"),
         consoleDir: path.resolve(__dirname, "console/index.html"),
+        productsDir: path.resolve(__dirname, "products/index.html"),
         privacyDir: path.resolve(__dirname, "privacy/index.html"),
         termsDir: path.resolve(__dirname, "terms/index.html"),
         legalDir: path.resolve(__dirname, "legal/index.html"),
