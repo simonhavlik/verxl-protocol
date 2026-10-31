@@ -294,57 +294,7 @@
     <div class="shmack-grid"></div>
     <div class="shmack-vignette"></div>
   </div>
-  <header class="site-head">
-    <div class="testnet"><span class="testnet-dot"></span><span>Sepolia test run</span><a class="test-notice" href="/notice">Test run notice</a></div>
-    <div class="topbar">
-      <a class="brand" href="/" aria-label="Verxl home">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>
-        <span>Verxl</span>
-      </a>
-      <nav class="desktop-nav" aria-label="Site">
-        <a href="/">Overview</a>
-        <a href="/products">Products</a>
-        <a href="/playground">Playground</a>
-        <a href="/chat">Chat</a>
-        <a href="/api">API</a>
-        <a href="/governance">Governance</a>
-        <a href="/about">About</a>
-        <div class="protocol">
-          <button id="protocolBtn" type="button" aria-expanded="false">Protocol
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6"/></svg>
-          </button>
-          <div class="protocol-menu" id="protocolMenu">
-            <a href="/registry">Registry</a>
-            <a href="/oracle">Oracle</a>
-            <a href="/whitepaper">Whitepaper</a>
-          </div>
-        </div>
-      </nav>
-      <div class="actions">
-        <a class="balance hidden" id="balance" href="/api" title="Balance"><span class="dot"></span><b id="balanceValue">$0.00</b><span>USD</span></a>
-        <button class="connect" id="connectBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 016.5 5H18a2 2 0 012 2v10a2 2 0 01-2 2H6.5A2.5 2.5 0 014 16.5v-9z" stroke="currentColor" stroke-width="1.5"/><path d="M16 12h4v3h-4a1.5 1.5 0 010-3z" stroke="currentColor" stroke-width="1.5"/></svg>
-          <span>Connect</span>
-        </button>
-        <div class="wallet hidden" id="wallet"><span class="dot"></span><span id="walletValue">Connected</span></div>
-        <a class="aragon" href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a" target="_blank" rel="noopener noreferrer" title="Aragon DAO">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9" stroke="currentColor" stroke-width="1.5"/><path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.5"/></svg>
-        </a>
-      </div>
-    </div>
-    <nav class="mobile-nav" aria-label="Site mobile">
-      <a href="/">Overview</a>
-      <a href="/products">Products</a>
-      <a href="/playground">Playground</a>
-      <a href="/chat">Chat</a>
-      <a href="/api">API</a>
-      <a href="/governance">Governance</a>
-      <a href="/about">About</a>
-      <a href="/registry">Registry</a>
-      <a href="/oracle">Oracle</a>
-      <a href="/whitepaper">Whitepaper</a>
-    </nav>
-  </header>
+  <div id="site-header"></div>
 
   <main class="shell">
     <section class="hero">
@@ -641,5 +591,6 @@
     spot.style.transform='translate3d('+x+'px,'+y+'px,0) translate(-50%,-50%)';
   })();
   </script>
+  <script type="module" src="/src/products-header.tsx"></script>
 </body>
 </html>
