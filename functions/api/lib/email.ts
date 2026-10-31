@@ -132,8 +132,9 @@ export function renderVerxlEmail({ preheader, eyebrow, title1, title2, intro, co
             <td style="padding:22px 24px 20px 24px;">
               <div style="border-top:1px solid ${HAIRLINE};padding-top:12px;font-family:${MONO};font-size:9px;line-height:1.7;color:${MUTED};">
                 Verxl Protocol · Prague · Sepolia test run<br>
-                This is a demonstration; not mainnet.<br>
-                <span style="color:${STEEL};">me@simonhavlik.com</span> · <span style="color:${STEEL};">verxl.com</span>
+                This is a transactional security message; not marketing.<br>
+                <span style="color:${STEEL};">me@simonhavlik.com</span> · <span style="color:${STEEL};">verxl.com</span><br>
+                <a href="https://verxl.com/unsubscribe" style="color:${MINT};text-decoration:underline;">Unsubscribe / email preferences</a>
               </div>
             </td>
           </tr>

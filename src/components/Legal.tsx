@@ -36,7 +36,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
         {/* Quick Nav Badges */}
         <div className="flex items-center gap-2 text-[10px]">
           <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            GDPR Art. 12–22 Compliant
+            GDPR data-subject rights
           </span>
           <span className="px-2 py-0.5 rounded-[2px] bg-blue-500/10 text-blue-400 border border-blue-500/30">
             MiCA Non-Custodial
@@ -101,7 +101,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 Verxl Protocol Privacy Policy
               </h1>
               <div className="text-[11px] text-slate-400 font-mono">
-                Effective Date: October 27, 2026 · Compliant with Regulation (EU) 2016/679 (GDPR)
+                Effective Date: October 31, 2026 · Designed for Regulation (EU) 2016/679 (GDPR)
               </div>
             </div>
             <span className="text-[10px] text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] font-mono">
@@ -117,7 +117,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Data Controller & Contact Information</span>
               </h2>
               <p>
-                The Data Controller for processing under the EU General Data Protection Regulation (GDPR) is the Verxl Protocol software architecture team, represented by lead project architect Simon Havlík, operating in Prague, Czech Republic.
+                The Data Controller for processing under the EU General Data Protection Regulation (GDPR) is the Verxl Protocol project, operated by Simon Havlík in Prague, Czech Republic. Verxl is established in the European Union; no separate EU representative is therefore appointed. Data-protection contact: me@simonhavlik.com.
               </p>
               <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 font-mono text-[11px] text-slate-300 space-y-0.5">
                 <div><strong>Entity / Representation:</strong> Verxl Protocol Research & Development</div>
@@ -194,12 +194,23 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                   </p>
                 </div>
                 <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 space-y-1">
-                  <div className="font-bold text-white text-[11px] font-mono">Ephemeral Edge Telemetry</div>
+                  <div className="font-bold text-white text-[11px] font-mono">Edge & Security Metadata</div>
                   <p className="text-[10.5px] text-slate-400">
-                    IP addresses processed strictly in volatile memory by Cloudflare edge workers for rate limiting and DDoS mitigation; automatically discarded.
+                    IP address, user agent, request path and timestamps processed by Cloudflare and our hosting providers for delivery, rate limiting, fraud prevention and security. Retained for a limited operational period.
                   </p>
                 </div>
               </div>
+              <p>
+                <strong>Workspace preferences:</strong> think level, search provider, search base URL, search-tool
+                preference and MCP server URLs. If you save a search-provider API key, it is stored encrypted at rest
+                with a key held by the service so it can be returned to your account on another device and used by the
+                search proxy; it is not used for any other purpose. Chat message content is different: it is encrypted
+                in your browser and cannot be decrypted by the service.
+              </p>
+              <p>
+                <strong>Legal acceptance records:</strong> your confirmation that you are 18+, the Terms/Privacy
+                version you accepted, and the acceptance timestamp. These are kept as evidence of consent.
+              </p>
             </div>
 
             {/* Section 4 */}
@@ -249,7 +260,138 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Cookies & Local Storage Policy</span>
               </h2>
               <p>
-                Verxl Protocol does <strong>not</strong> use third-party marketing, advertising, profiling, or tracking cookies. We utilize strictly necessary browser LocalStorage solely to maintain your authenticated session token (<code className="text-cyan-300">vrxl_auth_token</code>). Clearing your browser cache terminates the session immediately.
+                Verxl Protocol does <strong>not</strong> use third-party marketing, advertising, profiling or tracking cookies. We do not run analytics, heatmaps or advertising pixels.
+              </p>
+              <p>
+                We use strictly necessary browser storage to operate the service:
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                <li><strong>LocalStorage:</strong> <code className="text-cyan-300">vrxl_auth_token</code> keeps you signed in; <code className="text-cyan-300">vrxl_think_level</code>, <code className="text-cyan-300">vrxl_search_provider</code>, <code className="text-cyan-300">vrxl_search_key</code>, <code className="text-cyan-300">vrxl_search_base</code>, <code className="text-cyan-300">vrxl_search_tool</code> and the MCP connection list remember your workspace preferences.</li>
+                <li><strong>IndexedDB:</strong> a non-extractable AES-256-GCM chat key and a local ciphertext cache are stored on this device so reopening Chat does not require a new wallet signature. The key cannot be exported by JavaScript.</li>
+                <li><strong>SessionStorage:</strong> app-mode state for installed shell navigation.</li>
+              </ul>
+              <p>
+                This storage is essential for authentication, security and the requested workspace functionality; it is not used to track you across sites. It is not shared with advertisers. Our edge provider may also set strictly necessary security cookies (for example bot-management or challenge cookies); those are used only to protect the service. Clearing site data signs you out, removes the remembered chat key and deletes the local cache; the server retains your encrypted conversation envelopes until you delete them. Because we do not use non-essential cookies or trackers, we do not show a cookie-consent banner. If that changes, we will request consent first.
+              </p>
+            </div>
+
+            {/* Section 7 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">7.</span>
+                <span>Web Resources, IP Addresses & External Services</span>
+              </h2>
+              <p>
+                The site does <strong>not</strong> load Google Fonts or third-party font/CDN libraries. The typography
+                names in our stylesheet are local/system font preferences; KaTeX math fonts, JavaScript and CSS are
+                served from <code className="text-cyan-300">verxl.com</code>. We do not embed advertising networks,
+                analytics scripts, tracking pixels or third-party social widgets.
+              </p>
+              <p>
+                Like any website, loading a page necessarily discloses your IP address and basic request metadata
+                (user agent, requested URL, time) to the infrastructure that serves it. Our edge and hosting providers,
+                including Cloudflare and our PostgreSQL/email infrastructure, process this information for delivery,
+                TLS termination, rate limiting, fraud prevention, security and diagnostic logging. It is not used to
+                build advertising profiles. Retention follows our provider configuration and is limited to what is
+                needed for security and operations.
+              </p>
+              <p>
+                When you choose to connect a wallet, the MetaMask SDK communicates with MetaMask infrastructure, which
+                may receive your IP address and wallet address under MetaMask's own privacy policy. When you follow an
+                external link — for example Etherscan, Aragon, GitHub, a model provider or a search provider — that
+                third party receives your request and IP address. Search queries and inference prompts are sent to the
+                provider you select; see Section 2.1 for upstream model retention.
+              </p>
+            </div>
+
+            {/* Section 8 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">8.</span>
+                <span>Recipients, Subprocessors & International Transfers</span>
+              </h2>
+              <p>
+                We disclose personal data only to service providers that help operate Verxl, and only as necessary:
+                Cloudflare (edge delivery, security, rate limiting), our PostgreSQL database host, our transactional
+                email/SMTP provider, MetaMask (wallet connection), selected inference and search providers, and GitHub
+                (release downloads). Aragon and Etherscan receive data only if you open those links. We do not sell
+                personal data or share it for cross-context behavioural advertising.
+              </p>
+              <p>
+                Some providers process data outside the European Economic Area. Where required, transfers rely on
+                appropriate safeguards such as the European Commission's Standard Contractual Clauses and the
+                providers' data-processing terms. You can request more information about the safeguards at
+                <code className="text-cyan-300"> me@simonhavlik.com</code>.
+              </p>
+            </div>
+
+            {/* Section 9 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">9.</span>
+                <span>Retention & Security</span>
+              </h2>
+              <p>
+                Account identifiers, wallet address, email address, balance and API-key metadata are kept while your
+                account is active and for the period necessary to comply with tax, accounting, fraud-prevention and
+                limitation-period obligations. Encrypted chat envelopes are kept until you delete the conversation or
+                your account. Search preferences and the encrypted search key are kept until changed or your account is
+                deleted. Legal acceptance records (age confirmation, terms version, timestamp) are retained as evidence
+                of consent. Infrastructure logs are retained for a limited security/operations period.
+              </p>
+              <p>
+                We use TLS in transit, access controls, hashed API keys, salted password hashing, TOTP 2FA where
+                enabled, client-side AES-256-GCM chat encryption and a non-extractable device key. No system is
+                perfectly secure; report a suspected incident to <code className="text-cyan-300">me@simonhavlik.com</code>.
+              </p>
+            </div>
+
+            {/* Section 10 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">10.</span>
+                <span>Age Requirement & Children</span>
+              </h2>
+              <p>
+                Verxl is an adult-only service. You must be at least <strong>18 years old</strong> and have full legal
+                capacity to use it. We do not knowingly collect data from children. If we learn that an account belongs
+                to a person under 18, we will suspend it and delete the associated personal data, subject to legal
+                retention obligations. If you believe a minor has created an account, contact us immediately.
+              </p>
+            </div>
+
+            {/* Section 11 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">11.</span>
+                <span>Email Communications & Unsubscribe</span>
+              </h2>
+              <p>
+                We send only transactional security email: sign-in codes, account recovery and material service
+                notices. We do not send newsletters or promotional marketing. Every email includes an
+                <strong> unsubscribe / email preferences</strong> link. Using it records an opt-out from any future
+                non-transactional email. Login and security messages remain necessary while an account is active and
+                cannot be suppressed without disabling sign-in; deleting your account stops them. See
+                <a className="text-cyan-300 underline" href="/unsubscribe"> /unsubscribe</a>.
+              </p>
+            </div>
+
+            {/* Section 12 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">12.</span>
+                <span>Legal Acceptance, Changes & Complaints</span>
+              </h2>
+              <p>
+                After creating an account, we ask you to confirm that you are 18+ and to accept the current Terms and
+                this Privacy Policy. The confirmation is recorded server-side with the document version and timestamp.
+                Material changes to either document require a new acceptance. If you do not agree, stop using the
+                service and contact us to delete your account.
+              </p>
+              <p>
+                You may lodge a complaint with the Czech Office for Personal Data Protection (ÚOOÚ), Pplk. Sochora 27,
+                170 00 Prague 7, or with the supervisory authority in your EU member state. You can also contact us
+                first at <code className="text-cyan-300">me@simonhavlik.com</code>; we aim to respond within 30 days.
               </p>
             </div>
           </div>
@@ -265,7 +407,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 Terms of Service & Disclaimer of Liability
               </h1>
               <div className="text-[11px] text-slate-400 font-mono">
-                Last Updated: October 27, 2026 · Governing Law: Czech Republic (EU)
+                Last Updated: October 31, 2026 · Governing Law: Czech Republic (EU)
               </div>
             </div>
             <span className="text-[10px] text-amber-400 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-[2px] font-mono">
@@ -281,7 +423,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Critical Notice: Software Protocol Only — No Fiduciary or Custodial Relationship</span>
               </div>
               <p className="text-[11px] leading-relaxed">
-                Verxl Protocol is an open-source decentralized clearing software router. By interacting with the smart contracts, APIs, or website, you acknowledge that compute clearing is non-custodial and software-driven. You assume all operational, financial, and technological risks.
+                Verxl Protocol is an open-source decentralized clearing software router. By interacting with the smart contracts, APIs or website, you acknowledge that compute clearing is non-custodial and software-driven and that you are at least 18 years old. You assume all operational, financial and technological risks.
               </p>
             </div>
 
@@ -369,6 +511,135 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </h2>
               <p>
                 These Terms of Service and any non-contractual obligations arising out of them shall be governed by, and construed in accordance with, the laws of the Czech Republic and applicable European Union law. Any dispute, controversy, or claim arising out of or relating to these Terms shall be submitted to the exclusive jurisdiction of the competent courts of Prague, Czech Republic.
+              </p>
+            </div>
+
+            {/* Section 7 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">7.</span>
+                <span>Eligibility, Age & Account Security</span>
+              </h2>
+              <p>
+                You must be at least <strong>18 years old</strong> and legally capable of entering into a binding
+                contract. You may not use Verxl on behalf of a person under 18. You are responsible for the accuracy of
+                your account information, for keeping your wallet, email account, password, 2FA device and recovery
+                codes secure, and for all activity under your account or API keys. Notify us immediately at
+                <code className="text-cyan-300"> me@simonhavlik.com</code> if you suspect unauthorised access. We may
+                suspend accounts that are compromised, fraudulent, sanctionable or used to harm the service or third
+                parties.
+              </p>
+            </div>
+
+            {/* Section 8 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">8.</span>
+                <span>Acceptance, Electronic Contract & Changes</span>
+              </h2>
+              <p>
+                Creating an account is not complete until you confirm that you are 18+ and accept these Terms and the
+                Privacy Policy. The acceptance is recorded with the document version and timestamp and is a condition of
+                using Chat, Playground, Registry and the API console. This is an electronic contract; no handwritten
+                signature is required. We may update these Terms for legal, security or product reasons. Material
+                changes will be presented for a new acceptance before continued use. The current version is dated
+                October 31, 2026.
+              </p>
+            </div>
+
+            {/* Section 9 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">9.</span>
+                <span>Consumer Rights & Digital Content</span>
+              </h2>
+              <p>
+                If you are a consumer in the EU, mandatory consumer law applies and nothing in these Terms excludes
+                rights that cannot be waived. Digital services are supplied immediately upon your request. By starting
+                a paid inference request, you request immediate performance and acknowledge that, to the extent permitted
+                by law, the statutory 14-day withdrawal right for distance contracts does not apply once the digital
+                service has been fully performed. This does not affect your rights in respect of defective digital
+                content or services. Complaints can be sent to <code className="text-cyan-300">me@simonhavlik.com</code>;
+                we will respond within 30 days.
+              </p>
+            </div>
+
+            {/* Section 10 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">10.</span>
+                <span>AI Outputs, User Content & No Professional Advice</span>
+              </h2>
+              <p>
+                AI outputs are probabilistic and may be inaccurate, incomplete, biased or unsuitable for your purpose.
+                They are not legal, medical, financial, tax or other professional advice. You are responsible for
+                reviewing outputs before relying on them and for complying with the terms of the model or search
+                provider you select. You retain ownership of content you submit; you grant us a limited licence to
+                process, transmit and store it solely to provide the service. Do not submit confidential information,
+                personal data of third parties without a lawful basis, or content you are not allowed to process.
+              </p>
+            </div>
+
+            {/* Section 11 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">11.</span>
+                <span>Fees, Payments, Taxes & No Custody</span>
+              </h2>
+              <p>
+                The protocol clearing fee is 50 basis points (0.5%) of the applicable compute charge, unless a model
+                page states otherwise. Payments are made in USDC on Arbitrum to the published treasury address; we do
+                not take custody of your wallet, private keys or crypto-assets. Blockchain transactions are irreversible;
+                network fees are separate. You are responsible for any taxes applicable to you. Except where mandatory
+                law requires otherwise, consumed compute and clearing fees are non-refundable. You are responsible for
+                complying with sanctions, export-control and local law in your jurisdiction.
+              </p>
+            </div>
+
+            {/* Section 12 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">12.</span>
+                <span>Suspension, Termination & Deletion</span>
+              </h2>
+              <p>
+                You may stop using Verxl at any time and request account deletion at
+                <code className="text-cyan-300"> me@simonhavlik.com</code>. We may suspend or terminate access for
+                material breach, illegal use, fraud, sanctions exposure, security risk, non-payment or abuse of
+                providers. Where reasonable, we will give notice and an opportunity to cure. On termination we delete
+                or anonymise personal data subject to legal retention, fraud-prevention and accounting obligations;
+                encrypted chat envelopes you have not deleted may remain until the retention period or deletion request
+                is processed.
+              </p>
+            </div>
+
+            {/* Section 13 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">13.</span>
+                <span>Indemnity & Severability</span>
+              </h2>
+              <p>
+                To the extent permitted by law, you indemnify Verxl and its contributors against third-party claims,
+                losses and reasonable costs arising from your unlawful use, your content, your breach of these Terms or
+                your violation of a provider's terms. If any provision is held invalid, the remainder stays in effect
+                and the invalid provision is replaced by the closest lawful equivalent. A failure to enforce a provision
+                is not a waiver.
+              </p>
+            </div>
+
+            {/* Section 14 */}
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                <span className="text-blue-400">14.</span>
+                <span>Contact, Complaints & Alternative Dispute Resolution</span>
+              </h2>
+              <p>
+                Questions about these Terms: <code className="text-cyan-300">me@simonhavlik.com</code>. Consumers may
+                also use the European Commission's Online Dispute Resolution platform at
+                <a className="text-cyan-300 underline" href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer"> ec.europa.eu/consumers/odr</a>.
+                We are not obliged to participate in ADR but will consider a good-faith resolution first. The Czech
+                courts have jurisdiction subject to mandatory consumer protections.
               </p>
             </div>
           </div>

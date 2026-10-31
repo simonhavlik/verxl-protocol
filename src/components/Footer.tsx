@@ -87,10 +87,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
         <div className="mt-10 flex flex-col justify-between gap-3 border-t border-white/10 pt-5 lg:flex-row lg:items-center">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px]">
-            <a href="/privacy" onClick={go("privacy")} className="text-[#87959b] hover:text-white">Privacy (GDPR)</a>
+            <a href="/privacy" onClick={go("privacy")} className="text-[#87959b] hover:text-white">Privacy & cookies</a>
             <a href="/terms" onClick={go("terms")} className="text-[#87959b] hover:text-white">Terms</a>
             <a href="/legal" onClick={go("mica")} className="text-[#87959b] hover:text-white">EU MiCA statement</a>
             <a href="/legal" onClick={go("charter")} className="text-[#87959b] hover:text-white">Founders charter</a>
+            <a href="/unsubscribe" onClick={go("unsubscribe")} className="text-[#87959b] hover:text-white">Email preferences</a>
           </div>
           <div className="text-[10px] text-[#65737b]">
             VŠE Praha applied blockchain project · © 2026 Verxl Protocol

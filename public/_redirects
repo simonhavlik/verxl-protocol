@@ -27,6 +27,8 @@
 /legal/ /legal/index.html 200
 /privacy /privacy/index.html 200
 /privacy/ /privacy/index.html 200
+/unsubscribe /index.html 200
+/unsubscribe/ /index.html 200
 /terms /terms/index.html 200
 /terms/ /terms/index.html 200
 /charter /legal/index.html 200

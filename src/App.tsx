@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense, Component, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { AuthProvider } from "./context/AuthContext";
+import { LegalGate } from "./components/LegalGate";
 import { Header } from "./components/Header";
 const Hero = lazy(() => import("./components/Hero").then((m) => ({ default: m.Hero })));
 import { Footer } from "./components/Footer";
@@ -20,6 +21,7 @@ const Whitepaper = lazy(() => import("./components/Whitepaper").then((m) => ({ d
 const About = lazy(() => import("./components/Vision").then((m) => ({ default: m.Vision })));
 const Console = lazy(() => import("./components/Console").then((m) => ({ default: m.Console })));
 const Legal = lazy(() => import("./components/Legal").then((m) => ({ default: m.Legal })));
+const Unsubscribe = lazy(() => import("./components/Unsubscribe").then((m) => ({ default: m.Unsubscribe })));
 
 const TabLoadingFallback = () => (
   <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3 font-mono select-none">
@@ -187,6 +189,7 @@ function getTabFromPath(): string {
   if (path.includes("registry") || path.includes("fleet")) return "registry";
   if (path.includes("oracle")) return "oracle";
   if (path.includes("governance") || path.includes("dao")) return "governance";
+  if (path.includes("unsubscribe")) return "unsubscribe";
   if (path.includes("privacy") || path.includes("terms") || path.includes("legal") || path.includes("mica") || path.includes("charter") || path.includes("ip")) return "legal";
   return "overview";
 }
@@ -280,6 +283,7 @@ export default function App() {
   return (
     <GlobalErrorBoundary>
       <AuthProvider>
+        <LegalGate />
         <div className={`${appMode ? "h-[100dvh] overflow-hidden" : "min-h-screen"} bg-[#05070b] text-slate-100 flex flex-col font-sans selection:bg-[#b8f6dd] selection:text-[#07110d] relative ${isProductRoute && !appMode ? "lg:h-[100dvh] lg:overflow-hidden" : ""}`}>
           {/* Shmack OS Shifting Dynamic Background for all marketing tabs */}
           {activeTab !== "overview" && !isProductRoute && <ShmackBackground activeTab={activeTab} />}
@@ -345,6 +349,7 @@ export default function App() {
                   {activeTab === "whitepaper" && <Whitepaper />}
                   {activeTab === "governance" && <Governance />}
                   {activeTab === "about" && <About onNavigate={handleTabChange} />}
+                  {activeTab === "unsubscribe" && <Unsubscribe />}
                   {activeTab === "console" && <Console />}
                   {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
                     <Legal
