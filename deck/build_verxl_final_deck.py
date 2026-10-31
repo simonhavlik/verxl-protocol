@@ -162,10 +162,10 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
-    data.categories = ("20", "40", "60", "80", "100", "120")
-    data.add_series("GP @ $5k/mo", (400, 800, 1200, 1600, 2000, 2400))
-    data.add_series("GP @ $15k/mo", (1200, 2400, 3600, 4800, 6000, 7200))
-    data.add_series("Czech fixed cost", (2163, 2163, 2163, 2163, 2163, 2163))
+    data.categories = ("2", "5", "10", "20", "40", "80", "120")
+    data.add_series("GP @ $5k/mo", (40, 100, 200, 400, 800, 1600, 2400))
+    data.add_series("GP @ $15k/mo", (120, 300, 600, 1200, 2400, 4800, 7200))
+    data.add_series("Czech fixed cost", (2163, 2163, 2163, 2163, 2163, 2163, 2163))
     gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
@@ -434,30 +434,26 @@ s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
 tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: first ad test. Long term: scale only if the unit economics work. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
 goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
-goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 customers", "$4.12 CPC → 2,427 clicks. 3.64% CVR → 88 leads. 25% close → 22 customers; year-1 GP $5.3k–$15.8k.")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "36–109 customers to cover costs", "Czech fixed cost CZK 45k/mo. At $5k–$15k GMV/customer, break-even is 109–36 customers. Scale only if payback <12 months.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  CZECH COST BASE  /  MONTHLY GROSS PROFIT", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, 0.65, 3.18, 7.4, 0.18, "Monthly gross profit vs. Czech fixed cost (CZK 45k/mo ≈ $2,163)", 7.2, SAGE, FONT, spacing=1.1)
+goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 signups", "2,427 clicks · 88 leads · 22 signups. 15 test with $1; 2–4 fund $1k. Paid CAC $2.5k–$5k; year-1 GP $0.5k–$2.9k (0.05–0.29×).")
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "36–109 funded to cover costs", "Czech fixed cost CZK 45k/mo. At $5k–$15k GMV/customer, break-even is 109–36 funded. Paid ads do not scale; build organic/community.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL TEST  /  CZECH COST BASE  /  FUNDED CUSTOMERS", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 3.18, 7.4, 0.18, "Monthly gross profit by funded customers vs. Czech fixed cost (CZK 45k/mo ≈ $2,163)", 7.2, SAGE, FONT, spacing=1.1)
 financial_chart(s, 0.65, 3.40, 7.35, 2.70)
 kpis = [
-    ("FIRST ADS", "22 customers", "2,427 clicks · 88 leads"),
-    ("PAID CAC", "$455", "paid-only; blended later $240"),
-    ("BREAK-EVEN CUSTOMERS", "36–109", "at $15k–$5k GMV/mo"),
-    ("YEAR-1 GP / $10k ADS", "$5.3k–$15.8k", "0.5–1.6× return"),
+    ("FIRST ADS", "2–4 funded", "22 signups · 15 at $1"),
+    ("PAID CAC", "$2.5k–$5k", "$10k / funded customer"),
+    ("YEAR-1 GP / ADS", "$0.5k–$2.9k", "0.05–0.29× return"),
+    ("BREAK-EVEN", "36–109 funded", "at $15k–$5k GMV/mo"),
     ("CZECH FIXED COST", "CZK 45k/mo", "≈$2,163 at 20.8 CZK/USD"),
-    ("PREPAID FLOAT", "$110k–$330k", "1 mo · 1% breakage"),
+    ("PREPAID FLOAT", "$2k–$4k", "2–4 × $1k deposit"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
 tb(s, 0.65, 6.18, 7.4, 0.22, "Czech cost base: part-time contractor CZK 25k + legal/accounting 8k + software/domains 5k + office/other 7k. Founder unpaid.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Year-1 GP = 22 customers × 12 × GMV/customer × 0.5% fee × 80% margin. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Ads: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; 25% close assumption. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. Ranges, not a forecast.", 6.42)
+source(s, "Funded conversion: 22 signups × 10% = 2–4 funded; year-1 GP = funded × 12 × GMV/customer × 0.5% × 80%. 15 signups test with $1. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Ads: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; 25% signup assumption. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. Ranges, not a forecast.", 6.42)
 footer(s, 6, "EVALUATION")
-notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product before ads. Mid term: first $10k ads -> 2,427 clicks at $4.12 CPC; 3.64% CVR -> 88 leads; 25% close -> 22 customers; paid CAC $455. Year-1 gross profit range: 22 customers x $5k-$15k monthly GMV x 12 months x 0.5% fee x 80% margin = $5.3k-$15.8k; 0.53x-1.58x on the $10k ad spend. Czech fixed cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k = CZK 45k/mo; at CZK 20.8/USD = $2,163/mo. A full-time Czech developer would be materially more; SalaryExpert puts average developer gross salary at CZK 439k/year (~CZK 36.6k/month), plus 33.8% employer contributions; a full-time hire is a later milestone, not the lean base. Monthly GP per customer at $5k GMV = $20; at $15k = $60. Break-even customers = 2,163/20 = 109 at $5k, 2,163/60 = 36 at $15k. First 22 customers do not cover the Czech cost base; the ad test is a CAC test, not a full P&L. Long term: reach 36-109 customers, then scale only if payback <12 months; otherwise organic. Prepaid float 22 customers x one month = $110k-$330k; 1% breakage $1.1k-$3.3k, upside only. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
-footer(s, 6, "EVALUATION")
-notes(s, "Timeline: short term is legal and product. Resolve the MiCA/legal position first; finish and test the product. Do not run ads before both. Mid term is the first $10k ad test: $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads; 25% close = 22 customers; paid CAC $455. Return range: 22 customers x $5k-$15k average monthly inference x 12 months = $1.32M-$3.96M annual GMV. At 0.5% take: $6.6k-$19.8k revenue. At 80% gross margin: $5.3k-$15.8k gross profit. Return on $10k ads: 0.53x-$1.58x. Break-even per customer: gross profit $10k -> revenue $12.5k -> GMV $2.5M -> $9.47k/month per customer. Prepaid float: 22 customers x one month of GMV = $110k-$330k; 1% breakage = $1.1k-$3.3k, treated as upside, not in gross profit. Long term: repeat ads only if payback <12 months; otherwise organic/community. No external round; only the $10k ad test. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
-footer(s, 6, "EVALUATION")
-notes(s, "Five-minute cut. Short term: resolve the MiCA/legal position and finish/test the product before any ads. Mid term: first $10k ad test. $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads; 25% close = 22 customers; paid CAC $455. Return range: 22 customers x $5k-$15k average monthly inference x 12 months = $1.32M-$3.96M annual GMV. At 0.5% take: $6.6k-$19.8k revenue. At 80% gross margin: $5.3k-$15.8k gross profit. Return on $10k ads: 0.53x-$1.58x. Break-even per customer: gross profit $10k -> revenue $12.5k -> GMV $2.5M -> $9.47k/month per customer. Prepaid float: 22 customers x one month of GMV = $110k-$330k; 1% breakage = $1.1k-$3.3k, treated as upside, not in gross profit. Long term: repeat ads only if payback <12 months; otherwise organic/community. No external round; only the $10k ad test. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
+notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product before any ads. Mid term: the first $10k ad test. At $4.12 CPC: 2,427 clicks; 3.64% CVR: 88 leads; 25% signup: 22 signups. But most are testers: 15 deposit $1; 2-4 become funded accounts at up to $1,000. Paid CAC per funded account is $2,500-$5,000. Year-1 GP from 2-4 funded accounts at $5k-$15k monthly usage: 2-4 x 12 x $5k-$15k x 0.5% fee x 80% margin = $480-$2,880; return 0.05-0.29x on $10k ads. Paid ads do not pay back at 0.5%; they are a measurable test, not a growth channel. Do not scale ads. Long term: organic/community/build-in-public; need 36-109 funded customers at $5k-$15k/month to cover Czech fixed costs. Czech cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k = CZK 45k/mo = $2,163 at 20.8 CZK/USD. Full-time Czech developer average gross CZK 439k/year (~36.6k/month) plus 33.8% employer contributions; a full-time hire is later. Prepaid float from ad cohort: 2-4 funded x $1k = $2k-$4k; 1% breakage $20-$40; testers at $1. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
 
 # 7. DEADLINE
 # =====================================================================
