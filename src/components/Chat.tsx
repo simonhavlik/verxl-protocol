@@ -379,6 +379,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       : "medium";
   });
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const settingsUserIdRef = useRef<string | null>(null);
   const activeSessionIdRef = useRef("");
 
   const runSearch = async (query: string): Promise<SearchSource[]> => {
@@ -507,8 +508,29 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
   useEffect(() => {
     if (!authToken) {
       setSettingsLoaded(false);
+      settingsUserIdRef.current = null;
       return;
     }
+    if (!user?.id) return;
+
+    // Never carry one account's local search key into another account's row.
+    if (settingsUserIdRef.current && settingsUserIdRef.current !== user.id) {
+      setGlobalThink("medium");
+      setSearchProvider("firecrawl");
+      setSearchKey("");
+      setSearchBaseUrl("");
+      setSearchToolEnabled(true);
+      try {
+        localStorage.removeItem("vrxl_think_level");
+        localStorage.removeItem("vrxl_search_provider");
+        localStorage.removeItem("vrxl_search_key");
+        localStorage.removeItem("vrxl_search_base");
+        localStorage.removeItem("vrxl_search_tool");
+      } catch {}
+    }
+    settingsUserIdRef.current = user.id;
+    setSettingsLoaded(false);
+
     let cancelled = false;
     (async () => {
       try {
@@ -559,7 +581,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
     return () => {
       cancelled = true;
     };
-  }, [authToken]);
+  }, [authToken, user?.id]);
 
   useEffect(() => {
     if (!authToken || !settingsLoaded) return;
