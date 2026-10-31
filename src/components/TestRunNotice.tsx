@@ -40,8 +40,10 @@ export const TestRunNotice: React.FC = () => (
 
     <div className="mt-6 space-y-3 text-[11.5px] leading-relaxed text-[#8b989e]">
       <p>
-        The site uses a Sepolia test deployment and an experimental clearing path. Model outputs are probabilistic and
-        may be wrong. Do not rely on this deployment for regulated, safety-critical, financial, medical or legal
+        The $VRXL token and the governance DAO are deployed on Ethereum Sepolia. Compute fees are settled in
+        USDC on Arbitrum One mainnet, through a protocol settlement account whose balance is credited to your
+        internal account balance; that balance is a claim against the operator, not an on-chain asset. Model
+        outputs are probabilistic and may be wrong. Do not rely on this deployment for regulated, safety-critical, financial, medical or legal
         decisions.
       </p>
       <p>

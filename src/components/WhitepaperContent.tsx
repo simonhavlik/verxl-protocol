@@ -94,7 +94,7 @@ export const WhitepaperContent: React.FC = () => {
             Verxl Protocol
           </h1>
           <h2 className="text-sm sm:text-lg font-medium text-slate-300">
-            Decentralized, Non-Custodial AI Inference Routing & Compute Clearinghouse
+            Decentralized AI Inference Routing & Compute Clearinghouse
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs font-mono text-slate-400 pt-2 border-t border-slate-800/60">
@@ -127,7 +127,7 @@ export const WhitepaperContent: React.FC = () => {
             Artificial Intelligence (AI) inference workloads represent the fastest-growing computational demand in modern computing. However, developers and enterprise builders face severe economic friction imposed by centralized API aggregators. Incumbent platforms charge a 5.5% platform take-rate, compounded by credit card processing fees (2.9% + $0.30) and foreign exchange markups, imposing an effective 8% to 10% fee drag on developers while demanding unsegregated custodial fiat pre-funding and offering zero recourse against arbitrary account termination. Concurrently, regional GPU data centers and transitioning cryptocurrency mining facilities across Europe possess significant idle compute capacity but lack a permissionless liquidity rail due to developer distrust and the pervasive risk of Model Spoofing (advertising premium unquantized weights while serving quantized, degraded models).
           </p>
           <p className="text-xs sm:text-[13.5px] text-slate-300 leading-relaxed font-serif italic">
-            Verxl Protocol (<code className="text-blue-300 not-italic font-mono">verxl.com</code>) is a decentralized, non-custodial AI inference router and compute marketplace governed by the Verxl Aragon DAO on Ethereum Sepolia. Verxl replaces rent-seeking fiat intermediaries with a fixed 0.5% protocol routing fee (50 bps)—compressing intermediary fee drag by over 94%. By pairing a globally distributed Cloudflare Edge Worker with an Autonomous AI Quality Oracle executing seed-locked deterministic probe queries, Verxl continuously benchmarks Time to First Token (TTFT), tokens-per-second (TPS), and output perplexity. Dishonest providers forfeit their staked $VRXL collateral through automated smart contract slashing, while routing fees accrue non-custodially to the Aragon DAO Vault.
+            Verxl Protocol (<code className="text-blue-300 not-italic font-mono">verxl.com</code>) is a decentralized AI inference router and compute marketplace governed by the Verxl Aragon DAO on Ethereum Sepolia. Verxl replaces rent-seeking fiat intermediaries with a fixed 0.5% protocol routing fee (50 bps)—compressing intermediary fee drag by over 94%. By pairing a globally distributed Cloudflare Edge Worker with an Autonomous AI Quality Oracle executing seed-locked deterministic probe queries, Verxl continuously benchmarks Time to First Token (TTFT), tokens-per-second (TPS), and output perplexity. Dishonest providers forfeit their staked $VRXL collateral through automated smart contract slashing, while routing fees are received into the protocol settlement account.
           </p>
         </div>
 
@@ -567,7 +567,7 @@ OCTOBER             NOVEMBER            DECEMBER           JANUARY
             10. Conclusion
           </h3>
           <p className="text-[13.5px] text-slate-300 leading-relaxed">
-            Verxl Protocol dismantles the rent-seeking monopoly of centralized AI model aggregators. By combining a fixed 0.5% protocol fee with non-custodial smart contracts, seed-locked deterministic quality auditing, and Aragon OSx decentralized governance, Verxl provides developers with a 94% cheaper inference rail while enabling GPU data centers to monetize idle capacity trustlessly.
+            Verxl Protocol dismantles the rent-seeking monopoly of centralized AI model aggregators. By combining a fixed 0.5% protocol fee with smart-contract-governed provider staking, seed-locked deterministic quality auditing, and Aragon OSx decentralized governance, Verxl provides developers with a 94% cheaper inference rail while enabling GPU data centers to monetize idle capacity.
           </p>
         </section>
 
