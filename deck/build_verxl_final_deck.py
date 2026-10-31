@@ -132,7 +132,7 @@ def source(s, text, y=6.52):
 def footer(s, page, section="TERM PROJECT PROPOSAL", show_logo=True):
     if show_logo: logo(s)
     tb(s, 2.22, 7.03, 7.2, 0.18, f"VERXL PROTOCOL  ·  {section}", 6.8, SOFT, MONO, caps=True, spacing=1)
-    tb(s, 10.9, 7.03, 1.78, 0.18, f"{page:02d} / 09", 6.8, SOFT, MONO, align=PP_ALIGN.RIGHT, spacing=1)
+    tb(s, 10.9, 7.03, 1.78, 0.18, f"{page:02d} / 08", 6.8, SOFT, MONO, align=PP_ALIGN.RIGHT, spacing=1)
 
 def question(s, q, size=28):
     tb(s, 0.65, 0.55, 12.15, 0.9, q, size, INK, FONT, bold=True, spacing=0.98)
@@ -163,9 +163,9 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
     data.categories = ("2027", "2028", "2029", "2030", "2031")
-    data.add_series("Revenue", (0.015, 0.090, 0.360, 1.200, 4.800))
-    data.add_series("Gross profit", (0.012, 0.072, 0.288, 0.960, 3.840))
-    data.add_series("Free cash flow", (-0.198, -0.275, -0.301, -0.004, 2.166))
+    data.add_series("Low", (-12, -9, -3, 10, 30))
+    data.add_series("Base", (-10, -1, 6, 30, 100))
+    data.add_series("High", (-8, 2, 18, 70, 180))
     gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
@@ -179,13 +179,13 @@ def financial_chart(s, x, y, w, h):
     va.major_gridlines.format.line.color.rgb = LINE
     va.major_gridlines.format.line.width = Pt(0.5)
     va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
-    va.tick_labels.number_format = '"$"0.0"M"'; va.tick_labels.number_format_is_linked = False
-    va.minimum_scale = -0.5; va.maximum_scale = 5.2; va.major_unit = 1.0
+    va.tick_labels.number_format = '"$"#,##0"k"'; va.tick_labels.number_format_is_linked = False
+    va.minimum_scale = -20; va.maximum_scale = 200; va.major_unit = 50
     va.format.line.color.rgb = LINE
     ca = ch.category_axis
     ca.tick_labels.font.size = Pt(6.8); ca.tick_labels.font.name = MONO
     ca.format.line.color.rgb = LINE
-    colors = [DEEP, SAGE, ROSE]
+    colors = [SOFT, DEEP, SAGE]
     for i, series in enumerate(ch.series):
         series.smooth = False
         series.format.line.color.rgb = colors[i]
@@ -482,56 +482,30 @@ notes(s, "The product has six functions: route, registry, encryption, verificati
 # =====================================================================
 s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
-tb(s, 0.65, 1.34, 12.1, 0.24, "Short-term proof, an EU legal path and a financial base case. Two-thirds of this page is the financial success test.", 8.4, SAGE, FONT, spacing=1.15)
-goal_block(s, 0.65, 1.72, 3.92, 1.20, "SHORT TERM / 2027", "100 paying accounts", "GMV $3.0M · 99.8% verification · $0.8M seed. One Prague host and two bridges.")
-goal_block(s, 4.73, 1.72, 3.92, 1.20, "EU / MICA / 2027–28", "Perimeter, not a licence", "MiCA legal opinion; non-custodial, no CASP claim. GDPR + AI Act pack, DPA/SCC, complaints.")
-goal_block(s, 8.81, 1.72, 3.92, 1.20, "LONG TERM / 2031", "10,000 paying accounts", "GMV $960M · revenue $4.8M · FCF $2.17M. Break-even in 2031.")
-tb(s, 0.65, 3.06, 7.4, 0.18, "FINANCIAL SUCCESS  /  BASE CASE 2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
-financial_chart(s, 0.65, 3.26, 7.35, 2.95)
+tb(s, 0.65, 1.32, 12.15, 0.22, "Short-term proof, an EU legal path and a low-capital financial model. Two-thirds of this page is the financial success test.", 8.2, SAGE, FONT, spacing=1.15)
+goal_block(s, 0.65, 1.68, 3.92, 1.15, "SHORT TERM / 2027", "50 paying accounts", "$10k ads · 88 leads · 22 paid. GMV $0.45M; 99.8% verification.")
+goal_block(s, 4.73, 1.68, 3.92, 1.15, "EU / MICA / 2027–28", "Perimeter, not a licence", "MiCA legal opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints.")
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "LONG TERM / 2031", "1,500 paying accounts", "GMV $45M · revenue $225k · FCF ≈$100k. Break-even 2029.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  BASE CASE, RANGE 2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
+financial_chart(s, 0.65, 3.18, 7.35, 2.95)
 kpis = [
-    ("2031 REVENUE", "$4.8M", "0.5% of $960M GMV"),
-    ("GROSS MARGIN", "80%", "vs 77% median SaaS"),
-    ("2031 FCF", "$2.17M", "cumulative $1.39M"),
-    ("CAC PAYBACK", "7.5 mo", "blended CAC $240"),
-    ("LTV / CAC", "4.0×", "30-month LTV"),
-    ("PEAK FUNDING", "$0.8M", "no debt"),
+    ("2031 REVENUE", "$225k", "range $108k–$422k"),
+    ("GROSS MARGIN", "80%", "77% median · 85% top"),
+    ("PEAK CASH LOSS", "$10k", "no external round"),
+    ("BREAK-EVEN", "2029", "base case"),
+    ("PREPAID FLOAT", "$2.25M", "40% prepaid · 1% breakage"),
+    ("CAC PAYBACK", "12 mo", "blended CAC $120"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
-    kpi(s, 8.15 + col * 2.18, 3.26 + row * 0.97, 2.10, 0.88, label, value, sub)
-source(s, "Model: Verxl base case, not a forecast. Sources: Cloudflare Workers pricing (requests $0.30/M; CPU $0.02/M CPU-ms; Hyperdrive included; Pages static/bandwidth free); SaaS Capital 2025 (median gross margin 77%, top quartile 85%); RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; OpenRouter FAQ (5% usage fee, 5.5% card top-up); KPMG Czech Tax Card 2026 (21%).", 6.50)
+    kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
+tb(s, 0.65, 6.22, 7.4, 0.2, "Capital-light: $10k initial ads; founder time unpaid through 2028; growth funded from fee cash flow.", 6.0, DEEP, FONT, spacing=1.1)
+source(s, "Ranges reflect low/base/high account and spend assumptions. Sources: Cloudflare Workers pricing (requests $0.30/M; CPU $0.02/M CPU-ms; Hyperdrive included; Pages static/bandwidth free); SaaS Capital 2025 (median gross margin 77%, top quartile 85%); RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; OpenRouter FAQ (5% usage; 5.5% top-up); KPMG Tax Card 2026 (21%).", 6.48)
 footer(s, 6, "EVALUATION")
-notes(s, "Two-thirds of this slide is financial success. Short term 2027: 100 paying accounts, $3M GMV, 99.8% verification, $0.8M seed. EU/MiCA 2027–28: a legal perimeter opinion, explicitly non-custodial and no CASP licence claim; GDPR/AI Act documentation, DPA/SCC pack, complaints. Long term 2031: 10,000 accounts, $960M GMV, $4.8M revenue, $2.17M FCF. Financial model is a base case, not a forecast: 0.5% take, 80% gross margin, 21% Czech tax, no debt; the chart shows revenue, gross profit and FCF. Sources: Cloudflare Workers pricing; SaaS Capital 2025; RockingWeb Google Ads B2B tech CPC; OpenRouter FAQ; KPMG Tax Card 2026.")
+notes(s, "This is a 5-minute deck; there is no separate financial-model slide. Financial success is on the evaluation slide. Start with $10k ads: $4.12 CPC => 2,427 clicks; 3.64% CVR => 88 leads; 25% close => 22 paid accounts. Organic/community doubles the 2027 cohort to 50. Base case accounts: 50/200/500/900/1,500. Average monthly GMV: $750/$900/$1,100/$1,500/$2,500. GMV $0.45M/$2.16M/$6.6M/$16.2M/$45M. Revenue at 0.5%: $2.25k/$10.8k/$33k/$81k/$225k. Gross margin 80%: $1.8k/$8.64k/$26.4k/$64.8k/$180k. Opex: $12k/$10k/$20k/$35k/$55k. FCF base: -$10k/-$1k/$6k/$30k/$100k; peak loss $10k; break-even 2029; no $500k burn. Low/high scenarios are in the chart. Float: assume 40% of GMV prepaid with 45-day average; 2031 monthly GMV $3.75M; float $2.25M; breakage 1% of outstanding prepaid = $22.5k, not included in FCF. Paid CAC $455; blended $120 with 60% organic/community; payback 12 months; LTV/CAC ~2.5x. The model is a range, not a forecast. Sources: https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
 
-# 7. FINANCIAL MODEL
+# 7. DEADLINE
 # =====================================================================
-s = slide()
-question(s, "How does the model reach financial success?", 27)
-tb(s, 0.65, 1.32, 12.1, 0.24, "Base case 2027–2031: 0.5% take rate, 80% gross margin, no debt. Inputs are explicit; this is a model, not a forecast.", 8.4, SAGE, FONT, spacing=1.15)
-financial_table(s, 0.65, 1.70, 7.55, 4.00)
-# right panel
-rx, ry, rw = 8.43, 1.70, 4.25
-tb(s, rx, ry, rw, 0.18, "UNIT ECONOMICS  /  2031", 6.2, DEEP, MONO, caps=True, spacing=1)
-for i, (label, value) in enumerate([
-    ("Revenue / account / yr", "$480"),
-    ("Gross profit / account / yr", "$384"),
-    ("Blended CAC", "$240"),
-    ("CAC payback", "7.5 months"),
-    ("LTV (30 months) / CAC", "$960 / 4.0×"),
-]):
-    yy = ry + 0.28 + i * 0.36
-    tb(s, rx, yy, 2.35, 0.2, label, 6.5, GRAY, FONT, spacing=1)
-    tb(s, rx + 2.28, yy, 1.9, 0.2, value, 7.2, DEEP, MONO, align=PP_ALIGN.RIGHT, spacing=1)
-line(s, rx, ry + 2.18, rx + rw, ry + 2.18, LINE, 0.7)
-tb(s, rx, ry + 2.31, rw, 0.18, "CLOUDFLARE  /  1B REQUESTS / MO", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, rx, ry + 2.55, rw, 0.62, "$402/mo edge: $5 base + $297 requests + $100 CPU. Static Pages requests and bandwidth $0; Hyperdrive included. Postgres ~$200/mo assumed.", 6.6, GRAY, FONT, spacing=1.2)
-line(s, rx, ry + 3.22, rx + rw, ry + 3.22, LINE, 0.7)
-tb(s, rx, ry + 3.34, rw, 0.18, "ADS  /  CAPITAL", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, rx, ry + 3.56, rw, 0.74, "Paid-only CAC $452 = $113 CPL ÷ 25% close. Blended CAC $240 with 45% inbound. Peak funding $0.8M; no debt; NWC -$240k at 2031.", 6.6, GRAY, FONT, spacing=1.2)
-source(s, "Sources: Cloudflare Workers / Pages pricing; SaaS Capital 2025 (77% median, 85% top quartile); RockingWeb 2025 Google Ads B2B tech CPC $4.12 / CVR 3.64%; OpenRouter FAQ (5% usage; 5.5% top-up); KPMG Czech Tax Card 2026 (21%). Company-specific inputs are Verxl assumptions.", 6.48)
-footer(s, 7, "FINANCIAL MODEL")
-notes(s, "Financial model. 2027–2031 base case: 100/500/1,500/4,000/10,000 paying accounts; average monthly GMV $2.5k/$3k/$4k/$5k/$8k; 0.5% take; revenue $15k/$90k/$360k/$1.2M/$4.8M; gross margin 80%; opex $210k/$350k/$600k/$1.0M/$1.5M; EBITDA $(198)k/$(278)k/$(312)k/$(40)k/$2.34M; Czech tax 21% with loss carryforward; capex 2% revenue; NWC -5% revenue; FCF $(198)k/$(275)k/$(301)k/$(4)k/$2.166M; cumulative $1.388M; peak funding $0.8M. Unit economics: 2031 revenue/account $480, gross profit $384, blended CAC $240, payback 7.5 months, LTV 30 months $960, LTV/CAC 4.0x. Paid-only CAC $452 at $113 CPL and 25% close; blended $240 with 45% inbound. Cloudflare at 1B requests/mo: $5 base + 990M extra requests x $0.30/M = $297 + 5B CPU-ms x $0.02/M = $100; ~$402/mo; Pages static/bandwidth free; Hyperdrive included. Sources: https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
-
 # 7. DEADLINE
 # =====================================================================
 s = slide()
@@ -564,7 +538,7 @@ tb(s, tx + 1.65, ty + 1.55, 2.4, 0.18, "4-WEEK IMPROVEMENT WINDOW", 6.0, DEEP, M
 tb(s, tx + 1.65, ty + 1.76, 2.4, 0.18, "28 days · feedback only", 6.0, SAGE, FONT)
 line(s, tx, ty + 2.48, tx + tw, ty + 2.48, LINE, 0.7)
 tb(s, tx, ty + 2.62, tw, 0.55, "Only this presentation is in scope. Dated rollout, mainnet and SLA are outside this deliverable.", 7.4, GRAY, FONT, spacing=1.2)
-footer(s, 8, "DEADLINE")
+footer(s, 7, "DEADLINE")
 notes(s, "Submission 15 December 2026; final 13 January 2027. The improvement window is four weeks for feedback, deck edits and repository checks, not new scope. No dated product rollout, mainnet or SLA is claimed.")
 
 # =====================================================================
@@ -590,7 +564,7 @@ tb(s, qx + 2.65, qy + 0.42, 1.4, 0.2, "VERXL.COM", 6.4, DEEP, MONO, caps=True, s
 tb(s, qx + 2.65, qy + 0.68, 1.35, 0.5, "Live\nSepolia\npilot", 12.5, INK, FONT, bold=True, spacing=1.0)
 tb(s, qx + 0.25, qy + 2.72, 3.7, 0.3, "Chat · Playground · Registry · API", 7.4, SAGE, FONT, spacing=1.1)
 tb(s, qx + 0.25, qy + 3.00, 3.7, 0.2, "macOS · Linux · Windows · Android", 7.0, GRAY, MONO, spacing=1)
-footer(s, 9, "VŠE PRAHA", False)
+footer(s, 8, "VŠE PRAHA", False)
 notes(s, "Closing. verxl.com is live on Sepolia. The QR opens the site. The contact is me@simonhavlik.com. The final deck is due 13 January 2027.")
 
 prs.save(OUT)
