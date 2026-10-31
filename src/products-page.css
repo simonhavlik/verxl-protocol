@@ -90,8 +90,10 @@
     .chat-head .lock{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:5.6px;letter-spacing:.08em;text-transform:uppercase;color:#7fae9d;white-space:nowrap}
     .chat-head .lock svg{width:9px;height:9px}
     .chat-scroll{position:relative;flex:1;min-height:0;overflow:hidden}
-    .scene{position:absolute;inset:0;padding:13px 14px;opacity:0;transform:translateY(5px);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
-    .scene.active{opacity:1;transform:none;pointer-events:auto}
+    .scene{display:none;position:absolute;inset:0;padding:13px 14px}
+    .scene.active{display:block;animation:sceneIn .38s ease both}
+    @keyframes sceneIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.scene.active{animation:none}}
     .msg{margin-bottom:9px}
     .msg .who{display:flex;align-items:center;gap:5px;margin-bottom:3px;font-family:var(--mono);font-size:5.4px;letter-spacing:.13em;text-transform:uppercase;color:#4f5b56}
     .msg .who i{width:3px;height:3px;background:#4f5b56;display:block}

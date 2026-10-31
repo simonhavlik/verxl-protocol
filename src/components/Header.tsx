@@ -89,7 +89,11 @@ export const Header: React.FC<HeaderProps> = ({
               <a
                 key={item.id}
                 href="/products"
-                className="border-b border-transparent pb-1 text-[12px] text-[#8b989e] transition-colors hover:text-white"
+                className={`border-b pb-1 text-[12px] transition-colors ${
+                  activeTab === "products"
+                    ? "border-[#b8f6dd] text-white"
+                    : "border-transparent text-[#8b989e] hover:text-white"
+                }`}
               >
                 {item.label}
               </a>
@@ -206,7 +210,11 @@ export const Header: React.FC<HeaderProps> = ({
             <a
               key={item.id}
               href="/products"
-              className="shrink-0 border-b border-transparent pb-1 text-[11px] text-[#8b989e] transition-colors hover:text-white"
+              className={`shrink-0 border-b pb-1 text-[11px] transition-colors ${
+                activeTab === "products"
+                  ? "border-[#b8f6dd] text-white"
+                  : "border-transparent text-[#8b989e] hover:text-white"
+              }`}
             >
               {item.label}
             </a>
