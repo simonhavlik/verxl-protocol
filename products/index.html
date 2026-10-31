@@ -30,10 +30,10 @@
     .nav a.active{color:#fff;border-color:var(--mint)}
     .head .open{border:1px solid rgba(184,246,221,.25);padding:8px 12px;color:var(--mint);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
     .head .open:hover{border-color:rgba(184,246,221,.6)}
-    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;align-items:start;padding:64px 0 54px}
+    .hero{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.18fr);gap:44px;align-items:center;padding:58px 0 48px}
     .eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.17em;text-transform:uppercase;color:var(--mint)}
     .eyebrow i{display:block;width:4px;height:4px;background:var(--mint)}
-    h1{margin:18px 0 0;font-size:clamp(44px,6vw,68px);line-height:.97;letter-spacing:-.052em;font-weight:500}
+    h1{margin:18px 0 0;font-size:clamp(42px,4.9vw,58px);line-height:.97;letter-spacing:-.052em;font-weight:500}
     .lede{margin:22px 0 0;max-width:560px;color:var(--soft);font-size:14.5px;line-height:1.65}
     .actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:28px}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 15px;font-size:11px;font-weight:500;transition:background .16s,border-color .16s,color .16s}
@@ -46,27 +46,87 @@
     .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:20px;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
     .meta b{font-weight:400;color:#9aa7ad}
     .dot{width:4px;height:4px;background:var(--mint);display:inline-block;margin-right:5px}
-    .preview{border:1px solid var(--line);background:var(--panel);min-width:0}
-    .preview .top{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--line2)}
-    .preview .top span:last-child{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    .preview .body{display:grid;grid-template-columns:40px 1fr}
-    .preview .rail{display:flex;flex-direction:column;align-items:center;gap:9px;border-right:1px solid var(--line2);padding:12px 0}
-    .preview .rail i{width:24px;height:24px;border:1px solid #2a3531;display:block}
-    .preview .rail i:first-child{background:rgba(184,246,221,.08);border-color:rgba(184,246,221,.3);box-shadow:inset 2px 0 var(--mint)}
-    .preview .main{padding:15px;min-width:0}
-    .preview .main .kick{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-    .preview .routes{margin-top:11px}
-    .preview .route{display:flex;justify-content:space-between;align-items:center;border-left:1px solid transparent;padding:7px 9px;font-size:11px;color:var(--soft)}
-    .preview .route:first-child{border-color:var(--mint);background:rgba(255,255,255,.045);color:#fff}
-    .preview .route span:last-child{font-family:var(--mono);font-size:7.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
-    .preview .same{margin-top:15px;border:1px solid var(--line);padding:9px 10px}
-    .preview .same b{display:flex;align-items:center;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400}
-    .preview .same p{margin:4px 0 0;font-size:9.5px;color:var(--soft)}
-    .preview .foot{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line2)}
-    .preview .foot div{padding:10px 15px}
-    .preview .foot div+div{border-left:1px solid var(--line2)}
-    .preview .foot span{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    .preview .foot b{display:block;margin-top:2px;font-family:var(--mono);font-size:12px;color:var(--mint);font-weight:400}
+    /* Product preview: a live, animated miniature of the actual Chat app. */
+    .app-stage{position:relative;min-width:0;perspective:1400px}
+    .app-stage:before{content:"";position:absolute;inset:8% -8% -12% -4%;background:radial-gradient(ellipse at 60% 40%,rgba(184,246,221,.13),rgba(184,246,221,.03) 45%,transparent 72%);filter:blur(28px);pointer-events:none}
+    .app-window{position:relative;border:1px solid rgba(255,255,255,.13);background:#070a0f;box-shadow:0 32px 90px -38px rgba(0,0,0,.95),0 0 0 1px rgba(184,246,221,.035);overflow:hidden;transform:rotateY(-1.2deg) rotateX(.6deg);transform-origin:50% 45%;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+    .app-stage:hover .app-window{transform:rotateY(0) rotateX(0)}
+    .app-chrome{display:flex;align-items:center;gap:10px;height:30px;padding:0 11px;border-bottom:1px solid rgba(255,255,255,.07);background:#0b1117}
+    .traffic{display:flex;gap:4px;margin-right:2px}
+    .traffic i{width:5px;height:5px;border-radius:50%;background:#31403a;display:block}
+    .traffic i:first-child{background:#4a3333}.traffic i:nth-child(2){background:#4b4631}.traffic i:nth-child(3){background:#314a3d}
+    .app-url{flex:1;min-width:0;font-family:var(--mono);font-size:6.6px;letter-spacing:.06em;color:#69767b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .app-url b{color:#a9b6b8;font-weight:400}
+    .app-live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);white-space:nowrap}
+    .app-live i{width:4px;height:4px;background:var(--mint);border-radius:50%;box-shadow:0 0 6px rgba(184,246,221,.6)}
+    .app-dots{display:flex;align-items:center;gap:3px;margin-left:4px}
+    .app-dot{width:12px;height:2px;padding:0;border:0;background:#26332e;cursor:pointer;transition:background .2s}
+    .app-dot.active{background:var(--mint)}
+    .app-body{display:grid;grid-template-columns:44px 150px minmax(0,1fr);height:412px;min-width:0}
+    .app-rail{display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 0;border-right:1px solid rgba(255,255,255,.06);background:#080d12}
+    .app-rail .vmark{width:23px;height:23px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(184,246,221,.25);color:var(--mint);margin-bottom:7px}
+    .app-rail .vmark svg{width:13px;height:13px}
+    .rail-ico{width:27px;height:27px;display:flex;align-items:center;justify-content:center;color:#596760;border-left:2px solid transparent}
+    .rail-ico svg{width:13px;height:13px}
+    .rail-ico.active{color:var(--mint);background:rgba(184,246,221,.055);border-left-color:var(--mint)}
+    .app-chats{border-right:1px solid rgba(255,255,255,.06);padding:10px 8px;min-width:0;background:#090e13}
+    .chats-head{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:6.5px;letter-spacing:.14em;text-transform:uppercase;color:#65737b;padding:0 3px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+    .chats-head span:last-child{color:var(--mint);font-size:10px;line-height:1}
+    .chats-group{font-family:var(--mono);font-size:5.8px;letter-spacing:.13em;text-transform:uppercase;color:#4f5b56;padding:10px 3px 5px}
+    .chat-item{display:block;width:100%;text-align:left;border:0;border-left:1px solid transparent;background:none;padding:6px 7px;font-family:var(--sans);font-size:8.8px;line-height:1.25;color:#8b989e;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+    .chat-item span{display:block;margin-top:2px;font-family:var(--mono);font-size:5.8px;letter-spacing:.05em;text-transform:uppercase;color:#4f5b56;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-item:hover{color:#d7e2de}
+    .chat-item.active{background:rgba(184,246,221,.055);border-left-color:var(--mint);color:#fff}
+    .chat-item.active span{color:#7fae9d}
+    .chat-main{display:flex;flex-direction:column;min-width:0;min-height:0;background:#070a0f}
+    .chat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 13px;border-bottom:1px solid rgba(255,255,255,.06);min-height:44px}
+    .chat-title{min-width:0}
+    .chat-title b{display:block;font-family:var(--sans);font-size:10.5px;font-weight:500;color:#f3f6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-title span{display:block;margin-top:1px;font-family:var(--mono);font-size:5.8px;letter-spacing:.04em;color:#65737b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-head .lock{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:5.6px;letter-spacing:.08em;text-transform:uppercase;color:#7fae9d;white-space:nowrap}
+    .chat-head .lock svg{width:9px;height:9px}
+    .chat-scroll{position:relative;flex:1;min-height:0;overflow:hidden}
+    .scene{position:absolute;inset:0;padding:13px 14px;opacity:0;transform:translateY(5px);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+    .scene.active{opacity:1;transform:none;pointer-events:auto}
+    .msg{margin-bottom:9px}
+    .msg .who{display:flex;align-items:center;gap:5px;margin-bottom:3px;font-family:var(--mono);font-size:5.4px;letter-spacing:.13em;text-transform:uppercase;color:#4f5b56}
+    .msg .who i{width:3px;height:3px;background:#4f5b56;display:block}
+    .msg.user .who{color:#5d6a63}
+    .msg.user p{margin:0;border-left:1px solid #2a3831;padding-left:7px;font-size:8.6px;line-height:1.5;color:#b8c4bf}
+    .msg.assistant .who{color:#7fae9d}
+    .msg.assistant .who i{background:var(--mint);box-shadow:0 0 5px rgba(184,246,221,.5)}
+    .msg.assistant p{margin:0;font-size:8.8px;line-height:1.55;color:#d7e2de}
+    .msg.assistant p+p{margin-top:5px}
+    .stream:after{content:"";display:inline-block;width:4px;height:8px;margin-left:2px;vertical-align:-1px;background:var(--mint);animation:caret 1s steps(1) infinite}
+    @keyframes caret{50%{opacity:0}}
+    .math-block{margin:8px 0 6px;border:1px solid rgba(184,246,221,.16);background:#0b1117;padding:10px 11px}
+    .math-line{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-family:Georgia,"Times New Roman",serif;font-size:12.5px;line-height:1;color:#eaf7f1}
+    .math-line em{font-style:italic;color:var(--mint)}
+    .math-line strong{font-weight:400;color:var(--mint);font-size:14px}
+    .math-line .op{color:#65737b;font-size:10px}
+    .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;font-size:.7em;line-height:1.05}
+    .frac .num{border-bottom:1px solid #65737b;padding:0 3px 1px}
+    .frac .den{padding:1px 3px 0}
+    .math-note{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);font-family:var(--mono);font-size:5.8px;letter-spacing:.05em;color:#65737b}
+    .math-note b{font-weight:400;color:#b8f6dd}
+    .codeblock{margin:7px 0 6px;border:1px solid rgba(255,255,255,.08);background:#05080b;padding:8px 8px 8px 25px;overflow:hidden;counter-reset:line;font-family:var(--mono);font-size:7.1px;line-height:1.65;color:#b8c4bf;white-space:pre}
+    .codeblock .line{display:block;position:relative;white-space:pre;overflow:hidden;text-overflow:ellipsis}
+    .codeblock .line:before{counter-increment:line;content:counter(line);position:absolute;left:-18px;width:12px;text-align:right;color:#3e4a44}
+    .codeblock .kw{color:#c7a6e8}.codeblock .str{color:#b8f6dd}.codeblock .fn{color:#8fb8d9}.codeblock .cm{color:#4f5b56}
+    .secure-row{display:flex;align-items:center;gap:6px;margin:7px 0;border:1px solid rgba(184,246,221,.18);background:rgba(184,246,221,.04);padding:7px 8px;font-family:var(--mono);font-size:6.2px;letter-spacing:.05em;text-transform:uppercase;color:#b8f6dd}
+    .secure-row svg{width:11px;height:11px}
+    .secure-row span{margin-left:auto;color:#65737b;text-transform:none;letter-spacing:0}
+    .secure-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+    .secure-chips span{border:1px solid rgba(255,255,255,.07);padding:2px 4px;font-family:var(--mono);font-size:5.4px;letter-spacing:.04em;text-transform:uppercase;color:#7fae9d}
+    .composer{display:flex;align-items:center;gap:7px;min-height:42px;padding:7px 10px;border-top:1px solid rgba(255,255,255,.07);background:#080d12}
+    .composer .prompt{flex:1;min-width:0;border:1px solid rgba(255,255,255,.08);background:#05080b;padding:7px 8px;font-size:8.2px;color:#4f5b56;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .composer .tool{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:#65737b;flex:none}
+    .composer .tool svg{width:11px;height:11px}
+    .composer .send{width:24px;height:24px;background:var(--mint);color:#07110d;display:flex;align-items:center;justify-content:center;flex:none}
+    .composer .send svg{width:11px;height:11px}
+    .app-caption{display:flex;justify-content:space-between;gap:12px;margin-top:9px;font-family:var(--mono);font-size:6.4px;letter-spacing:.08em;text-transform:uppercase;color:#4f5b56}
+    .app-caption b{font-weight:400;color:#8b989e}
+    .app-caption .live-dot{display:inline-block;width:3px;height:3px;background:var(--mint);margin-right:4px;vertical-align:1px}
     .section{padding:46px 0 0;content-visibility:auto;contain-intrinsic-size:700px}
     .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:15px}
     .section-head .eyebrow{color:var(--mint)}
@@ -124,17 +184,34 @@
     .trust a:hover{color:#fff}
     .foot{border-top:1px solid var(--line);padding:24px 0 30px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:8px;color:var(--muted)}
     .foot a:hover{color:#fff}
+    /* Full site footer, matching the shared marketing footer. */
+    .site-footer{margin-top:30px;border-top:1px solid var(--line);background:#070a0f}
+    .footer-grid{display:grid;grid-template-columns:1.45fr .7fr 1fr 1fr;gap:34px;padding:36px 0 30px}
+    .f-brand{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;letter-spacing:-.02em;color:#fff}
+    .f-brand svg{width:20px;height:20px}
+    .f-badge{border:1px solid var(--line);padding:2px 5px;font-family:var(--mono);font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .f-copy{margin:12px 0 0;max-width:320px;font-size:12px;line-height:1.65;color:var(--soft)}
+    .f-status{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:12px;font-family:var(--mono);font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .f-status i{width:4px;height:4px;background:var(--mint);display:inline-block;margin-right:4px;vertical-align:1px}
+    .f-col h4{margin:0 0 10px;font-family:var(--mono);font-size:8px;font-weight:400;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+    .f-col a{display:block;padding:3px 0;font-size:11px;color:#9aa7ad;transition:color .15s}
+    .f-col a:hover{color:#fff}
+    .f-bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:16px 0 9px;font-family:var(--mono);font-size:7.5px;color:var(--muted)}
+    .f-legal{display:flex;flex-wrap:wrap;gap:12px}
+    .f-legal a:hover{color:#fff}
+    .f-note{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding-bottom:22px;font-family:var(--mono);font-size:7px;color:#4f5b56}
     html.js .reveal{opacity:0;transform:translateY(7px);transition:opacity .42s ease,transform .42s ease}
     html.js .reveal.in{opacity:1;transform:none}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}html.js .reveal{opacity:1;transform:none;transition:none}}
     @media(max-width:900px){
-      .shell{padding:0 18px}.nav{display:none}.hero{grid-template-columns:1fr;gap:30px;padding:40px 0 38px}.preview{max-width:520px}
+      .shell{padding:0 18px}.nav{display:none}.hero{grid-template-columns:1fr;gap:28px;padding:36px 0 34px}.app-stage{max-width:680px;width:100%}
       .api .inner,.harness .inner{grid-template-columns:1fr;gap:26px;padding:34px 0}.section-head{display:block}.release{margin-top:9px}
       .trust{grid-template-columns:1fr;gap:10px}.head .bar{height:56px}.head .open{font-size:8px;padding:7px 9px}
       .row{grid-template-columns:1fr 1fr;gap:9px 14px;padding:13px 0}.platform{grid-column:1/-1}.note{grid-column:1/-1}.dl{justify-self:start;grid-column:1/-1}
       .pwa{align-items:flex-start;flex-direction:column}.pwa a{align-self:flex-start}.meta{gap:6px 10px}.section{padding-top:34px}
+      .footer-grid{grid-template-columns:1fr 1fr;gap:24px;padding:30px 0 24px}.footer-grid>div:first-child{grid-column:1/-1}.f-copy{max-width:100%}.f-bottom{display:block;line-height:1.8}.f-legal{gap:8px 12px;margin-bottom:8px}
     }
-    @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.preview .body{grid-template-columns:34px 1fr}.preview .main{padding:12px}.api .inner,.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
+    @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.app-body{grid-template-columns:38px 1fr}.app-chats{display:none}.app-window{transform:none}.app-stage:before{inset:0 -6% -8% -6%}.chat-scroll .scene{padding:12px}.codeblock{font-size:6.6px;white-space:pre-wrap}.codeblock .line{white-space:pre-wrap}.math-line{font-size:11.8px}.api .inner,.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
 
     /* Site header: mirrors the shared React Header exactly. */
     .site-head{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(7,10,15,.85);backdrop-filter:blur(24px)}
@@ -254,22 +331,70 @@
         <div class="meta"><span><i class="dot"></i><b id="detected">Choose a build</b></span><span>4 platforms</span><span>1 codebase</span><span>Live workspace</span></div>
       </div>
 
-      <aside class="preview" aria-label="Installed workspace preview">
-        <div class="top"><span class="brand" style="font-size:12px"><svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>Verxl</span><span>Installed</span></div>
-        <div class="body">
-          <div class="rail"><i></i><i></i><i></i><i></i></div>
-          <div class="main">
-            <div class="kick">Workspace</div>
-            <div class="routes">
-              <div class="route"><span>Chat</span><span>active</span></div>
-              <div class="route"><span>Playground</span><span>live</span></div>
-              <div class="route"><span>Registry</span><span>live</span></div>
-              <div class="route"><span>API</span><span>keys</span></div>
+      <aside class="app-stage" aria-label="Live Verxl Chat preview cycling through settlement math, streaming code and encrypted chat">
+        <div class="app-window">
+          <div class="app-chrome">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="app-url"><b>verxl.com</b>/chat?app=1</span>
+            <span class="app-live"><i></i>Live</span>
+            <span class="app-dots" aria-label="Preview scenes">
+              <button class="app-dot active" type="button" data-scene="0" aria-label="Settlement math"></button>
+              <button class="app-dot" type="button" data-scene="1" aria-label="Streaming client"></button>
+              <button class="app-dot" type="button" data-scene="2" aria-label="Encrypted chat"></button>
+            </span>
+          </div>
+          <div class="app-body">
+            <div class="app-rail" aria-hidden="true">
+              <span class="vmark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4l9 16 9-16" stroke="currentColor" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg></span>
+              <span class="rail-ico active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-5 4V5z" stroke="currentColor" stroke-width="1.5"/></svg></span>
+              <span class="rail-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6l6 6-6 6M13 18h6" stroke="currentColor" stroke-width="1.5"/></svg></span>
+              <span class="rail-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="4" width="7" height="7" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="13" width="7" height="7" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="13" width="7" height="7" stroke="currentColor" stroke-width="1.5"/></svg></span>
+              <span class="rail-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 12H20M17 12v3M20 12v2" stroke="currentColor" stroke-width="1.5"/></svg></span>
             </div>
-            <div class="same"><b><i class="dot"></i>Same code</b><p>The shell loads the live app.</p></div>
+            <div class="app-chats">
+              <div class="chats-head"><span>Chats</span><span>＋</span></div>
+              <div class="chats-group">Today</div>
+              <button class="chat-item active" type="button" data-scene="0">Settlement math<span>Qwen 3.5 · 32K</span></button>
+              <button class="chat-item" type="button" data-scene="1">Streaming client<span>DeepSeek V4.1</span></button>
+              <button class="chat-item" type="button" data-scene="2">Encrypted chat<span>Qwen 3.5 · 32K</span></button>
+            </div>
+            <div class="chat-main">
+              <div class="chat-head">
+                <div class="chat-title"><b id="chatTitle">Settlement math</b><span id="chatSub">Qwen 3.5 4B · 32K · Think medium</span></div>
+                <div class="lock"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" stroke="currentColor" stroke-width="1.5"/><path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.5"/></svg>E2E</div>
+              </div>
+              <div class="chat-scroll">
+                <div class="scene active" data-scene="0">
+                  <div class="msg user"><div class="who"><i></i>You</div><p>What's the fee on a $12.40 completion at 50 bps?</p></div>
+                  <div class="msg assistant"><div class="who"><i></i>Verxl</div><p>50 bps is 0.5%. The fee is:</p>
+                    <div class="math-block">
+                      <div class="math-line"><em>fee</em><span class="op">=</span><span class="frac"><span class="num">50</span><span class="den">10,000</span></span><span class="op">×</span><span>$12.40</span><span class="op">=</span><strong>$0.062</strong></div>
+                      <div class="math-note"><span>Provider keeps <b>$12.338</b></span><span>Receipt · settled</span></div>
+                    </div>
+                    <p class="stream">Metered per request. No subscription.</p>
+                  </div>
+                </div>
+                <div class="scene" data-scene="1">
+                  <div class="msg user"><div class="who"><i></i>You</div><p>Give me a streaming client.</p></div>
+                  <div class="msg assistant"><div class="who"><i></i>Verxl</div><p>Point the OpenAI SDK at Verxl:</p>
+                    <div class="codeblock"><span class="line"><span class="kw">const</span> res = <span class="kw">await</span> fetch(<span class="str">"https://verxl.com/v1/chat/completions"</span>, {</span><span class="line">  method: <span class="str">"POST"</span>,</span><span class="line">  headers: { Authorization: <span class="str">`Bearer ${key}`</span> },</span><span class="line">  body: JSON.stringify({ model: <span class="str">"deepseek-v4.1-flash"</span>, stream: <span class="kw">true</span> })</span><span class="line">});</span></div>
+                    <p class="stream">Same key. Same route. Streams end-to-end.</p>
+                  </div>
+                </div>
+                <div class="scene" data-scene="2">
+                  <div class="msg user"><div class="who"><i></i>You</div><p>Can the server read this chat?</p></div>
+                  <div class="msg assistant"><div class="who"><i></i>Verxl</div><p>No. The browser encrypts the conversation with AES-256-GCM before sync.</p>
+                    <div class="secure-row"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" stroke="currentColor" stroke-width="1.5"/><path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.5"/></svg>AES-256-GCM<span>wallet-derived key</span></div>
+                    <p class="stream">The key never leaves this device. The server stores ciphertext only.</p>
+                    <div class="secure-chips"><span>0 plaintext rows</span><span>non-extractable key</span><span>ciphertext sync</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="composer"><span class="tool"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="currentColor" stroke-width="1.2"/></svg></span><span class="prompt">Message Verxl…</span><span class="tool"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V5M8 9l4-4 4 4M5 19h14" stroke="currentColor" stroke-width="1.5"/></svg></span><span class="send"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-6 16-3-7-7-1z" stroke="currentColor" stroke-width="1.5"/></svg></span></div>
+            </div>
           </div>
         </div>
-        <div class="foot"><div><span>Routes</span><b>4</b></div><div><span>Platforms</span><b>4 + PWA</b></div></div>
+        <div class="app-caption"><span><i class="live-dot"></i><b>Live product</b> · Chat</span><span>Wallet-derived key · ciphertext only</span></div>
       </aside>
     </section>
 
@@ -357,9 +482,21 @@
     </div>
   </main>
 
-  <footer class="shell foot">
-    <div>Verxl Protocol · <a href="/about">About</a> · <a href="/notice">Test run notice</a> · <a href="/api">API</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/unsubscribe">Email preferences</a> · <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener">Source</a></div>
-    <div>© 2026 Verxl · Sepolia demonstration</div>
+  <footer class="site-footer">
+    <div class="shell">
+      <div class="footer-grid">
+        <div>
+          <div class="f-brand"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg><span>Verxl</span><span class="f-badge">v0.1.0 · Sepolia</span></div>
+          <p class="f-copy">Non-custodial inference clearing at a fixed 50 bps. Providers keep 99.5% in USDC on Arbitrum.</p>
+          <div class="f-status"><span><i></i>Sepolia test run</span><span>3 models</span><span>1 bare-metal host</span><span>2 bridges</span></div>
+        </div>
+        <div class="f-col"><h4>Protocol</h4><a href="/products">Products</a><a href="/playground">Playground</a><a href="/chat">Chat</a><a href="/api">API</a><a href="/registry">Registry</a><a href="/about">About</a></div>
+        <div class="f-col"><h4>Network</h4><a href="/notice">Test run notice</a><a href="/oracle">Quality oracle</a><a href="/governance">Aragon DAO</a><a href="/about">Vision &amp; roadmap</a><a href="/whitepaper">Whitepaper</a></div>
+        <div class="f-col"><h4>Resources</h4><a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener">Source repository ↗</a><a href="https://github.com/simonhavlik/verxl-protocol/releases/tag/v0.1.0" target="_blank" rel="noopener">Native release ↗</a><a href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/SHA256SUMS" target="_blank" rel="noopener">Checksums ↗</a><a href="/unsubscribe">Email preferences</a><a href="mailto:me@simonhavlik.com">me@simonhavlik.com</a></div>
+      </div>
+      <div class="f-bottom"><div class="f-legal"><a href="/privacy">Privacy (GDPR)</a><a href="/terms">Terms</a><a href="/legal">EU MiCA statement</a><a href="/legal">Founders charter</a><a href="/unsubscribe">Unsubscribe</a></div><span>© 2026 Verxl Protocol</span></div>
+      <div class="f-note"><span>Sepolia demonstration deployment. Mainnet production is out of scope.</span><span>Cloudflare Workers edge · PostgreSQL telemetry · Aragon OSx vault</span></div>
+    </div>
   </footer>
 
   <script>
@@ -423,6 +560,41 @@
         }).catch(function(){connectBtn.disabled=false;connectBtn.querySelector('span').textContent='Connect';});
       });
     }
+  })();
+  </script>
+
+  <script>
+  (function(){
+    var stage=document.querySelector('.app-stage');
+    if(!stage)return;
+    var scenes=[].slice.call(stage.querySelectorAll('.scene'));
+    var items=[].slice.call(stage.querySelectorAll('.chat-item'));
+    var dots=[].slice.call(stage.querySelectorAll('.app-dot'));
+    var title=document.getElementById('chatTitle');
+    var sub=document.getElementById('chatSub');
+    var copy=[
+      {t:'Settlement math',s:'Qwen 3.5 4B · 32K · Think medium'},
+      {t:'Streaming client',s:'DeepSeek V4.1 Flash · 64K · Think off'},
+      {t:'Encrypted chat',s:'Qwen 3.5 4B · 32K · E2E encrypted'}
+    ];
+    var current=0, timer=null;
+    var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function show(n){
+      current=n;
+      scenes.forEach(function(el,i){el.classList.toggle('active',i===n)});
+      items.forEach(function(el){el.classList.toggle('active',Number(el.dataset.scene)===n)});
+      dots.forEach(function(el){el.classList.toggle('active',Number(el.dataset.scene)===n)});
+      if(copy[n]){title.textContent=copy[n].t;sub.textContent=copy[n].s;}
+    }
+    function stop(){if(timer){clearInterval(timer);timer=null;}}
+    function start(){if(reduced)return;stop();timer=setInterval(function(){show((current+1)%scenes.length)},4800);}
+    items.concat(dots).forEach(function(el){el.addEventListener('click',function(){show(Number(el.dataset.scene));start();});});
+    stage.addEventListener('mouseenter',stop);
+    stage.addEventListener('mouseleave',start);
+    stage.addEventListener('focusin',stop);
+    stage.addEventListener('focusout',start);
+    show(0);
+    start();
   })();
   </script>
 </body>
