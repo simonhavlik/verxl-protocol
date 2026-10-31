@@ -78,22 +78,32 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <nav className="hidden items-center gap-6 md:flex">
-          {coreItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              onPointerEnter={() => preloadRoute(item.id)}
-              onTouchStart={() => preloadRoute(item.id)}
-              onFocus={() => preloadRoute(item.id)}
-              className={`border-b pb-1 text-[12px] transition-colors ${
-                activeTab === item.id
-                  ? "border-[#b8f6dd] text-white"
-                  : "border-transparent text-[#8b989e] hover:text-white"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {coreItems.map((item) =>
+            item.id === "products" ? (
+              <a
+                key={item.id}
+                href="/products"
+                className="border-b border-transparent pb-1 text-[12px] text-[#8b989e] transition-colors hover:text-white"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                onPointerEnter={() => preloadRoute(item.id)}
+                onTouchStart={() => preloadRoute(item.id)}
+                onFocus={() => preloadRoute(item.id)}
+                className={`border-b pb-1 text-[12px] transition-colors ${
+                  activeTab === item.id
+                    ? "border-[#b8f6dd] text-white"
+                    : "border-transparent text-[#8b989e] hover:text-white"
+                }`}
+              >
+                {item.label}
+              </button>
+            )
+          )}
           <div className="relative" onMouseLeave={() => setShowMore(false)}>
             <button
               onClick={() => setShowMore((v) => !v)}
@@ -185,20 +195,30 @@ export const Header: React.FC<HeaderProps> = ({
         ref={mobileNavRef}
         className="no-scrollbar sticky top-0 z-50 flex gap-5 overflow-x-auto border-t border-white/5 bg-[#070a0f]/95 px-4 py-2.5 backdrop-blur-xl md:hidden"
       >
-        {allItems.map((item) => (
-          <button
-            key={item.id}
-            data-active={activeTab === item.id ? "true" : "false"}
-            onClick={() => setActiveTab(item.id)}
-            className={`shrink-0 border-b pb-1 text-[11px] transition-colors ${
-              activeTab === item.id
-                ? "border-[#b8f6dd] text-white"
-                : "border-transparent text-[#8b989e]"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+        {allItems.map((item) =>
+          item.id === "products" ? (
+            <a
+              key={item.id}
+              href="/products"
+              className="shrink-0 border-b border-transparent pb-1 text-[11px] text-[#8b989e] transition-colors hover:text-white"
+            >
+              {item.label}
+            </a>
+          ) : (
+            <button
+              key={item.id}
+              data-active={activeTab === item.id ? "true" : "false"}
+              onClick={() => setActiveTab(item.id)}
+              className={`shrink-0 border-b pb-1 text-[11px] transition-colors ${
+                activeTab === item.id
+                  ? "border-[#b8f6dd] text-white"
+                  : "border-transparent text-[#8b989e]"
+              }`}
+            >
+              {item.label}
+            </button>
+          )
+        )}
       </div>
     </header>
   );

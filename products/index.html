@@ -1,30 +1,316 @@
-<!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Products — Verxl</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    
-    <!-- Meta tags -->
-    <meta name="description" content="Verxl Chat: Institutional AI conversational interface with real-time balance clearing, 50 bps protocol fee, and verified deterministic edge routing." />
-    <meta property="og:title" content="Verxl Chat — Verified Institutional AI" />
-    <meta property="og:description" content="Pay for compute output in real-time with 50 bps protocol fee and multi-model edge intelligence." />
-    <meta property="og:image" content="/logo-horizontal.jpg" />
-    <meta property="og:url" content="https://verxl.com/chat" />
-    <meta name="twitter:card" content="summary_large_image" />
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Products — Verxl</title>
+  <meta name="description" content="Verxl for macOS, Windows, Linux and Android. The same four-page workspace: Chat, Playground, Registry and API." />
+  <meta name="theme-color" content="#070a0f" />
+  <link rel="icon" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Verxl" />
+  <style>
+    :root{--ink:#070a0f;--panel:#0b1117;--panel2:#080c10;--mint:#b8f6dd;--sage:#7fae9d;--text:#f3f6f5;--soft:#9aa7ad;--muted:#65737b;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.06);--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    *{box-sizing:border-box}
+    html{background:var(--ink);color-scheme:dark;scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(ellipse 70% 45% at 78% 0%,rgba(184,246,221,.06),transparent 62%),var(--ink);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.55}
+    a{color:inherit;text-decoration:none}
+    ::selection{background:var(--mint);color:var(--ink)}
+    .shell{max-width:1280px;margin:0 auto;padding:0 28px}
+    .head{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:rgba(7,10,15,.9);backdrop-filter:blur(18px)}
+    .head .bar{display:flex;align-items:center;justify-content:space-between;gap:24px;height:64px}
+    .brand{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;letter-spacing:-.02em}
+    .brand svg{width:20px;height:20px}
+    .nav{display:flex;align-items:center;gap:24px;font-size:11.5px;color:var(--soft)}
+    .nav a{border-bottom:1px solid transparent;padding:4px 0;transition:color .16s,border-color .16s}
+    .nav a:hover{color:#fff}
+    .nav a.active{color:#fff;border-color:var(--mint)}
+    .head .open{border:1px solid rgba(184,246,221,.25);padding:8px 12px;color:var(--mint);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+    .head .open:hover{border-color:rgba(184,246,221,.6)}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;align-items:start;padding:64px 0 54px}
+    .eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.17em;text-transform:uppercase;color:var(--mint)}
+    .eyebrow i{display:block;width:4px;height:4px;background:var(--mint)}
+    h1{margin:18px 0 0;font-size:clamp(44px,6vw,68px);line-height:.97;letter-spacing:-.052em;font-weight:500}
+    .lede{margin:22px 0 0;max-width:560px;color:var(--soft);font-size:14.5px;line-height:1.65}
+    .actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:28px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 15px;font-size:11px;font-weight:500;transition:background .16s,border-color .16s,color .16s}
+    .btn.primary{background:var(--mint);color:#07110d;border:1px solid rgba(184,246,221,.35)}
+    .btn.primary:hover{background:#d7f8ec}
+    .btn.ghost{border:1px solid var(--line);color:#c9d4d8}
+    .btn.ghost:hover{border-color:rgba(255,255,255,.3);color:#fff}
+    .link{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);padding:8px 2px}
+    .link:hover{color:var(--mint)}
+    .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:20px;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .meta b{font-weight:400;color:#9aa7ad}
+    .dot{width:4px;height:4px;background:var(--mint);display:inline-block;margin-right:5px}
+    .preview{border:1px solid var(--line);background:var(--panel);min-width:0}
+    .preview .top{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--line2)}
+    .preview .top span:last-child{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .preview .body{display:grid;grid-template-columns:40px 1fr}
+    .preview .rail{display:flex;flex-direction:column;align-items:center;gap:9px;border-right:1px solid var(--line2);padding:12px 0}
+    .preview .rail i{width:24px;height:24px;border:1px solid #2a3531;display:block}
+    .preview .rail i:first-child{background:rgba(184,246,221,.08);border-color:rgba(184,246,221,.3);box-shadow:inset 2px 0 var(--mint)}
+    .preview .main{padding:15px;min-width:0}
+    .preview .main .kick{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+    .preview .routes{margin-top:11px}
+    .preview .route{display:flex;justify-content:space-between;align-items:center;border-left:1px solid transparent;padding:7px 9px;font-size:11px;color:var(--soft)}
+    .preview .route:first-child{border-color:var(--mint);background:rgba(255,255,255,.045);color:#fff}
+    .preview .route span:last-child{font-family:var(--mono);font-size:7.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+    .preview .same{margin-top:15px;border:1px solid var(--line);padding:9px 10px}
+    .preview .same b{display:flex;align-items:center;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400}
+    .preview .same p{margin:4px 0 0;font-size:9.5px;color:var(--soft)}
+    .preview .foot{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line2)}
+    .preview .foot div{padding:10px 15px}
+    .preview .foot div+div{border-left:1px solid var(--line2)}
+    .preview .foot span{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .preview .foot b{display:block;margin-top:2px;font-family:var(--mono);font-size:12px;color:var(--mint);font-weight:400}
+    .section{padding:46px 0 0;content-visibility:auto;contain-intrinsic-size:700px}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:15px}
+    .section-head .eyebrow{color:var(--mint)}
+    h2{margin:8px 0 0;font-size:clamp(25px,3vw,32px);line-height:1.05;letter-spacing:-.035em;font-weight:500}
+    .release{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .release a:hover{color:#fff}
+    .release i{width:1px;height:12px;background:var(--line)}
+    .rows{border-bottom:1px solid var(--line)}
+    .row{display:grid;grid-template-columns:minmax(220px,1.45fr) 1fr 1.1fr 132px;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--line2);transition:background .15s}
+    .row:hover{background:rgba(255,255,255,.018)}
+    .row.current{background:rgba(184,246,221,.028);box-shadow:inset 2px 0 rgba(184,246,221,.55)}
+    .platform{display:flex;align-items:center;gap:11px}
+    .mark{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line);color:var(--mint);font-family:var(--mono);font-size:12px;flex:none}
+    .pname{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#fff}
+    .tag{display:none;border:1px solid rgba(184,246,221,.25);background:rgba(184,246,221,.06);padding:1px 5px;font-family:var(--mono);font-size:6.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mint)}
+    .row.current .tag{display:inline-block}
+    .pdetail{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:2px}
+    .format{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)}
+    .format small{display:block;margin-top:2px;font-size:8.5px;letter-spacing:0;text-transform:none;color:var(--muted)}
+    .note{font-family:var(--mono);font-size:8.5px;color:var(--muted)}
+    .dl{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;border:1px solid var(--line);height:34px;padding:0 11px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#c9d4d8;justify-self:end;transition:border-color .15s,color .15s}
+    .row:hover .dl,.dl:hover{border-color:rgba(184,246,221,.3);color:var(--mint)}
+    .pwa{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:14px;border:1px solid var(--line2);background:var(--panel);padding:13px 15px}
+    .pwa b{display:block;font-size:11.5px;color:#d7e2de;font-weight:400}
+    .pwa p{margin:2px 0 0;font-size:10.5px;color:var(--soft)}
+    .pwa a{flex:none;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);border:1px solid rgba(184,246,221,.25);padding:7px 10px}
+    .small{font-family:var(--mono);font-size:8px;line-height:1.7;color:var(--muted);margin:12px 0 0;max-width:960px}
+    .api{margin-top:54px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel2)}
+    .api .inner{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;padding:48px 0}
+    .api p,.harness p{margin:13px 0 0;max-width:520px;color:var(--soft);font-size:12.5px;line-height:1.65}
+    .api .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:1px solid var(--line2);margin-top:24px;padding-top:14px}
+    .stats b{display:block;font-family:var(--mono);font-size:12px;color:var(--mint);font-weight:400}
+    .stats span{display:block;margin-top:2px;font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .code{border:1px solid var(--line);background:#05070b;min-width:0}
+    .code .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line2);padding:9px 13px}
+    .code .bar span{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;color:var(--soft)}
+    .code .bar span:first-child::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--mint)}
+    .copy{border:0;background:none;color:var(--muted);font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:4px}
+    .copy:hover{color:var(--mint)}
+    pre{margin:0;padding:15px;overflow-x:auto;font-family:var(--mono);font-size:10px;line-height:1.8;color:#c9d4d8}
+    .harness .inner{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;padding:48px 0 54px}
+    .bullets{margin-top:20px;border-top:1px solid var(--line2)}
+    .bullet{display:flex;gap:10px;border-bottom:1px solid var(--line2);padding:9px 0}
+    .bullet i{width:3px;height:3px;border-radius:50%;background:var(--mint);margin-top:7px;flex:none}
+    .bullet b{display:block;font-size:10.5px;color:#d7e2de;font-weight:400}
+    .bullet span{display:block;margin-top:1px;font-size:9.5px;color:var(--muted)}
+    .endpoints{border-top:1px solid var(--line2);padding:11px 13px;font-family:var(--mono);font-size:8px;color:var(--muted)}
+    .endpoints div{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
+    .endpoints b{font-weight:400;color:#c9d4d8}
+    .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;border-top:1px solid var(--line);padding:22px 0 40px;margin-top:0}
+    .trust div{display:flex;gap:9px}
+    .trust b{display:block;font-size:10.5px;color:#d7e2de;font-weight:400}
+    .trust a,.trust span{display:block;margin-top:2px;font-family:var(--mono);font-size:8px;color:var(--muted)}
+    .trust a:hover{color:#fff}
+    .foot{border-top:1px solid var(--line);padding:24px 0 30px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:8px;color:var(--muted)}
+    .foot a:hover{color:#fff}
+    html.js .reveal{opacity:0;transform:translateY(7px);transition:opacity .42s ease,transform .42s ease}
+    html.js .reveal.in{opacity:1;transform:none}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}html.js .reveal{opacity:1;transform:none;transition:none}}
+    @media(max-width:900px){
+      .shell{padding:0 18px}.nav{display:none}.hero{grid-template-columns:1fr;gap:30px;padding:40px 0 38px}.preview{max-width:520px}
+      .api .inner,.harness .inner{grid-template-columns:1fr;gap:26px;padding:34px 0}.section-head{display:block}.release{margin-top:9px}
+      .trust{grid-template-columns:1fr;gap:10px}.head .bar{height:56px}.head .open{font-size:8px;padding:7px 9px}
+      .row{grid-template-columns:1fr 1fr;gap:9px 14px;padding:13px 0}.platform{grid-column:1/-1}.note{grid-column:1/-1}.dl{justify-self:start;grid-column:1/-1}
+      .pwa{align-items:flex-start;flex-direction:column}.pwa a{align-self:flex-start}.meta{gap:6px 10px}.section{padding-top:34px}
+    }
+    @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.preview .body{grid-template-columns:34px 1fr}.preview .main{padding:12px}.api .inner,.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
+  </style>
+</head>
+<body>
+  <header class="head">
+    <div class="shell bar">
+      <a class="brand" href="/" aria-label="Verxl home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>
+        <span>Verxl</span>
+      </a>
+      <nav class="nav" aria-label="Site">
+        <a href="/">Overview</a>
+        <a class="active" href="/products">Products</a>
+        <a href="/playground">Playground</a>
+        <a href="/chat">Chat</a>
+        <a href="/api">API</a>
+        <a href="/about">About</a>
+      </nav>
+      <a class="open" href="/chat?app=1">Open app ↗</a>
+    </div>
+  </header>
 
-    <!-- Google Fonts: Inter and JetBrains Mono -->
-      <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Verxl" />
-  </head>
-  <body class="bg-[#080c14] text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white min-h-screen">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><i></i> Products / Release 0.1.0</div>
+        <h1>Verxl on your<br />desktop.</h1>
+        <p class="lede">Chat, Playground, Registry and API as one installed workspace. The same code, the same account, the same clearing path — on macOS, Windows, Linux and Android.</p>
+        <div class="actions">
+          <a id="primary" class="btn primary" href="#downloads"><span data-label>Choose your platform</span><span aria-hidden="true">↓</span></a>
+          <a class="btn ghost" href="/chat?app=1">Open the web app</a>
+          <a class="link" href="/api">API keys ↗</a>
+        </div>
+        <div class="meta"><span><i class="dot"></i><b id="detected">Choose a build</b></span><span>4 platforms</span><span>1 codebase</span><span>Live workspace</span></div>
+      </div>
+
+      <aside class="preview" aria-label="Installed workspace preview">
+        <div class="top"><span class="brand" style="font-size:12px"><svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>Verxl</span><span>Installed</span></div>
+        <div class="body">
+          <div class="rail"><i></i><i></i><i></i><i></i></div>
+          <div class="main">
+            <div class="kick">Workspace</div>
+            <div class="routes">
+              <div class="route"><span>Chat</span><span>active</span></div>
+              <div class="route"><span>Playground</span><span>live</span></div>
+              <div class="route"><span>Registry</span><span>live</span></div>
+              <div class="route"><span>API</span><span>keys</span></div>
+            </div>
+            <div class="same"><b><i class="dot"></i>Same code</b><p>The shell loads the live app.</p></div>
+          </div>
+        </div>
+        <div class="foot"><div><span>Routes</span><b>4</b></div><div><span>Platforms</span><b>4 + PWA</b></div></div>
+      </aside>
+    </section>
+
+    <section id="downloads" class="section reveal">
+      <div class="section-head">
+        <div><div class="eyebrow">01 / Native</div><h2>Download the workspace.</h2></div>
+        <div class="release"><span>v0.1.0</span><i></i><a href="https://github.com/simonhavlik/verxl-protocol/releases/tag/v0.1.0" target="_blank" rel="noopener">Release notes ↗</a><i></i><a href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/SHA256SUMS" target="_blank" rel="noopener">Checksums ↗</a></div>
+      </div>
+      <div class="rows">
+        <div class="row" data-os="macos">
+          <div class="platform"><span class="mark">⌘</span><div><div class="pname">macOS <span class="tag">Your build</span></div><div class="pdetail">Apple Silicon · macOS 12+</div></div></div>
+          <div class="format">DMG<small>98 MB</small></div><div class="note">Unsigned: right-click → Open</div>
+          <a class="dl" href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-mac-arm64.dmg">Download ↓</a>
+        </div>
+        <div class="row" data-os="windows">
+          <div class="platform"><span class="mark">⊞</span><div><div class="pname">Windows <span class="tag">Your build</span></div><div class="pdetail">Windows 10/11 · x64</div></div></div>
+          <div class="format">EXE<small>82 MB</small></div><div class="note">Unsigned: SmartScreen may warn</div>
+          <a class="dl" href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-win-x64.exe">Download ↓</a>
+        </div>
+        <div class="row" data-os="linux">
+          <div class="platform"><span class="mark">$_</span><div><div class="pname">Linux <span class="tag">Your build</span></div><div class="pdetail">x86_64 · AppImage</div></div></div>
+          <div class="format">AppImage<small>108 MB</small></div><div class="note">chmod +x, then run</div>
+          <a class="dl" href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-linux-x86_64.AppImage">Download ↓</a>
+        </div>
+        <div class="row" data-os="android">
+          <div class="platform"><span class="mark">A</span><div><div class="pname">Android <span class="tag">Your build</span></div><div class="pdetail">Android 7+ · debug APK</div></div></div>
+          <div class="format">APK<small>3.7 MB</small></div><div class="note">Sideload; Play Store build later</div>
+          <a class="dl" href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-android.apk">Download ↓</a>
+        </div>
+      </div>
+      <div class="pwa"><div><b>iOS and any other platform</b><p>Install the same workspace from the browser. Safari: Share → Add to Home Screen.</p></div><a href="/chat?app=1">Open web app ↗</a></div>
+      <p class="small">Desktop builds are unsigned. macOS: right-click → Open. Windows: SmartScreen may warn. Android is a debug APK until Play Store signing. All shells load the live workspace, so updates ship with the web.</p>
+    </section>
+
+    <section class="api reveal">
+      <div class="inner">
+        <div>
+          <div class="eyebrow">02 / API</div><h2>Build against the clearing layer.</h2>
+          <p>One OpenAI-compatible endpoint. 50 bps on compute. 99.5% to the provider. USDC settlement on Arbitrum. Start with a key, test in the playground, ship the same route.</p>
+          <div class="btns"><a class="btn primary" href="/api">Create API key ↗</a><a class="btn ghost" href="/playground">Open playground ↗</a></div>
+          <div class="stats"><div><b>50 bps</b><span>clearing fee</span></div><div><b>99.5%</b><span>to provider</span></div><div><b>USDC</b><span>Arbitrum</span></div></div>
+        </div>
+        <div class="code">
+          <div class="bar"><span>POST /v1/chat/completions</span><button class="copy" data-copy="curl https://verxl.com/v1/chat/completions \&#10;  -H &quot;Authorization: Bearer $VERXL_API_KEY&quot; \&#10;  -H &quot;Content-Type: application/json&quot; \&#10;  -d '{&quot;model&quot;:&quot;deepseek-v4.1-flash&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Hello&quot;}],&quot;stream&quot;:true}'">Copy</button></div>
+          <pre><code>curl https://verxl.com/v1/chat/completions \
+  -H "Authorization: Bearer $VERXL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-v4.1-flash",
+    "messages": [{ "role": "user", "content": "Hello" }],
+    "stream": true
+  }'</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section harness reveal">
+      <div class="inner">
+        <div>
+          <div class="eyebrow">03 / Harness</div><h2>Bring your own harness.</h2>
+          <p>Keep the editor, CLI or coding agent you already use. Point it at Verxl through the OpenAI-compatible base URL and select a routed model. Your harness stays yours; the clearing path handles access, metering and settlement.</p>
+          <div class="bullets">
+            <div class="bullet"><i></i><div><b>No SDK required</b><span>Use the standard OpenAI Chat Completions API.</span></div></div>
+            <div class="bullet"><i></i><div><b>Streaming</b><span>Token streaming with usage and clearing receipt.</span></div></div>
+            <div class="bullet"><i></i><div><b>Model choice</b><span>Qwen 3.5 4B, DeepSeek V4.1 Flash, MiMo 2.6 Flash.</span></div></div>
+            <div class="bullet"><i></i><div><b>Tool calling</b><span>Where the routed model supports it.</span></div></div>
+          </div>
+          <div class="btns"><a class="btn ghost" href="/api">Create a key ↗</a><a class="link" href="/playground">Test a request ↗</a></div>
+        </div>
+        <div class="code">
+          <div class="bar"><span>YOUR SHELL</span><button class="copy" data-copy="export OPENAI_BASE_URL=&quot;https://verxl.com/v1&quot;&#10;export OPENAI_API_KEY=&quot;vrxl_...&quot;">Copy</button></div>
+          <pre><code><span style="color:#65737b">$</span> export OPENAI_BASE_URL=<span style="color:#b8f6dd">"https://verxl.com/v1"</span>
+<span style="color:#65737b">$</span> export OPENAI_API_KEY=<span style="color:#b8f6dd">"vrxl_..."</span>
+<span style="color:#65737b">$</span> your-harness --model deepseek-v4.1-flash</code></pre>
+          <div class="endpoints"><div><span>Base URL</span><b>https://verxl.com/v1</b></div><div><span>Chat</span><b>POST /v1/chat/completions</b></div><div><span>Streaming</span><b>SSE · data: [DONE]</b></div><div><span>Auth</span><b>Authorization: Bearer</b></div></div>
+          <div class="bar" style="border-top:1px solid var(--line2);border-bottom:0"><span>BRING YOUR OWN TOOLS</span><a class="copy" style="text-decoration:none" href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener">Source ↗</a></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="trust">
+      <div><span style="color:#b8f6dd">◇</span><div><b>Unsigned, checksummed</b><a href="https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/SHA256SUMS" target="_blank" rel="noopener">SHA-256 checksums ↗</a></div></div>
+      <div><span style="color:#b8f6dd">◇</span><div><b>Built by Actions</b><a href="https://github.com/simonhavlik/verxl-protocol/actions/workflows/native.yml" target="_blank" rel="noopener">Native build pipeline ↗</a></div></div>
+      <div><span style="color:#b8f6dd">◇</span><div><b>Same workspace</b><a href="/chat?app=1">Open the four-page app ↗</a></div></div>
+    </div>
+  </main>
+
+  <footer class="shell foot">
+    <div>Verxl Protocol · <a href="/about">About</a> · <a href="/api">API</a> · <a href="https://github.com/simonhavlik/verxl-protocol" target="_blank" rel="noopener">Source</a></div>
+    <div>© 2026 Verxl · Sepolia demonstration</div>
+  </footer>
+
+  <script>
+  (function(){
+    document.documentElement.classList.add('js');
+    var ua=navigator.userAgent||'', pf=((navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'').toLowerCase(), label=pf+' '+ua.toLowerCase(), p='unknown';
+    if(/android/i.test(ua))p='android';
+    else if(/iphone|ipad|ipod/i.test(ua)||/cros/i.test(ua)||(navigator.maxTouchPoints>1&&/macintosh/i.test(ua)))p='web';
+    else if(/windows|win32|win64|winnt/i.test(label))p='windows';
+    else if(/macintosh|mac os x|macintel|macppc/i.test(label))p='macos';
+    else if(/linux|x11|ubuntu|fedora|debian/i.test(label))p='linux';
+    var map={
+      windows:{label:'Download for Windows',detail:'Windows 10/11 · x64',href:'https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-win-x64.exe'},
+      macos:{label:'Download for macOS',detail:'Apple Silicon · macOS 12+',href:'https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-mac-arm64.dmg'},
+      linux:{label:'Download for Linux',detail:'AppImage · x86_64',href:'https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-linux-x86_64.AppImage'},
+      android:{label:'Download for Android',detail:'debug APK · Android 7+',href:'https://github.com/simonhavlik/verxl-protocol/releases/download/v0.1.0/Verxl-0.1.0-android.apk'},
+      web:{label:'Install the web app',detail:'PWA · iOS / browser',href:'/chat?app=1'}
+    };
+    var primary=document.getElementById('primary'), detected=document.getElementById('detected');
+    if(map[p]){
+      primary.href=map[p].href; primary.querySelector('[data-label]').textContent=map[p].label;
+      detected.textContent='Detected: '+map[p].detail;
+      var row=document.querySelector('[data-os="'+p+'"]'); if(row)row.classList.add('current');
+    } else { detected.textContent='Choose a build below'; }
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('.copy'); if(!b||!b.dataset.copy)return;
+      navigator.clipboard.writeText(b.dataset.copy).then(function(){var t=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=t},1400)}).catch(function(){});
+    });
+    var reveal=document.querySelectorAll('.reveal');
+    if('IntersectionObserver' in window){
+      reveal.forEach(function(el){el.classList.add('in')});
+      var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{rootMargin:'120px 0px'});
+      reveal.forEach(function(el){el.classList.remove('in');io.observe(el)});
+    }
+  })();
+  </script>
+</body>
 </html>

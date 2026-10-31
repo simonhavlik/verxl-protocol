@@ -10,7 +10,6 @@ const loaders: Record<string, Loader> = {
   about: () => import("../components/Vision"),
   console: () => import("../components/Console"),
   legal: () => import("../components/Legal"),
-  products: () => import("../components/Products"),
 };
 
 const pending = new Map<string, Promise<unknown>>();
