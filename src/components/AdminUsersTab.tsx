@@ -146,7 +146,7 @@ export const AdminUsersTab: React.FC = () => {
             </span>
           </div>
           <p className="text-[11px] text-slate-400 font-sans">
-            Inspect registered users, rewrite non-custodial balances, toggle account suspensions, and audit token usage activity across Charizard PostgreSQL.
+            Inspect registered users, adjust held balances, toggle account suspensions, and audit token usage activity across Charizard PostgreSQL.
           </p>
         </div>
         <button

@@ -145,7 +145,7 @@ class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundary
               Telemetry Rail Exception Intercepted
             </h3>
             <p className="text-xs text-slate-400 max-w-md mx-auto font-sans">
-              A temporary render fault occurred while hydrating data. Your non-custodial cryptographic keys, on-chain balances, and account session are 100% secure.
+              A temporary render fault occurred while hydrating data. Your wallet keys are never held by us, and your account session is unaffected.
             </p>
           </div>
           {this.state.error?.message && (

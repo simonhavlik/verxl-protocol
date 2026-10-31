@@ -29,7 +29,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
             <span className="text-emerald-400 text-[11px]">EU & Czechia Jurisdiction</span>
           </div>
           <p className="text-[11px] text-slate-400 font-sans">
-            Formal legal terms, GDPR privacy covenants, non-custodial declarations, and EU MiCA regulatory perimeter.
+            Formal terms of service, GDPR privacy disclosures, settlement model and EU MiCA regulatory position.
           </p>
         </div>
 
@@ -420,7 +420,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
             <div className="bg-amber-950/30 border border-amber-500/40 rounded-[2px] p-3 text-amber-200 text-xs space-y-1 font-mono">
               <div className="font-bold flex items-center gap-1.5 uppercase text-amber-300">
                 <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
-                <span>Critical Notice: Software Protocol Only — No Fiduciary or Custodial Relationship</span>
+                <span>Critical Notice: Software Protocol Only — No Fiduciary Duty; the Operator Holds Settlement Balances</span>
               </div>
               <p className="text-[11px] leading-relaxed">
                 Verxl Protocol is an open-source decentralized clearing software router. By interacting with the smart contracts, APIs or website, you acknowledge that compute clearing is software-driven, that balances are held by the operator and credited to your account, and that you are at least 18 years old. You assume all operational, financial and technological risks.
@@ -584,12 +584,16 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
             <div className="space-y-1.5">
               <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                 <span className="text-blue-400">11.</span>
-                <span>Fees, Payments, Taxes & No Custody</span>
+                <span>Fees, Payments, Balances & Custody of Settlement Funds</span>
               </h2>
               <p>
                 The protocol clearing fee is 50 basis points (0.5%) of the applicable compute charge, unless a model
-                page states otherwise. Payments are made in USDC on Arbitrum to the published treasury address; we do
-                not take custody of your wallet, private keys or crypto-assets. Blockchain transactions are irreversible;
+                page states otherwise. Payments are made in USDC on Arbitrum to the published settlement address. USDC
+                received is credited to your internal balance and is held by the operator until it is spent on
+                inference or a payout is made; it is not held in a smart contract and no on-chain claim is created in
+                your favour. There is no self-service withdrawal function: return of an unused balance requires a
+                manual request to <code className="text-cyan-300">support@verxl.com</code> and is not guaranteed. We
+                never take possession of your wallet or your private keys. Blockchain transactions are irreversible;
                 network fees are separate. You are responsible for any taxes applicable to you. Except where mandatory
                 law requires otherwise, consumed compute and clearing fees are non-refundable. You are responsible for
                 complying with sanctions, export-control and local law in your jurisdiction.
@@ -822,7 +826,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </h2>
               <ul className="list-disc pl-5 space-y-1 text-slate-300">
                 <li>
-                  <strong>Commercial Operating Entity:</strong> Verxl Protocol operates as an open-source research initiative and non-custodial decentralized clearinghouse. Founding assembly role allocations on presentation decks reflect functional governance domains within the VŠE competition initiative.
+                  <strong>Commercial Operating Entity:</strong> Verxl Protocol operates as an open-source research initiative and decentralized clearing project. Founding assembly role allocations on presentation decks reflect functional governance domains within the VŠE competition initiative.
                 </li>
                 <li>
                   <strong>Settlement Design:</strong> Deposits are received into a protocol settlement account and credited to an internal balance; provider payouts are settled from that account. Funds are not yet routed through an immutable contract, so the claim against the operator is not backed by a segregated or guaranteed arrangement.

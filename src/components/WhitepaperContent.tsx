@@ -189,7 +189,7 @@ export const WhitepaperContent: React.FC = () => {
 {`+------------------------------------------------------------------------------------+
 |                          VERXL PROTOCOL FEE COMPOSITION                            |
 |                                                                                    |
-|  [ Compute Provider Net Payout: 99.50% ] + [ Verxl DAO Vault Protocol Fee: 0.50% ] |
+|  [ Compute Provider Net Payout: 99.50% ] + [ Verxl Protocol Fee: 0.50% ]          |
 |  ───────────────────────────────────────────────────────────────────────────────── |
 |                         Total Intermediary Cost: 0.50%                             |
 +------------------------------------------------------------------------------------+`}
@@ -380,7 +380,7 @@ for chunk in response:
             5. Aragon OSx Governance Architecture
           </h3>
           <p className="text-[13.5px] text-slate-300">
-            Verxl DAO is structured using the Aragon OSx protocol standard on Ethereum Sepolia, providing non-custodial asset custody, programmatic access controls, and transparent token-weighted voting.
+            Verxl DAO is structured using the Aragon OSx protocol standard on Ethereum Sepolia, with on-chain asset custody controlled by token-weighted voting rather than by any single keyholder, programmatic access controls, and transparent voting records.
           </p>
 
           <pre className="font-mono text-[9.5px] sm:text-[10.5px] leading-tight text-blue-300 bg-[#05070b] border border-slate-800 p-3 rounded-[2px] overflow-x-auto">

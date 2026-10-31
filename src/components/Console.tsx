@@ -1323,7 +1323,7 @@ main();`,
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Connect your MetaMask Web3 wallet for instant, non-custodial access to API keys, model routing, and balance clearing. Email is completely optional.
+                Connect your MetaMask Web3 wallet for instant, non-custodial authentication to API keys and model routing. Your balance is held by the operator, not in your wallet. Email is completely optional.
               </p>
               <button
                 type="button"

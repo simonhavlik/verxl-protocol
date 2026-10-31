@@ -33,7 +33,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </span>
             </div>
             <p className="max-w-sm text-[12.5px] leading-relaxed text-[#9aa7ad]">
-              Non-custodial inference clearing at a fixed 50 bps. Providers keep 99.5% in USDC on Arbitrum.
+              Inference clearing at a fixed 50 bps. Providers keep 99.5% in USDC on Arbitrum; user balances are held by the operator.
             </p>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[9px] text-[#7d8a92]">
               <span className="h-1 w-1 bg-[#b8f6dd]" />
