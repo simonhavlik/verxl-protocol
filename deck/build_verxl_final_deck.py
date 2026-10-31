@@ -443,30 +443,31 @@ tb(s, 0.65, 1.85, 5.9, 0.55, "Legal + product.", 27, INK, FONT, bold=True, spaci
 tb(s, 0.65, 2.42, 5.6, 0.55, "Set the legal structure. Resolve the MiCA / EU law position. Finish and test the project before any ads.", 8.5, GRAY, FONT, spacing=1.3)
 # January
 tb(s, 7.2, 1.55, 5.2, 0.2, "JANUARY 2027 →", 7.0, SAGE, MONO, caps=True, spacing=1)
-tb(s, 7.2, 1.85, 5.3, 0.55, "Ads + measurement.", 27, INK, FONT, bold=True, spacing=0.96)
-tb(s, 7.2, 2.42, 5.2, 0.55, "Start the ad test. Measure leads, conversion rate, revenue per user range, gross margin and net working capital.", 8.5, GRAY, FONT, spacing=1.3)
+tb(s, 7.2, 1.85, 5.3, 0.55, "Design partners.", 27, INK, FONT, bold=True, spacing=0.96)
+tb(s, 7.2, 2.42, 5.2, 0.55, "Onboard paid design partners. Measure deposit, usage, conversion, revenue per user, gross margin and net working capital. No paid ads at launch.", 8.5, GRAY, FONT, spacing=1.3)
 # bottom detail: no submission, no chart
 line(s, 0.65, 4.18, 12.68, 4.18, LINE, 0.8)
 tb(s, 0.65, 4.42, 4.1, 0.2, "WHAT WE MEASURE", 6.5, DEEP, MONO, caps=True, spacing=1)
 metrics = [
-    ("AD LEADS", "88", "2,427 clicks / $10k"),
-    ("CONVERSION", "5–10%", "4–9 funded"),
-    ("REVENUE / USER", "$6–$60", "per year"),
+    ("PAID ADS", "$0", "no paid ads at launch"),
+    ("AD LEADS", "measure", "after product"),
+    ("CONVERSION", "measure", "lead → funded"),
+    ("REVENUE / USER", "$6–$60/yr", "target API user"),
     ("GROSS MARGIN", "80%", "77–85% SaaS range"),
-    ("NET WORKING CAPITAL", "$0.4k–$9k", "1 month prepaid"),
+    ("NET WORKING CAPITAL", "measure", "prepaid float"),
 ]
 for i, (label, value, sub) in enumerate(metrics):
-    x = 0.65 + i * 2.42
-    tb(s, x, 4.68, 2.2, 0.18, label, 6.2, INK, MONO, caps=True, spacing=1)
-    tb(s, x, 4.86, 2.2, 0.3, value, 12.5, DEEP, FONT, bold=True, spacing=0.95)
-    tb(s, x, 5.18, 2.2, 0.18, sub, 6.4, GRAY, FONT, spacing=1.1)
-    line(s, x, 5.42, x + 2.20, 5.42, LINE, 0.7)
+    x = 0.65 + i * 2.02
+    tb(s, x, 4.68, 1.9, 0.18, label, 5.8, INK, MONO, caps=True, spacing=1)
+    tb(s, x, 4.86, 1.9, 0.3, value, 11.2, DEEP, FONT, bold=True, spacing=0.95)
+    tb(s, x, 5.18, 1.9, 0.18, sub, 5.8, GRAY, FONT, spacing=1.1)
+    line(s, x, 5.42, x + 1.85, 5.42, LINE, 0.7)
 # expectation + sequence
-tb(s, 0.65, 5.62, 12.0, 0.3, "Expected ad return 0.002–0.043×: paid ads do not pay back at 0.5%. Run a capped test, measure, and stay organic/design-partner led.", 8.6, DEEP, FONT, spacing=1.15)
-tb(s, 0.65, 5.96, 12.0, 0.28, "Sequence: legal structure and finished product first; ads and measurement from January 2027.", 8.2, GRAY, FONT, spacing=1.1)
-source(s, "Sources: RockingWeb 2025 (B2B tech CPC $4.12, CVR 3.64%); B2B SaaS lead-to-close 5–10%; OpenRouter $8M monthly customer spend / 5.1M users (2025); SaaS Capital 2025 (77% median / 85% top gross margin); CNB CZK/USD ≈20.8. Ranges, not a forecast.", 6.35)
+tb(s, 0.65, 5.62, 12.0, 0.3, "Paid ads at 0.5% take do not pay back. We do not run them. Growth is design-partner and open-source led; we measure real conversion before any spend.", 8.4, DEEP, FONT, spacing=1.15)
+tb(s, 0.65, 5.96, 12.0, 0.28, "Sequence: legal structure and finished product first; design partners and measurement from January 2027.", 8.2, GRAY, FONT, spacing=1.1)
+source(s, "Revenue/user range: target API user with $1.2k–$12k annual inference at 0.5% fee. Gross margin 80% vs SaaS Capital 2025 (77% median / 85% top). OpenRouter $8M monthly customer spend / 5.1M users (2025). Czech cost CZK 45k/mo. No ad funnel is projected from zero.", 6.35)
 footer(s, 7, "TIMEFRAME")
-notes(s, "Timeframe expectations: December 2026 is legal structure, MiCA/EU position and finishing/testing the product. January 2027 onward is ads and measurement. Expected ad leads: $10k at $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads. Lead-to-funded conversion 5-10% = 4-9 funded; CAC $1,111-$2,500. Revenue per user: $100-$1,000 monthly inference x 0.5% = $6-$60/year; gross margin 80% = $4.80-$48 GP/user/year. Cohort GP $19-$432; ad return 0.002x-0.043x, so paid ads are a capped test, not a growth channel. NWC from one month prepaid usage: $0.4k-$9k. Czech fixed cost CZK 45k/mo. No internal submission dates are presented. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://thunderbit.com/blog/lead-conversion-rate-statistics-benchmarks ; https://developer.puter.com/encyclopedia/openrouter/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/")
+notes(s, "Timeframe expectations: December 2026 is legal structure, MiCA/EU position and finishing/testing the product. January 2027 onward is paid design partners and measurement, not paid ads. Paid ads at 0.5% take do not pay back; no ad funnel is projected. Measure actual deposit, usage, lead-to-funded conversion, revenue per user, gross margin and net working capital. Target API user: $1.2k-$12k annual inference x 0.5% = $6-$60/year fee revenue. Gross margin 80% is the target against the 77%-85% SaaS benchmark. NWC is the prepaid float and is measured, not forecast. Czech fixed cost CZK 45k/mo. Sources: https://developer.puter.com/encyclopedia/openrouter/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/")
 
 # 8. CLOSING
 # 8. CLOSING
