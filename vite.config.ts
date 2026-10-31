@@ -32,6 +32,7 @@ export default defineConfig({
         consoleDir: path.resolve(__dirname, "console/index.html"),
         productsDir: path.resolve(__dirname, "products/index.html"),
         unsubscribeDir: path.resolve(__dirname, "unsubscribe/index.html"),
+        noticeDir: path.resolve(__dirname, "notice/index.html"),
         privacyDir: path.resolve(__dirname, "privacy/index.html"),
         termsDir: path.resolve(__dirname, "terms/index.html"),
         legalDir: path.resolve(__dirname, "legal/index.html"),

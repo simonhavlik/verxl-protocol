@@ -22,6 +22,7 @@ const About = lazy(() => import("./components/Vision").then((m) => ({ default: m
 const Console = lazy(() => import("./components/Console").then((m) => ({ default: m.Console })));
 const Legal = lazy(() => import("./components/Legal").then((m) => ({ default: m.Legal })));
 const Unsubscribe = lazy(() => import("./components/Unsubscribe").then((m) => ({ default: m.Unsubscribe })));
+const TestRunNotice = lazy(() => import("./components/TestRunNotice").then((m) => ({ default: m.TestRunNotice })));
 
 const TabLoadingFallback = () => (
   <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3 font-mono select-none">
@@ -190,6 +191,7 @@ function getTabFromPath(): string {
   if (path.includes("oracle")) return "oracle";
   if (path.includes("governance") || path.includes("dao")) return "governance";
   if (path.includes("unsubscribe")) return "unsubscribe";
+  if (path.includes("notice")) return "notice";
   if (path.includes("privacy") || path.includes("terms") || path.includes("legal") || path.includes("mica") || path.includes("charter") || path.includes("ip")) return "legal";
   return "overview";
 }
@@ -216,7 +218,7 @@ export default function App() {
     try { return sessionStorage.getItem("vrxl_app_mode") === "1"; } catch { return false; }
   });
   const isProductRoute = ["chat", "playground", "registry", "console"].includes(activeTab);
-  const isLegalRoute = ["legal", "privacy", "terms", "mica", "charter", "unsubscribe"].includes(activeTab);
+  const isLegalRoute = ["legal", "privacy", "terms", "mica", "charter", "unsubscribe", "notice"].includes(activeTab);
 
   // Sync tab changes with browser URL
   const handleTabChange = (tab: string) => {
@@ -351,6 +353,7 @@ export default function App() {
                   {activeTab === "governance" && <Governance />}
                   {activeTab === "about" && <About onNavigate={handleTabChange} />}
                   {activeTab === "unsubscribe" && <Unsubscribe />}
+                  {activeTab === "notice" && <TestRunNotice />}
                   {activeTab === "console" && <Console />}
                   {(activeTab === "legal" || activeTab === "privacy" || activeTab === "terms" || activeTab === "mica" || activeTab === "charter") && (
                     <Legal

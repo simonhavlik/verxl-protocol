@@ -63,9 +63,15 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070a0f]/85 backdrop-blur-xl max-md:static">
-      <div className="flex h-6 items-center justify-center gap-2 border-b border-white/5 bg-[#0b1016] px-3 font-mono text-[8.5px] uppercase tracking-[0.18em] text-[#b8f6dd]/70">
+      <div className="relative flex h-6 items-center justify-center gap-2 border-b border-white/5 bg-[#0b1016] px-3 font-mono text-[8.5px] uppercase tracking-[0.18em] text-[#b8f6dd]/70">
         <span className="h-1 w-1 bg-[#b8f6dd]" />
         <span>Sepolia test run</span>
+        <a
+          href="/notice"
+          className="absolute right-2 top-1/2 -translate-y-1/2 border border-[#b8f6dd]/20 px-1.5 py-0.5 text-[7px] tracking-[0.1em] text-[#b8f6dd]/80 transition hover:border-[#b8f6dd]/50 hover:text-[#b8f6dd]"
+        >
+          Test run notice
+        </a>
       </div>
 
       <div className="mx-auto flex h-[68px] max-md:h-[54px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
