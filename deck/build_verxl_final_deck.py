@@ -162,10 +162,8 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
-    data.categories = ("2", "5", "10", "20", "40", "80", "120")
-    data.add_series("GP @ $5k/mo", (40, 100, 200, 400, 800, 1600, 2400))
-    data.add_series("GP @ $15k/mo", (120, 300, 600, 1200, 2400, 4800, 7200))
-    data.add_series("Czech fixed cost", (2163, 2163, 2163, 2163, 2163, 2163, 2163))
+    data.categories = ("$1k", "$2.5k", "$5k", "$7.5k", "$10k", "$15k")
+    data.add_series("Funded customers required", (541, 216, 108, 72, 54, 36))
     gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
@@ -179,21 +177,26 @@ def financial_chart(s, x, y, w, h):
     va.major_gridlines.format.line.color.rgb = LINE
     va.major_gridlines.format.line.width = Pt(0.5)
     va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
-    va.tick_labels.number_format = '"$"#,##0'; va.tick_labels.number_format_is_linked = False
-    va.minimum_scale = 0; va.maximum_scale = 8000; va.major_unit = 2000
+    va.tick_labels.number_format = '#,##0'; va.tick_labels.number_format_is_linked = False
+    va.minimum_scale = 0; va.maximum_scale = 600; va.major_unit = 100
     va.format.line.color.rgb = LINE
     ca = ch.category_axis
     ca.tick_labels.font.size = Pt(7); ca.tick_labels.font.name = MONO
     ca.format.line.color.rgb = LINE
-    colors = [SAGE, DEEP, ROSE]
-    for i, series in enumerate(ch.series):
-        series.smooth = False
-        series.format.line.color.rgb = colors[i]
-        series.format.line.width = Pt(2.2 if i < 2 else 1.6)
-        series.marker.style = XL_MARKER_STYLE.CIRCLE
-        series.marker.size = 4
-        series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = colors[i]
-        series.marker.format.line.color.rgb = WHITE
+    series = ch.series[0]
+    series.smooth = False
+    series.format.line.color.rgb = DEEP
+    series.format.line.width = Pt(2.2)
+    series.marker.style = XL_MARKER_STYLE.CIRCLE
+    series.marker.size = 5
+    series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = DEEP
+    series.marker.format.line.color.rgb = WHITE
+    series.data_labels.show_value = True
+    series.data_labels.font.name = MONO
+    series.data_labels.font.size = Pt(7)
+    series.data_labels.font.bold = True
+    series.data_labels.font.color.rgb = INK
+    series.data_labels.position = XL_LABEL_POSITION.ABOVE
 
 # =====================================================================
 # 1. COVER
@@ -432,28 +435,28 @@ notes(s, "The product has six functions: route, registry, encryption, verificati
 # =====================================================================
 s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
-tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: first ad test. Long term: scale only if the unit economics work. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
+tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: paid design partners, measure actual CAC and usage. Long term: break-even threshold. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
 goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
-goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 signups", "2,427 clicks · 88 leads · 22 signups. 15 test with $1; 2–4 fund $1k. Paid CAC $2.5k–$5k; year-1 GP $0.5k–$2.9k (0.05–0.29×).")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "36–109 funded to cover costs", "Czech fixed cost CZK 45k/mo. At $5k–$15k GMV/customer, break-even is 109–36 funded. Paid ads do not scale; build organic/community.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL TEST  /  CZECH COST BASE  /  FUNDED CUSTOMERS", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, 0.65, 3.18, 7.4, 0.18, "Monthly gross profit by funded customers vs. Czech fixed cost (CZK 45k/mo ≈ $2,163)", 7.2, SAGE, FONT, spacing=1.1)
+goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "Design partners, no paid ads", "Onboard first paid design partners. Measure actual deposit, monthly usage and CAC. Do not extrapolate a funnel from zero.")
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "Break-even is a threshold", "CZK 45k/mo fixed cost at 80% margin and 0.5% take requires CZK 11.25M monthly GMV: 36–541 funded customers.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  BREAK-EVEN REQUIREMENT, NOT A FORECAST", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 3.18, 7.4, 0.18, "Funded customers required to cover CZK 45k/mo at 0.5% take and 80% margin", 7.2, SAGE, FONT, spacing=1.1)
 financial_chart(s, 0.65, 3.40, 7.35, 2.70)
 kpis = [
-    ("FIRST ADS", "2–4 funded", "22 signups · 15 at $1"),
-    ("PAID CAC", "$2.5k–$5k", "$10k / funded customer"),
-    ("YEAR-1 GP / ADS", "$0.5k–$2.9k", "0.05–0.29× return"),
-    ("BREAK-EVEN", "36–109 funded", "at $15k–$5k GMV/mo"),
     ("CZECH FIXED COST", "CZK 45k/mo", "≈$2,163 at 20.8 CZK/USD"),
-    ("PREPAID FLOAT", "$2k–$4k", "2–4 × $1k deposit"),
+    ("BREAK-EVEN GMV", "CZK 11.25M/mo", "≈$541k/mo"),
+    ("AT $5K / CUSTOMER", "108 funded", "CZK 104k/mo usage"),
+    ("AT $15K / CUSTOMER", "36 funded", "CZK 312k/mo usage"),
+    ("GROSS MARGIN", "80%", "0.5% take × 80%"),
+    ("PAID ADS", "$0", "until measured LTV/CAC >3×"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.18, 7.4, 0.22, "Czech cost base: part-time contractor CZK 25k + legal/accounting 8k + software/domains 5k + office/other 7k. Founder unpaid.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Funded conversion: 22 signups × 10% = 2–4 funded; year-1 GP = funded × 12 × GMV/customer × 0.5% × 80%. 15 signups test with $1. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Ads: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; 25% signup assumption. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. Ranges, not a forecast.", 6.42)
+tb(s, 0.65, 6.18, 7.4, 0.22, "Break-even GMV = CZK 45k / (0.5% × 80%) = CZK 11.25M/mo. Czech cost: contractor 25k + legal/accounting 8k + software 5k + office 7k. No paid ads until measured.", 5.8, DEEP, FONT, spacing=1.1)
+source(s, "Math: CZK 45,000 / (0.005 × 0.80) = CZK 11.25M monthly GMV; customers = CZK 11.25M / monthly usage per customer. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. No ad funnel is projected from zero.", 6.42)
 footer(s, 6, "EVALUATION")
-notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product before any ads. Mid term: the first $10k ad test. At $4.12 CPC: 2,427 clicks; 3.64% CVR: 88 leads; 25% signup: 22 signups. But most are testers: 15 deposit $1; 2-4 become funded accounts at up to $1,000. Paid CAC per funded account is $2,500-$5,000. Year-1 GP from 2-4 funded accounts at $5k-$15k monthly usage: 2-4 x 12 x $5k-$15k x 0.5% fee x 80% margin = $480-$2,880; return 0.05-0.29x on $10k ads. Paid ads do not pay back at 0.5%; they are a measurable test, not a growth channel. Do not scale ads. Long term: organic/community/build-in-public; need 36-109 funded customers at $5k-$15k/month to cover Czech fixed costs. Czech cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k = CZK 45k/mo = $2,163 at 20.8 CZK/USD. Full-time Czech developer average gross CZK 439k/year (~36.6k/month) plus 33.8% employer contributions; a full-time hire is later. Prepaid float from ad cohort: 2-4 funded x $1k = $2k-$4k; 1% breakage $20-$40; testers at $1. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
+notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product. Mid term: onboard paid design partners; measure actual deposit, monthly usage and CAC; do not invent an ad funnel from zero. Long term: break-even is a threshold, not a forecast. Czech fixed cost CZK 45k/mo; at 0.5% take and 80% gross margin, required monthly GMV = 45,000 / (0.005 x 0.80) = CZK 11.25M. At $5k/customer/month (CZK 104k), 108 funded customers; at $15k/customer/month (CZK 312k), 36. The chart is a break-even sensitivity, not a projection. No paid ads until measured LTV/CAC >3x. Czech cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k. Full-time Czech developer average gross CZK 439k/year plus 33.8% employer contributions; later. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
 
 # 7. DEADLINE
 # =====================================================================
