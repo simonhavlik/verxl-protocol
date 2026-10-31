@@ -134,7 +134,7 @@ export function renderVerxlEmail({ preheader, eyebrow, title1, title2, intro, co
                 Verxl Protocol · Prague · Sepolia test run<br>
                 This is a transactional security message; not marketing.<br>
                 <span style="color:${STEEL};">me@simonhavlik.com</span> · <span style="color:${STEEL};">verxl.com</span><br>
-                <a href="https://verxl.com/unsubscribe" style="color:${MINT};text-decoration:underline;">Unsubscribe / email preferences</a>
+                <a href="https://verxl.com/unsubscribe" style="display:inline-block;margin-top:5px;border:1px solid ${MINT};padding:5px 9px;color:${MINT};text-decoration:none;font-family:${MONO};font-size:8px;letter-spacing:0.8px;text-transform:uppercase;">Unsubscribe / email preferences</a>
               </div>
             </td>
           </tr>

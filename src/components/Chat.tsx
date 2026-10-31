@@ -2631,6 +2631,9 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
               <p className="mt-2 max-w-md text-[12.5px] leading-relaxed text-[#8b989e]">
                 Ask anything. Your chats are encrypted in this browser.
               </p>
+              <p className="mt-2 max-w-md font-mono text-[8.5px] uppercase tracking-[0.1em] text-[#65737b]">
+                AI-generated responses may be inaccurate. Verify important information.
+              </p>
               <div className="mt-9 grid w-full max-w-xl grid-cols-1 gap-1.5 text-left sm:grid-cols-2">
                 {STARTER_PROMPTS.slice(0, 4).map((starter, i) => (
                   <button
@@ -3788,6 +3791,12 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                               Sign out
                             </button>
                           )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-white/[0.07] pt-4 font-mono text-[8px] uppercase tracking-[0.1em] text-[#65737b]">
+                          <a href="/privacy" className="transition hover:text-[#b8f6dd]">Privacy</a>
+                          <a href="/terms" className="transition hover:text-[#b8f6dd]">Terms</a>
+                          <a href="/unsubscribe" className="transition hover:text-[#b8f6dd]">Email preferences</a>
+                          <a href="/legal" className="transition hover:text-[#b8f6dd]">Legal</a>
                         </div>
                       </div>
                     )}
