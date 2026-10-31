@@ -1190,6 +1190,15 @@ td, th, .tabular, .font-mono {
 }
 .chat-prose td { border: 1px solid rgba(255, 255, 255, 0.06); padding: 5px 8px; color: #c9d4d8; }
 .chat-prose a { color: #b8f6dd; text-decoration: underline; text-underline-offset: 3px; }
+.chat-prose .katex { font-size: 1.04em; color: #f3f6f5; }
+.chat-prose .katex-display {
+  margin: 0.85rem 0;
+  padding: 0.15rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.chat-prose .katex-display > .katex { white-space: normal; }
+.chat-prose .katex .mord.text { color: inherit; }
 .chat-prose hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 1rem 0; }
 
 /* Product route transition: rail stays; only the workspace changes. */

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { marked } from "marked";
+import markedKatex from "marked-katex-extension";
+import "katex/dist/katex.min.css";
 import {
   deriveChatKey,
   encryptChatPayload,
@@ -56,6 +58,14 @@ marked.setOptions({
   gfm: true,
   breaks: true,
 });
+
+marked.use(
+  markedKatex({
+    throwOnError: false,
+    nonStandard: false,
+    output: "htmlAndMathml",
+  })
+);
 
 const VegaChart = ({ spec }: { spec: any }) => {
   const ref = useRef<HTMLDivElement>(null);
