@@ -7,7 +7,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_MARKER_STYLE
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_MARKER_STYLE, XL_LABEL_POSITION
 from pptx.oxml.ns import qn
 
 ASSETS = os.path.join(os.path.dirname(__file__), "assets")
@@ -162,88 +162,40 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
-    data.categories = ("2027", "2028", "2029", "2030", "2031")
-    data.add_series("Low", (-12, -9, -3, 10, 30))
-    data.add_series("Base", (-10, -1, 6, 30, 100))
-    data.add_series("High", (-8, 2, 18, 70, 180))
-    gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
+    data.categories = ("Low", "Base", "High", "Ad spend")
+    data.add_series("Year-1 gross profit", (5.3, 10.6, 15.8, 10.0))
+    gf = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
     ch.has_title = False
-    ch.has_legend = True
-    ch.legend.position = XL_LEGEND_POSITION.BOTTOM
-    ch.legend.include_in_layout = False
-    ch.legend.font.size = Pt(6.5); ch.legend.font.name = FONT
+    ch.has_legend = False
+    plot = ch.plots[0]
+    plot.gap_width = 55
+    plot.has_data_labels = True
+    labels = plot.data_labels
+    labels.font.name = MONO; labels.font.size = Pt(7); labels.font.bold = True
+    labels.font.color.rgb = INK
+    labels.number_format = '"$"#,##0.0"k"'; labels.number_format_is_linked = False
+    labels.position = XL_LABEL_POSITION.OUTSIDE_END
     va = ch.value_axis
     va.has_major_gridlines = True
     va.major_gridlines.format.line.color.rgb = LINE
     va.major_gridlines.format.line.width = Pt(0.5)
     va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
     va.tick_labels.number_format = '"$"#,##0"k"'; va.tick_labels.number_format_is_linked = False
-    va.minimum_scale = -20; va.maximum_scale = 200; va.major_unit = 50
+    va.minimum_scale = 0; va.maximum_scale = 18; va.major_unit = 5
     va.format.line.color.rgb = LINE
     ca = ch.category_axis
-    ca.tick_labels.font.size = Pt(6.8); ca.tick_labels.font.name = MONO
+    ca.tick_labels.font.size = Pt(7); ca.tick_labels.font.name = MONO
     ca.format.line.color.rgb = LINE
-    colors = [SOFT, DEEP, SAGE]
-    for i, series in enumerate(ch.series):
-        series.smooth = False
-        series.format.line.color.rgb = colors[i]
-        series.format.line.width = Pt(2.0)
-        series.marker.style = XL_MARKER_STYLE.CIRCLE
-        series.marker.size = 5
-        series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = colors[i]
-        series.marker.format.line.color.rgb = WHITE
+    series = ch.series[0]
+    colors = [SAGE, DEEP, MINT, ROSE]
+    for i, color in enumerate(colors):
+        pt = series.points[i]
+        pt.format.fill.solid(); pt.format.fill.fore_color.rgb = color
+        pt.format.line.color.rgb = color
+    series.format.line.color.rgb = LINE
 
-def financial_table(s, x, y, w, h):
-    rows = [
-        ("Paying accounts", "100", "500", "1,500", "4,000", "10,000"),
-        ("GMV / account / mo", "$2.5k", "$3.0k", "$4.0k", "$5.0k", "$8.0k"),
-        ("GMV ($M)", "3.0", "18.0", "72.0", "240.0", "960.0"),
-        ("Revenue ($k)", "15", "90", "360", "1,200", "4,800"),
-        ("Gross profit ($k)", "12", "72", "288", "960", "3,840"),
-        ("Opex ($k)", "210", "350", "600", "1,000", "1,500"),
-        ("EBITDA ($k)", "(198)", "(278)", "(312)", "(40)", "2,340"),
-        ("Tax ($k)", "0", "0", "0", "0", "(318)"),
-        ("Capex + ΔNWC ($k)", "(0.5)", "(2.7)", "(10.8)", "(36)", "(144)"),
-        ("Free cash flow ($k)", "(198)", "(275)", "(301)", "(4)", "2,166"),
-        ("Cumulative FCF ($k)", "(198)", "(473)", "(774)", "(778)", "1,388"),
-    ]
-    shape = s.shapes.add_table(len(rows) + 1, 6, Inches(x), Inches(y), Inches(w), Inches(h))
-    t = shape.table
-    t.columns[0].width = Inches(1.72)
-    for i in range(1, 6):
-        t.columns[i].width = Inches((w - 1.72) / 5)
-    t.rows[0].height = Inches(0.33)
-    for i in range(1, len(rows) + 1):
-        t.rows[i].height = Inches((h - 0.33) / len(rows))
-    heads = ["METRIC", "2027", "2028", "2029", "2030", "2031"]
-    for j, head in enumerate(heads):
-        c = t.cell(0, j)
-        c.text = head
-        c.fill.solid(); c.fill.fore_color.rgb = DEEP
-        c.margin_left = c.margin_right = Inches(0.04)
-        c.margin_top = c.margin_bottom = Inches(0.01)
-        c.vertical_anchor = MSO_ANCHOR.MIDDLE
-        p = c.text_frame.paragraphs[0]
-        p.alignment = PP_ALIGN.LEFT if j == 0 else PP_ALIGN.RIGHT
-        for r in p.runs:
-            r.font.name = MONO; r.font.size = Pt(6.2); r.font.bold = True; r.font.color.rgb = WHITE
-    for i, row in enumerate(rows, 1):
-        for j, val in enumerate(row):
-            c = t.cell(i, j)
-            c.text = val
-            c.fill.solid(); c.fill.fore_color.rgb = WHITE if i % 2 else OFF
-            c.margin_left = c.margin_right = Inches(0.04)
-            c.margin_top = c.margin_bottom = Inches(0.01)
-            c.vertical_anchor = MSO_ANCHOR.MIDDLE
-            p = c.text_frame.paragraphs[0]
-            p.alignment = PP_ALIGN.LEFT if j == 0 else PP_ALIGN.RIGHT
-            for r in p.runs:
-                r.font.name = FONT if j == 0 else MONO
-                r.font.size = Pt(6.6)
-                r.font.color.rgb = GRAY if j == 0 else (ROSE if val.startswith("(") else INK)
-                r.font.bold = j == 0
 
 # =====================================================================
 # 1. COVER
@@ -482,27 +434,30 @@ notes(s, "The product has six functions: route, registry, encryption, verificati
 # =====================================================================
 s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
-tb(s, 0.65, 1.32, 12.15, 0.22, "Short-term proof, an EU legal path and a low-capital financial model. Two-thirds of this page is the financial success test.", 8.2, SAGE, FONT, spacing=1.15)
-goal_block(s, 0.65, 1.68, 3.92, 1.15, "SHORT TERM / 2027", "50 paying accounts", "$10k ads · 88 leads · 22 paid. GMV $0.45M; 99.8% verification.")
-goal_block(s, 4.73, 1.68, 3.92, 1.15, "EU / MICA / 2027–28", "Perimeter, not a licence", "MiCA legal opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints.")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "LONG TERM / 2031", "1,500 paying accounts", "GMV $45M · revenue $225k · FCF ≈$100k. Break-even 2029.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  FCF RANGE ($k)  /  2027–2031", 6.2, DEEP, MONO, caps=True, spacing=1)
-financial_chart(s, 0.65, 3.18, 7.35, 2.95)
+tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: first ad test. Long term: scale only if the unit economics work. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
+goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
+goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 customers", "$4.12 CPC → 2,427 clicks. 3.64% CVR → 88 leads. 25% close → 22 customers; return $5.3k–$15.8k GP.")
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "Scale only on payback", "Repeat ads only if payback <12 months. Otherwise organic/community. No external round; founder time unpaid.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  MID-TERM AD TEST, YEAR-1 RETURN RANGE", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 3.18, 7.4, 0.18, "Year-1 gross profit after 80% margin vs. $10k ad spend ($k)", 7.2, SAGE, FONT, spacing=1.1)
+financial_chart(s, 0.65, 3.40, 7.35, 2.70)
 kpis = [
-    ("2031 REVENUE", "$225k", "range $108k–$422k"),
+    ("ADS → CUSTOMERS", "22", "88 leads · $455 paid CAC"),
+    ("BREAK-EVEN GMV", "$9.5k/mo", "per customer"),
+    ("RETURN ON ADS", "0.5–1.6×", "$5.3k–$15.8k GP"),
     ("GROSS MARGIN", "80%", "77% median · 85% top"),
-    ("PEAK CASH LOSS", "$10k", "no external round"),
-    ("BREAK-EVEN", "2029", "base case"),
-    ("PREPAID FLOAT", "$2.25M", "40% prepaid · 1% breakage"),
-    ("CAC PAYBACK", "12 mo", "blended CAC $120"),
+    ("PREPAID FLOAT", "$110k–$330k", "1 month · 1% breakage"),
+    ("EXTERNAL CAPITAL", "$0", "only $10k ads"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.20, 7.4, 0.22, "$10k initial ads; founder time unpaid through 2028; Cloudflare at 1B req/mo ≈$402/mo; growth funded from fee cash flow and prepaid float.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Ranges reflect low/base/high account and spend assumptions. Sources: Cloudflare Workers pricing (requests $0.30/M; CPU $0.02/M CPU-ms; Hyperdrive included; Pages static/bandwidth free); SaaS Capital 2025 (median gross margin 77%, top quartile 85%); RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; OpenRouter FAQ (5% usage; 5.5% top-up); KPMG Tax Card 2026 (21%).", 6.48)
+tb(s, 0.65, 6.18, 7.4, 0.22, "Capital: only the $10k ad test; founder time unpaid; no external round, no bank debt.", 5.8, DEEP, FONT, spacing=1.1)
+source(s, "Conversion inputs: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; Verxl 25% lead-to-close assumption. Gross margin 80% vs SaaS Capital 2025 median 77% / top quartile 85%; Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free; Hyperdrive included. OpenRouter FAQ 5% usage / 5.5% top-up. Ranges, not a forecast.", 6.44)
 footer(s, 6, "EVALUATION")
-notes(s, "This is a 5-minute deck; there is no separate financial-model slide. Financial success is on the evaluation slide. Start with $10k ads: $4.12 CPC => 2,427 clicks; 3.64% CVR => 88 leads; 25% close => 22 paid accounts. Organic/community doubles the 2027 cohort to 50. Base case accounts: 50/200/500/900/1,500. Average monthly GMV: $750/$900/$1,100/$1,500/$2,500. GMV $0.45M/$2.16M/$6.6M/$16.2M/$45M. Revenue at 0.5%: $2.25k/$10.8k/$33k/$81k/$225k. Gross margin 80%: $1.8k/$8.64k/$26.4k/$64.8k/$180k. Opex: $12k/$10k/$20k/$35k/$55k. FCF base: -$10k/-$1k/$6k/$30k/$100k; peak loss $10k; break-even 2029; no $500k burn. Low/high scenarios are in the chart. Float: assume 40% of GMV prepaid with 45-day average; 2031 monthly GMV $3.75M; float $2.25M; breakage 1% of outstanding prepaid = $22.5k, not included in FCF. Paid CAC $455; blended $120 with 60% organic/community; payback 12 months; LTV/CAC ~2.5x. The model is a range, not a forecast. Sources: https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
+notes(s, "Timeline: short term is legal and product. Resolve the MiCA/legal position first; finish and test the product. Do not run ads before both. Mid term is the first $10k ad test: $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads; 25% close = 22 customers; paid CAC $455. Return range: 22 customers x $5k-$15k average monthly inference x 12 months = $1.32M-$3.96M annual GMV. At 0.5% take: $6.6k-$19.8k revenue. At 80% gross margin: $5.3k-$15.8k gross profit. Return on $10k ads: 0.53x-$1.58x. Break-even per customer: gross profit $10k -> revenue $12.5k -> GMV $2.5M -> $9.47k/month per customer. Prepaid float: 22 customers x one month of GMV = $110k-$330k; 1% breakage = $1.1k-$3.3k, treated as upside, not in gross profit. Long term: repeat ads only if payback <12 months; otherwise organic/community. No external round; only the $10k ad test. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
+footer(s, 6, "EVALUATION")
+notes(s, "Five-minute cut. Short term: resolve the MiCA/legal position and finish/test the product before any ads. Mid term: first $10k ad test. $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads; 25% close = 22 customers; paid CAC $455. Return range: 22 customers x $5k-$15k average monthly inference x 12 months = $1.32M-$3.96M annual GMV. At 0.5% take: $6.6k-$19.8k revenue. At 80% gross margin: $5.3k-$15.8k gross profit. Return on $10k ads: 0.53x-$1.58x. Break-even per customer: gross profit $10k -> revenue $12.5k -> GMV $2.5M -> $9.47k/month per customer. Prepaid float: 22 customers x one month of GMV = $110k-$330k; 1% breakage = $1.1k-$3.3k, treated as upside, not in gross profit. Long term: repeat ads only if payback <12 months; otherwise organic/community. No external round; only the $10k ad test. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
 
 # 7. DEADLINE
 # =====================================================================
