@@ -16,7 +16,7 @@
     :root{--ink:#070a0f;--panel:#0b1117;--panel2:#080c10;--mint:#b8f6dd;--sage:#7fae9d;--text:#f3f6f5;--soft:#9aa7ad;--muted:#65737b;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.06);--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
     *{box-sizing:border-box}
     html{background:var(--ink);color-scheme:dark;scroll-behavior:smooth}
-    body{margin:0;background:radial-gradient(ellipse 70% 45% at 78% 0%,rgba(184,246,221,.06),transparent 62%),var(--ink);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.55}
+    body{margin:0;overflow-x:clip;background:radial-gradient(ellipse 70% 45% at 78% 0%,rgba(184,246,221,.06),transparent 62%),var(--ink);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.55}
     a{color:inherit;text-decoration:none}
     ::selection{background:var(--mint);color:var(--ink)}
     /* Shmack OS background: the same drifting mint atmosphere as the React shell. */
@@ -174,7 +174,7 @@
     .pwa a{flex:none;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--mint);border:1px solid rgba(184,246,221,.25);padding:7px 10px}
     .small{font-family:var(--mono);font-size:8px;line-height:1.7;color:var(--muted);margin:12px 0 0;max-width:960px}
     .api{margin-top:54px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel2)}
-    .api .inner{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;padding:48px 0}
+    .api .inner{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;padding:48px 26px}
     .api p,.harness p{margin:13px 0 0;max-width:520px;color:var(--soft);font-size:12.5px;line-height:1.65}
     .api .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:1px solid var(--line2);margin-top:24px;padding-top:14px}
@@ -224,13 +224,13 @@
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}html.js .reveal{opacity:1;transform:none;transition:none}}
     @media(max-width:900px){
       .shell{padding:0 18px}.nav{display:none}.hero{grid-template-columns:1fr;gap:28px;padding:36px 0 34px}.app-stage{max-width:680px;width:100%}
-      .api .inner,.harness .inner{grid-template-columns:1fr;gap:26px;padding:34px 0}.section-head{display:block}.release{margin-top:9px}
+      .api .inner{grid-template-columns:1fr;gap:26px;padding:34px 18px}.harness .inner{grid-template-columns:1fr;gap:26px;padding:34px 0}.section-head{display:block}.release{margin-top:9px}
       .trust{grid-template-columns:1fr;gap:10px}.head .bar{height:56px}.head .open{font-size:8px;padding:7px 9px}
       .row{grid-template-columns:1fr 1fr;gap:9px 14px;padding:13px 0}.platform{grid-column:1/-1}.note{grid-column:1/-1}.dl{justify-self:start;grid-column:1/-1}
       .pwa{align-items:flex-start;flex-direction:column}.pwa a{align-self:flex-start}.meta{gap:6px 10px}.section{padding-top:34px}
       .footer-grid{grid-template-columns:1fr 1fr;gap:24px;padding:30px 0 24px}.footer-grid>div:first-child{grid-column:1/-1}.f-copy{max-width:100%}.f-bottom{display:block;line-height:1.8}.f-legal{gap:8px 12px;margin-bottom:8px}
     }
-    @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.app-body{grid-template-columns:38px 1fr}.app-chats{display:none}.app-window{transform:none}.app-stage:before{inset:0 -6% -8% -6%}.chat-scroll .scene{padding:12px}.codeblock{font-size:6.6px;white-space:pre-wrap}.codeblock .line{white-space:pre-wrap}.math-line{font-size:11.8px}.api .inner,.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
+    @media(max-width:480px){h1{font-size:42px}.lede{font-size:13px}.actions{gap:7px}.btn{height:38px;padding:0 12px;font-size:10px}.app-body{grid-template-columns:38px 1fr}.app-chats{display:none}.app-window{transform:none}.app-stage:before{inset:0 -6% -8% -6%}.chat-scroll .scene{padding:12px}.codeblock{font-size:6.6px;white-space:pre-wrap}.codeblock .line{white-space:pre-wrap}.math-line{font-size:11.8px}.api .inner{padding:28px 18px}.harness .inner{padding:28px 0}.section-head{padding-bottom:12px}.row{grid-template-columns:1fr 1fr}.format{grid-column:2;grid-row:2;text-align:right}.pdetail{font-size:8px}.dl{grid-column:1/-1}.foot{display:block;line-height:2}}
 
     /* Site header: mirrors the shared React Header exactly. */
     .site-head{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(7,10,15,.85);backdrop-filter:blur(24px)}
