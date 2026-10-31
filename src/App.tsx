@@ -216,6 +216,7 @@ export default function App() {
     try { return sessionStorage.getItem("vrxl_app_mode") === "1"; } catch { return false; }
   });
   const isProductRoute = ["chat", "playground", "registry", "console"].includes(activeTab);
+  const isLegalRoute = ["legal", "privacy", "terms", "mica", "charter", "unsubscribe"].includes(activeTab);
 
   // Sync tab changes with browser URL
   const handleTabChange = (tab: string) => {
@@ -233,10 +234,10 @@ export default function App() {
 
   // App installs expose only the four product routes; no marketing home.
   useEffect(() => {
-    if (appMode && !isProductRoute) {
+    if (appMode && !isProductRoute && !isLegalRoute) {
       handleTabChange("chat");
     }
-  }, [appMode, isProductRoute]);
+  }, [appMode, isProductRoute, isLegalRoute]);
 
   // Warm the interactive surface. On Chat/Playground, don't download the other route.
   useEffect(() => {
