@@ -174,7 +174,7 @@ export const WhitepaperContent: React.FC = () => {
             1.3 The Verxl Zero-Margin Protocol Economics
           </h4>
           <p className="text-[13.5px] text-slate-300">
-            Verxl completely bypasses centralized fiat rails by settling usage non-custodially on-chain via smart contracts:
+            Verxl bypasses centralized fiat rails by settling usage in USDC on Arbitrum. Settlement funds are received into a protocol settlement account and credited to an internal balance; direct non-custodial settlement is the target design, not the current one:
           </p>
 
           <div className="bg-[#05070b] border border-slate-800 p-3 rounded-[2px] font-mono text-xs sm:text-sm text-blue-300 text-center space-y-1">

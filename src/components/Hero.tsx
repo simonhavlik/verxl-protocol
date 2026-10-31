@@ -398,7 +398,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           <div className="lg:col-span-6 space-y-6">
             <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#87959b]">
               <span className="w-1.5 h-1.5 bg-[#b8f6dd]" />
-              <span>Non-custodial inference clearing</span>
+              <span>Inference clearing</span>
               <span className="text-white/20">/ 01</span>
             </div>
 
@@ -841,7 +841,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <span className="w-1 h-1 bg-[#b8f6dd]" />
             Live
           </span>
-          <span>Non-custodial</span>
+          <span>Settlement account</span>
           <span>·</span>
           <span>USDC on Arbitrum</span>
           <span>·</span>

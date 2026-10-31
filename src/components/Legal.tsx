@@ -39,7 +39,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
             GDPR data-subject rights
           </span>
           <span className="px-2 py-0.5 rounded-[2px] bg-blue-500/10 text-blue-400 border border-blue-500/30">
-            MiCA Non-Custodial
+            MiCA Perimeter
           </span>
         </div>
       </div>
@@ -190,7 +190,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 space-y-1">
                   <div className="font-bold text-white text-[11px] font-mono">Financial Ledger Records</div>
                   <p className="text-[10.5px] text-slate-400">
-                    Public blockchain addresses (Ethereum & Arbitrum L2), on-chain transaction hashes for USDC deposits, and non-custodial balance records.
+                    Public blockchain addresses (Ethereum & Arbitrum L2), on-chain transaction hashes for USDC deposits, and internal balance records.
                   </p>
                 </div>
                 <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 space-y-1">
@@ -423,7 +423,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 <span>Critical Notice: Software Protocol Only — No Fiduciary or Custodial Relationship</span>
               </div>
               <p className="text-[11px] leading-relaxed">
-                Verxl Protocol is an open-source decentralized clearing software router. By interacting with the smart contracts, APIs or website, you acknowledge that compute clearing is non-custodial and software-driven and that you are at least 18 years old. You assume all operational, financial and technological risks.
+                Verxl Protocol is an open-source decentralized clearing software router. By interacting with the smart contracts, APIs or website, you acknowledge that compute clearing is software-driven, that balances are held by the operator and credited to your account, and that you are at least 18 years old. You assume all operational, financial and technological risks.
               </p>
             </div>
 
@@ -438,9 +438,9 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-300">
                 <li>Does <strong>not</strong> own, operate, or maintain third-party GPU clusters or hardware servers.</li>
-                <li>Does <strong>not</strong> act as a broker, custodian, financial advisor, bank, or exchange.</li>
-                <li>Does <strong>not</strong> take custody, control, or possession of user cryptocurrency deposits or private keys.</li>
-                <li>Operates solely on a non-custodial basis, charging a fixed 50 basis point (0.5%) clearing spread programmatically routed to Aragon OSx smart contracts on Arbitrum L2.</li>
+                <li>Does <strong>not</strong> act as a broker, financial advisor, bank, exchange or investment firm.</li>
+                <li>Receives settlement funds into an operator-controlled protocol settlement account and credits them to an internal balance; it does not hold user funds in an immutable or smart-contract vault.</li>
+                <li>Charges a fixed 50 basis point (0.5%) protocol fee on inference volume; the fee is settled through the same account.</li>
               </ul>
             </div>
 
@@ -655,7 +655,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                 EU MiCA & Regulatory Compliance Statement
               </h1>
               <div className="text-[11px] text-slate-400 font-mono">
-                Regulation (EU) 2023/1114 on Markets in Crypto-Assets (MiCA) & Non-Custodial Perimeter
+                Regulation (EU) 2023/1114 on Markets in Crypto-Assets (MiCA) & Current Regulatory Position
               </div>
             </div>
             <span className="text-[10px] text-blue-400 border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 rounded-[2px] font-mono">
@@ -668,26 +668,30 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
             <div className="bg-[#05070b] border border-blue-500/30 p-4 rounded-[2px] space-y-2">
               <div className="text-xs font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-blue-400" />
-                <span>Regulatory Summary: Non-Custodial Technical Switch</span>
+                <span>Regulatory Summary: Software Platform and Settlement Model</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed">
-                Verxl Protocol operates strictly as an autonomous, decentralized software messaging and cryptographic routing layer. Under European Union financial regulations, including the <strong>Markets in Crypto-Assets Regulation (EU) 2023/1114 (MiCA)</strong> and <strong>Directive (EU) 2015/2366 (PSD2)</strong>, Verxl does not qualify as a Crypto-Asset Service Provider (CASP) or a Payment Institution.
+                Verxl Protocol is a software platform that routes AI inference requests and settles compute fees. It is not a bank, an investment firm, a trading venue or a payment institution, and it is not authorised as a crypto-asset service provider under the <strong>Markets in Crypto-Assets Regulation (EU) 2023/1114 (MiCA)</strong>.
               </p>
             </div>
 
-            {/* Section 1: Non-Custodial Exemption */}
+            {/* Section 1: Scope of MiCA as it applies to this deployment */}
             <div className="space-y-1.5">
               <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                 <span className="text-blue-400">1.</span>
-                <span>MiCA Recital 22 & Non-Custodial Router Exemption</span>
+                <span>Scope of MiCA and the Current Settlement Model</span>
               </h2>
               <p>
-                Pursuant to Recital 22 of MiCA (Regulation (EU) 2023/1114), purely decentralized software protocols that do not provide intermediation services through an identified central issuer or custodian fall outside the scope of authorization requirements:
+                MiCA applies to the crypto-asset services listed in Article 3(1)(16) of Regulation (EU) 2023/1114 and requires authorisation under Article 59 to provide them within the Union. Two of those services are relevant to any platform that keeps a prepaid balance and pays compute providers: <em>custody and administration of crypto-assets on behalf of clients</em>, and <em>transfer services for crypto-assets on behalf of clients</em>.
+              </p>
+              <p>
+                Recital 22 excludes only services that are provided in a <em>fully decentralised manner without any intermediary</em>. Verxl does not rely on that exclusion for the current settlement path, because that path has an identified operator, a protocol fee and an operator-controlled settlement account.
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-300">
-                <li><strong>No Custody of Funds:</strong> User funds deposited on Arbitrum L2 are held in immutable, non-custodial smart contract vaults. Protocol contributors do not have unilateral access to transfer, seize, or pool user funds.</li>
-                <li><strong>No Order Book Matching / Trading:</strong> Verxl does not operate an exchange, multilateral trading facility, or broker-dealer service. Compute fees are settled programmatically based on token volume at fixed smart contract rates.</li>
-                <li><strong>No Proprietary Token Issuance on Mainnet:</strong> Staking operations utilize standard on-chain contracts. In accordance with testnet execution guidelines, $VRXL operates as an experimental utility governance instrument on Ethereum Sepolia.</li>
+                <li><strong>Settlement account, not a vault:</strong> funds transferred to the protocol settlement account are credited to an internal balance. That balance is a claim against the operator, not an on-chain asset, and it is not covered by any deposit guarantee or investor compensation scheme.</li>
+                <li><strong>No trading or exchange service:</strong> Verxl does not operate a trading platform, does not exchange crypto-assets for funds with clients, and does not execute client orders.</li>
+                <li><strong>Testnet token:</strong> $VRXL is an experimental utility and governance token deployed on Ethereum Sepolia. It has no market value, is not listed on any trading venue and is not offered for sale.</li>
+                <li><strong>Direction of travel:</strong> the protocol is being moved to direct settlement, in which the requesting user pays the compute provider without an operator holding client funds, and authorisation will be obtained wherever the resulting activity requires it.</li>
               </ul>
               <div className="bg-[#05070b] p-3 rounded-[2px] border border-slate-800 text-[10.5px] font-mono text-slate-400 space-y-1 mt-2">
                 <div className="text-white font-bold">Important Jurisdictional Separation: MiCA vs. Data Privacy (GDPR / AI Act)</div>
@@ -821,7 +825,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
                   <strong>Commercial Operating Entity:</strong> Verxl Protocol operates as an open-source research initiative and non-custodial decentralized clearinghouse. Founding assembly role allocations on presentation decks reflect functional governance domains within the VŠE competition initiative.
                 </li>
                 <li>
-                  <strong>Non-Custodial Design:</strong> The protocol router never takes custody of user deposits; 99.5% of gross inference volume is cleared directly to independent GPU nodes in USDC, and 0.5% accumulates in the autonomous Aragon OSx DAO treasury vault.
+                  <strong>Settlement Design:</strong> Deposits are received into a protocol settlement account and credited to an internal balance; provider payouts are settled from that account. Funds are not yet routed through an immutable contract, so the claim against the operator is not backed by a segregated or guaranteed arrangement.
                 </li>
               </ul>
             </div>
