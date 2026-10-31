@@ -2,7 +2,8 @@ import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./context/AuthContext";
 import { Header } from "./components/Header";
-import "./products-header.css";
+import "./index.css";
+import "./products-page.css";
 
 function ProductsHeader() {
   const [walletAddress] = useState<string | null>(null);
