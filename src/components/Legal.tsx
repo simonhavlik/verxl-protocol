@@ -663,7 +663,7 @@ export const Legal: React.FC<LegalProps> = ({ initialTab = "privacy" }) => {
               </div>
             </div>
             <span className="text-[10px] text-blue-400 border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 rounded-[2px] font-mono">
-              Technical Exemption Status
+              Regulatory Position
             </span>
           </div>
 
