@@ -162,8 +162,10 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
-    data.categories = ("$1k", "$2.5k", "$5k", "$7.5k", "$10k", "$15k")
-    data.add_series("Funded customers required", (541, 216, 108, 72, 54, 36))
+    data.categories = ("2027", "2028", "2029", "2030", "2031")
+    data.add_series("Low", (1.5, 15.0, 30.0, 60.0, 90.0))
+    data.add_series("Base", (4.8, 33.75, 90.0, 198.0, 360.0))
+    data.add_series("High", (10.8, 72.0, 162.0, 324.0, 810.0))
     gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
@@ -177,26 +179,21 @@ def financial_chart(s, x, y, w, h):
     va.major_gridlines.format.line.color.rgb = LINE
     va.major_gridlines.format.line.width = Pt(0.5)
     va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
-    va.tick_labels.number_format = '#,##0'; va.tick_labels.number_format_is_linked = False
-    va.minimum_scale = 0; va.maximum_scale = 600; va.major_unit = 100
+    va.tick_labels.number_format = '"$"#,##0"k"'; va.tick_labels.number_format_is_linked = False
+    va.minimum_scale = 0; va.maximum_scale = 900; va.major_unit = 200
     va.format.line.color.rgb = LINE
     ca = ch.category_axis
     ca.tick_labels.font.size = Pt(7); ca.tick_labels.font.name = MONO
     ca.format.line.color.rgb = LINE
-    series = ch.series[0]
-    series.smooth = False
-    series.format.line.color.rgb = DEEP
-    series.format.line.width = Pt(2.2)
-    series.marker.style = XL_MARKER_STYLE.CIRCLE
-    series.marker.size = 5
-    series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = DEEP
-    series.marker.format.line.color.rgb = WHITE
-    series.data_labels.show_value = True
-    series.data_labels.font.name = MONO
-    series.data_labels.font.size = Pt(7)
-    series.data_labels.font.bold = True
-    series.data_labels.font.color.rgb = INK
-    series.data_labels.position = XL_LABEL_POSITION.ABOVE
+    colors = [SOFT, DEEP, SAGE]
+    for i, series in enumerate(ch.series):
+        series.smooth = False
+        series.format.line.color.rgb = colors[i]
+        series.format.line.width = Pt(2.2 if i == 1 else 1.5)
+        series.marker.style = XL_MARKER_STYLE.CIRCLE
+        series.marker.size = 5 if i == 1 else 4
+        series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = colors[i]
+        series.marker.format.line.color.rgb = WHITE
 
 # =====================================================================
 # 1. COVER
@@ -435,28 +432,28 @@ notes(s, "The product has six functions: route, registry, encryption, verificati
 # =====================================================================
 s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
-tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: paid design partners, measure actual CAC and usage. Long term: break-even threshold. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
+tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: paid design partners; measure CAC and usage. Long term: 0.04% of OpenRouter's 5.1M users.", 8.0, SAGE, FONT, spacing=1.15)
 goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
 goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "Design partners, no paid ads", "Onboard first paid design partners. Measure actual deposit, monthly usage and CAC. Do not extrapolate a funnel from zero.")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "Break-even is a threshold", "CZK 45k/mo fixed cost at 80% margin and 0.5% take requires CZK 11.25M monthly GMV: 36–541 funded customers.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  BREAK-EVEN REQUIREMENT, NOT A FORECAST", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, 0.65, 3.18, 7.4, 0.18, "Funded customers required to cover CZK 45k/mo at 0.5% take and 80% margin", 7.2, SAGE, FONT, spacing=1.1)
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "2,000 funded = 0.04% of OpenRouter", "Base revenue $360k; high $810k; low $90k. Czech cost CZK 45k/mo. No paid scale until unit economics are measured.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  REVENUE GROWTH FROM OPENROUTER USER BASE", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 3.18, 7.4, 0.18, "Annual revenue ($k) at 0.012% / 0.04% / 0.059% of OpenRouter's 5.1M users. Scenario, not forecast.", 7.2, SAGE, FONT, spacing=1.1)
 financial_chart(s, 0.65, 3.40, 7.35, 2.70)
 kpis = [
-    ("CZECH FIXED COST", "CZK 45k/mo", "≈$2,163 at 20.8 CZK/USD"),
-    ("BREAK-EVEN GMV", "CZK 11.25M/mo", "≈$541k/mo"),
-    ("AT $5K / CUSTOMER", "108 funded", "CZK 104k/mo usage"),
-    ("AT $15K / CUSTOMER", "36 funded", "CZK 312k/mo usage"),
+    ("2031 REVENUE", "$360k", "range $90k–$810k"),
+    ("BASE FUNDED CUSTOMERS", "2,000", "0.04% of 5.1M users"),
+    ("CZECH FIXED COST", "CZK 45k/mo", "≈$26k/year"),
     ("GROSS MARGIN", "80%", "0.5% take × 80%"),
     ("PAID ADS", "$0", "until measured LTV/CAC >3×"),
+    ("FIRST COHORT", "Design partners", "measure deposit + usage"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.18, 7.4, 0.22, "Break-even GMV = CZK 45k / (0.5% × 80%) = CZK 11.25M/mo. Czech cost: contractor 25k + legal/accounting 8k + software 5k + office 7k. No paid ads until measured.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Math: CZK 45,000 / (0.005 × 0.80) = CZK 11.25M monthly GMV; customers = CZK 11.25M / monthly usage per customer. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. No ad funnel is projected from zero.", 6.42)
+tb(s, 0.65, 6.18, 7.4, 0.22, "Assumptions: revenue = funded customers × 12 × monthly usage × 0.5%. Czech cost: contractor 25k + legal/accounting 8k + software 5k + office 7k.", 5.8, DEEP, FONT, spacing=1.1)
+source(s, "Users: OpenRouter 5.1M (a16z State of AI, 2025). Funded customers 600/2,000/3,000 = 0.012%/0.04%/0.059%; average monthly usage $2.5k/$3k/$4.5k; revenue = customers × 12 × usage × 0.5%. Czech cost: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. Scenario, not forecast.", 6.42)
 footer(s, 6, "EVALUATION")
-notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product. Mid term: onboard paid design partners; measure actual deposit, monthly usage and CAC; do not invent an ad funnel from zero. Long term: break-even is a threshold, not a forecast. Czech fixed cost CZK 45k/mo; at 0.5% take and 80% gross margin, required monthly GMV = 45,000 / (0.005 x 0.80) = CZK 11.25M. At $5k/customer/month (CZK 104k), 108 funded customers; at $15k/customer/month (CZK 312k), 36. The chart is a break-even sensitivity, not a projection. No paid ads until measured LTV/CAC >3x. Czech cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k. Full-time Czech developer average gross CZK 439k/year plus 33.8% employer contributions; later. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
+notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product. Mid term: onboard paid design partners; measure actual deposit, monthly usage and CAC; no paid ads yet. Long term: revenue growth scenarios anchored to OpenRouter's 5.1M users, not arbitrary customer counts. Low/base/high 2031: 600/2,000/3,000 funded = 0.012%/0.04%/0.059% of OpenRouter users; average monthly usage $2.5k/$3k/$4.5k; revenue = customers x 12 x usage x 0.5% = $90k/$360k/$810k. Czech fixed cost CZK 45k/mo = $26k/year. Gross margin 80%. No paid ads until measured LTV/CAC >3x. No external round; founder unpaid. Sources: https://a16z.com/state-of-ai/ ; https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
 
 # 7. DEADLINE
 # =====================================================================
