@@ -162,40 +162,38 @@ def kpi(s, x, y, w, h, label, value, sub=""):
 
 def financial_chart(s, x, y, w, h):
     data = CategoryChartData()
-    data.categories = ("Low", "Base", "High", "Ad spend")
-    data.add_series("Year-1 gross profit", (5.3, 10.6, 15.8, 10.0))
-    gf = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(x), Inches(y), Inches(w), Inches(h), data)
+    data.categories = ("20", "40", "60", "80", "100", "120")
+    data.add_series("GP @ $5k/mo", (400, 800, 1200, 1600, 2000, 2400))
+    data.add_series("GP @ $15k/mo", (1200, 2400, 3600, 4800, 6000, 7200))
+    data.add_series("Czech fixed cost", (2163, 2163, 2163, 2163, 2163, 2163))
+    gf = s.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), data)
     ch = gf.chart
     ch.font.name = FONT; ch.font.size = Pt(6.5); ch.font.color.rgb = GRAY
     ch.has_title = False
-    ch.has_legend = False
-    plot = ch.plots[0]
-    plot.gap_width = 55
-    plot.has_data_labels = True
-    labels = plot.data_labels
-    labels.font.name = MONO; labels.font.size = Pt(7); labels.font.bold = True
-    labels.font.color.rgb = INK
-    labels.number_format = '"$"#,##0.0"k"'; labels.number_format_is_linked = False
-    labels.position = XL_LABEL_POSITION.OUTSIDE_END
+    ch.has_legend = True
+    ch.legend.position = XL_LEGEND_POSITION.BOTTOM
+    ch.legend.include_in_layout = False
+    ch.legend.font.size = Pt(6.2); ch.legend.font.name = FONT
     va = ch.value_axis
     va.has_major_gridlines = True
     va.major_gridlines.format.line.color.rgb = LINE
     va.major_gridlines.format.line.width = Pt(0.5)
     va.tick_labels.font.size = Pt(6.0); va.tick_labels.font.name = MONO
-    va.tick_labels.number_format = '"$"#,##0"k"'; va.tick_labels.number_format_is_linked = False
-    va.minimum_scale = 0; va.maximum_scale = 18; va.major_unit = 5
+    va.tick_labels.number_format = '"$"#,##0'; va.tick_labels.number_format_is_linked = False
+    va.minimum_scale = 0; va.maximum_scale = 8000; va.major_unit = 2000
     va.format.line.color.rgb = LINE
     ca = ch.category_axis
     ca.tick_labels.font.size = Pt(7); ca.tick_labels.font.name = MONO
     ca.format.line.color.rgb = LINE
-    series = ch.series[0]
-    colors = [SAGE, DEEP, MINT, ROSE]
-    for i, color in enumerate(colors):
-        pt = series.points[i]
-        pt.format.fill.solid(); pt.format.fill.fore_color.rgb = color
-        pt.format.line.color.rgb = color
-    series.format.line.color.rgb = LINE
-
+    colors = [SAGE, DEEP, ROSE]
+    for i, series in enumerate(ch.series):
+        series.smooth = False
+        series.format.line.color.rgb = colors[i]
+        series.format.line.width = Pt(2.2 if i < 2 else 1.6)
+        series.marker.style = XL_MARKER_STYLE.CIRCLE
+        series.marker.size = 4
+        series.marker.format.fill.solid(); series.marker.format.fill.fore_color.rgb = colors[i]
+        series.marker.format.line.color.rgb = WHITE
 
 # =====================================================================
 # 1. COVER
@@ -436,24 +434,26 @@ s = slide()
 question(s, "How will you evaluate if the project was successful?", 26)
 tb(s, 0.65, 1.32, 12.15, 0.22, "Short term: legal + product. Mid term: first ad test. Long term: scale only if the unit economics work. Two-thirds of this page is the financial test.", 8.0, SAGE, FONT, spacing=1.15)
 goal_block(s, 0.65, 1.68, 3.92, 1.15, "01 / SHORT TERM", "MiCA + finished product", "MiCA perimeter opinion; non-custodial, no CASP claim. GDPR + AI Act, DPA/SCC, complaints. Product tested before any ads.")
-goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 customers", "$4.12 CPC → 2,427 clicks. 3.64% CVR → 88 leads. 25% close → 22 customers; return $5.3k–$15.8k GP.")
-goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "Scale only on payback", "Repeat ads only if payback <12 months. Otherwise organic/community. No external round; founder time unpaid.")
-tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  MID-TERM AD TEST, YEAR-1 RETURN RANGE", 6.2, DEEP, MONO, caps=True, spacing=1)
-tb(s, 0.65, 3.18, 7.4, 0.18, "Year-1 gross profit after 80% margin vs. $10k ad spend ($k)", 7.2, SAGE, FONT, spacing=1.1)
+goal_block(s, 4.73, 1.68, 3.92, 1.15, "02 / MID TERM", "$10k → 22 customers", "$4.12 CPC → 2,427 clicks. 3.64% CVR → 88 leads. 25% close → 22 customers; year-1 GP $5.3k–$15.8k.")
+goal_block(s, 8.81, 1.68, 3.92, 1.15, "03 / LONG TERM", "36–109 customers to cover costs", "Czech fixed cost CZK 45k/mo. At $5k–$15k GMV/customer, break-even is 109–36 customers. Scale only if payback <12 months.")
+tb(s, 0.65, 2.98, 7.4, 0.18, "FINANCIAL SUCCESS  /  CZECH COST BASE  /  MONTHLY GROSS PROFIT", 6.2, DEEP, MONO, caps=True, spacing=1)
+tb(s, 0.65, 3.18, 7.4, 0.18, "Monthly gross profit vs. Czech fixed cost (CZK 45k/mo ≈ $2,163)", 7.2, SAGE, FONT, spacing=1.1)
 financial_chart(s, 0.65, 3.40, 7.35, 2.70)
 kpis = [
-    ("ADS → CUSTOMERS", "22", "88 leads · $455 paid CAC"),
-    ("BREAK-EVEN GMV", "$9.5k/mo", "per customer"),
-    ("RETURN ON ADS", "0.5–1.6×", "$5.3k–$15.8k GP"),
-    ("GROSS MARGIN", "80%", "77% median · 85% top"),
-    ("PREPAID FLOAT", "$110k–$330k", "1 month · 1% breakage"),
-    ("EXTERNAL CAPITAL", "$0", "only $10k ads"),
+    ("FIRST ADS", "22 customers", "2,427 clicks · 88 leads"),
+    ("PAID CAC", "$455", "paid-only; blended later $240"),
+    ("BREAK-EVEN CUSTOMERS", "36–109", "at $15k–$5k GMV/mo"),
+    ("YEAR-1 GP / $10k ADS", "$5.3k–$15.8k", "0.5–1.6× return"),
+    ("CZECH FIXED COST", "CZK 45k/mo", "≈$2,163 at 20.8 CZK/USD"),
+    ("PREPAID FLOAT", "$110k–$330k", "1 mo · 1% breakage"),
 ]
 for i, (label, value, sub) in enumerate(kpis):
     col, row = i % 2, i // 2
     kpi(s, 8.15 + col * 2.18, 3.18 + row * 0.97, 2.10, 0.88, label, value, sub)
-tb(s, 0.65, 6.18, 7.4, 0.22, "Capital: only the $10k ad test; founder time unpaid; no external round, no bank debt.", 5.8, DEEP, FONT, spacing=1.1)
-source(s, "Conversion inputs: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; Verxl 25% lead-to-close assumption. Gross margin 80% vs SaaS Capital 2025 median 77% / top quartile 85%; Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free; Hyperdrive included. OpenRouter FAQ 5% usage / 5.5% top-up. Ranges, not a forecast.", 6.44)
+tb(s, 0.65, 6.18, 7.4, 0.22, "Czech cost base: part-time contractor CZK 25k + legal/accounting 8k + software/domains 5k + office/other 7k. Founder unpaid.", 5.8, DEEP, FONT, spacing=1.1)
+source(s, "Czech salary/contributions: SalaryExpert 2026, 33.8% employer contributions; CNB CZK/USD ≈20.8. Gross margin 80% vs SaaS Capital 2025 median 77% / top 85%. Ads: RockingWeb 2025 B2B tech CPC $4.12, CVR 3.64%; 25% close assumption. Cloudflare Workers $0.30/M requests, $0.02/M CPU-ms; Pages static/bandwidth free. OpenRouter FAQ 5% usage. Ranges, not a forecast.", 6.42)
+footer(s, 6, "EVALUATION")
+notes(s, "Five-minute cut. Short term: resolve MiCA/legal and finish/test product before ads. Mid term: first $10k ads -> 2,427 clicks at $4.12 CPC; 3.64% CVR -> 88 leads; 25% close -> 22 customers; paid CAC $455. Year-1 gross profit range: 22 customers x $5k-$15k monthly GMV x 12 months x 0.5% fee x 80% margin = $5.3k-$15.8k; 0.53x-1.58x on the $10k ad spend. Czech fixed cost base: part-time contractor CZK 25k + legal/accounting CZK 8k + software/domains CZK 5k + office/other CZK 7k = CZK 45k/mo; at CZK 20.8/USD = $2,163/mo. A full-time Czech developer would be materially more; SalaryExpert puts average developer gross salary at CZK 439k/year (~CZK 36.6k/month), plus 33.8% employer contributions; a full-time hire is a later milestone, not the lean base. Monthly GP per customer at $5k GMV = $20; at $15k = $60. Break-even customers = 2,163/20 = 109 at $5k, 2,163/60 = 36 at $15k. First 22 customers do not cover the Czech cost base; the ad test is a CAC test, not a full P&L. Long term: reach 36-109 customers, then scale only if payback <12 months; otherwise organic. Prepaid float 22 customers x one month = $110k-$330k; 1% breakage $1.1k-$3.3k, upside only. No external round; founder unpaid. Sources: https://www.salaryexpert.com/salary/job/developer/czech-republic ; https://rivermate.com/guides/czech-republic/taxes ; https://www.kurzy.cz/cnb/ekonomika/SFXS1M1USD/ ; https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://openrouter.ai/docs/faq")
 footer(s, 6, "EVALUATION")
 notes(s, "Timeline: short term is legal and product. Resolve the MiCA/legal position first; finish and test the product. Do not run ads before both. Mid term is the first $10k ad test: $4.12 CPC = 2,427 clicks; 3.64% CVR = 88 leads; 25% close = 22 customers; paid CAC $455. Return range: 22 customers x $5k-$15k average monthly inference x 12 months = $1.32M-$3.96M annual GMV. At 0.5% take: $6.6k-$19.8k revenue. At 80% gross margin: $5.3k-$15.8k gross profit. Return on $10k ads: 0.53x-$1.58x. Break-even per customer: gross profit $10k -> revenue $12.5k -> GMV $2.5M -> $9.47k/month per customer. Prepaid float: 22 customers x one month of GMV = $110k-$330k; 1% breakage = $1.1k-$3.3k, treated as upside, not in gross profit. Long term: repeat ads only if payback <12 months; otherwise organic/community. No external round; only the $10k ad test. Sources: https://www.rockingweb.com.au/average-cost-per-click-google-ads-industry/ ; https://www.saas-capital.com/blog-posts/what-should-a-saas-income-statement-look-like/ ; https://developers.cloudflare.com/workers/platform/pricing/ ; https://www.cloudflare.com/plans/ ; https://openrouter.ai/docs/faq ; https://assets.kpmg.com/content/dam/kpmgsites/cz/pdf/2026/TaxCard_2026.pdf.coredownload.inline.pdf")
 footer(s, 6, "EVALUATION")
