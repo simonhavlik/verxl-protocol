@@ -371,6 +371,15 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("vrxl_search_base") || "";
   });
+  const [globalThink, setGlobalThink] = useState<ThinkLevel>(() => {
+    if (typeof window === "undefined") return "medium";
+    const stored = localStorage.getItem("vrxl_think_level");
+    return stored === "off" || stored === "low" || stored === "medium" || stored === "high"
+      ? (stored as ThinkLevel)
+      : "medium";
+  });
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const activeSessionIdRef = useRef("");
 
   const runSearch = async (query: string): Promise<SearchSource[]> => {
     const q = query.slice(0, 400);
@@ -414,6 +423,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
         ? Number(localStorage.getItem("vrxl_chat_temperature"))
         : 0.7,
     messages: [],
+    think: globalThink,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
@@ -423,6 +433,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
     return local.length > 0 ? local : [createBlankSession()];
   });
   const [activeSessionId, setActiveSessionId] = useState<string>(sessions[0].id);
+  activeSessionIdRef.current = activeSessionId;
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
   const currentModelConfig =
     AVAILABLE_MODELS.find((m) => m.id === activeSession.model) || AVAILABLE_MODELS[0];
@@ -475,14 +486,10 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       activeSession.temperature ?? (Number.isFinite(savedTemp) ? savedTemp : 0.7)
     );
     const storedSearchTool = localStorage.getItem("vrxl_search_tool");
-    setSearchToolEnabled(
-      activeSession.searchTool ?? (storedSearchTool === null ? true : storedSearchTool === "1")
-    );
-    setSearchProvider(
-      activeSession.searchProvider ?? localStorage.getItem("vrxl_search_provider") ?? "firecrawl"
-    );
-    setSearchBaseUrl(activeSession.searchBaseUrl ?? localStorage.getItem("vrxl_search_base") ?? "");
-    setSearchKey(activeSession.searchKey ?? localStorage.getItem("vrxl_search_key") ?? "");
+    setSearchToolEnabled(storedSearchTool === null ? true : storedSearchTool === "1");
+    setSearchProvider(localStorage.getItem("vrxl_search_provider") || "firecrawl");
+    setSearchBaseUrl(localStorage.getItem("vrxl_search_base") || "");
+    setSearchKey(localStorage.getItem("vrxl_search_key") || "");
     setChartToolEnabled(activeSession.chartTool ?? localStorage.getItem("vrxl_chart_tool") === "1");
     setMcpConnections(activeSession.mcpConnections ?? (() => {
       try { return JSON.parse(localStorage.getItem("vrxl_mcp_connections") || "[]"); } catch { return []; }
@@ -493,6 +500,87 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSessionId]);
+
+  // Cross-device preferences. Think is the default for new chats; search
+  // provider/key/base/tool are global. The search key is encrypted at rest
+  // by the settings endpoint, never stored as plaintext in PostgreSQL.
+  useEffect(() => {
+    if (!authToken) {
+      setSettingsLoaded(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/settings", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as any;
+        if (cancelled) return;
+        const remote = data?.settings;
+        if (!remote) {
+          setSettingsLoaded(true);
+          return;
+        }
+        if (["off", "low", "medium", "high"].includes(remote.think)) {
+          const level = remote.think as ThinkLevel;
+          setGlobalThink(level);
+          localStorage.setItem("vrxl_think_level", level);
+          setSessions((prev) =>
+            prev.map((session) =>
+              session.id === activeSessionIdRef.current && session.messages.length === 0
+                ? { ...session, think: level }
+                : session
+            )
+          );
+        }
+        if (["firecrawl", "exa", "brave", "custom"].includes(remote.searchProvider)) {
+          setSearchProvider(remote.searchProvider);
+          localStorage.setItem("vrxl_search_provider", remote.searchProvider);
+        }
+        if (typeof remote.searchKey === "string") {
+          setSearchKey(remote.searchKey);
+          localStorage.setItem("vrxl_search_key", remote.searchKey);
+        }
+        if (typeof remote.searchBaseUrl === "string") {
+          setSearchBaseUrl(remote.searchBaseUrl);
+          localStorage.setItem("vrxl_search_base", remote.searchBaseUrl);
+        }
+        if (typeof remote.searchTool === "boolean") {
+          setSearchToolEnabled(remote.searchTool);
+          localStorage.setItem("vrxl_search_tool", remote.searchTool ? "1" : "0");
+        }
+        setSettingsLoaded(true);
+      } catch {
+        // Keep local settings; do not overwrite the server on a transient read failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken]);
+
+  useEffect(() => {
+    if (!authToken || !settingsLoaded) return;
+    const timer = window.setTimeout(() => {
+      void fetch("/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          think: globalThink,
+          searchProvider,
+          searchKey,
+          searchBaseUrl,
+          searchTool: searchToolEnabled,
+        }),
+      }).catch(() => undefined);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [authToken, settingsLoaded, globalThink, searchProvider, searchKey, searchBaseUrl, searchToolEnabled]);
 
   // Model Selector Search, Category Filter & Recently Used
   const [modelSearch, setModelSearch] = useState("");
@@ -686,9 +774,20 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       setChatKey(null);
       setCryptoStatus("locked");
       setCryptoError(null);
+      setSettingsLoaded(false);
+      setGlobalThink("medium");
+      setSearchProvider("firecrawl");
+      setSearchKey("");
+      setSearchBaseUrl("");
+      setSearchToolEnabled(true);
       if (typeof window !== "undefined") {
         try {
           localStorage.removeItem(CHAT_STORAGE_KEY);
+          localStorage.removeItem("vrxl_think_level");
+          localStorage.removeItem("vrxl_search_provider");
+          localStorage.removeItem("vrxl_search_key");
+          localStorage.removeItem("vrxl_search_base");
+          localStorage.removeItem("vrxl_search_tool");
         } catch {}
       }
       const blank = createBlankSession();
@@ -1589,7 +1688,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
           ]
         : []),
     ];
-    const thinkLevel = targetSession.think || "medium";
+    const thinkLevel = globalThink;
     let requestFailed = false;
 
     try {
@@ -1899,6 +1998,8 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
   };
 
   const updateThinkLevel = (level: ThinkLevel) => {
+    setGlobalThink(level);
+    localStorage.setItem("vrxl_think_level", level);
     const updated = { ...activeSession, think: level, updatedAt: Date.now() };
     setSessions((prev) => prev.map((s) => (s.id === activeSession.id ? updated : s)));
     syncSessionToDb(updated);
@@ -2360,7 +2461,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
           <div className="flex items-center gap-1.5">
             <span className="hidden font-mono text-[7.5px] uppercase tracking-[0.14em] text-[#65737b] xl:inline">Think</span>
             <select
-              value={activeSession.think || "medium"}
+              value={globalThink}
               onChange={(e) => updateThinkLevel(e.target.value as ThinkLevel)}
               className="h-7 border border-white/[0.07] bg-transparent px-1.5 font-mono text-[9px] uppercase tracking-[0.08em] text-[#9aa7ad] outline-none transition hover:border-white/20 focus:border-[#b8f6dd]/40"
               aria-label="Thinking level"
@@ -3173,7 +3274,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                               <div className="text-[13px] font-medium text-white">Thinking level</div>
                               <p className="mt-0.5 text-[11px] leading-relaxed text-[#8b989e]">How much reasoning the model spends before answering. Higher costs more output tokens.</p>
                             </div>
-                            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#b8f6dd]">{activeSession.think || "medium"}</span>
+                            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#b8f6dd]">{globalThink}</span>
                           </div>
                           <div className="mt-3 grid grid-cols-4 gap-1">
                             {(["off", "low", "medium", "high"] as ThinkLevel[]).map((level) => (
@@ -3182,7 +3283,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                                 type="button"
                                 onClick={() => updateThinkLevel(level)}
                                 className={`border py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] transition ${
-                                  (activeSession.think || "medium") === level
+                                  globalThink === level
                                     ? "border-[#b8f6dd]/35 bg-[#b8f6dd]/[0.08] text-[#dff8ef]"
                                     : "border-white/[0.07] text-[#8b989e] hover:border-white/15 hover:text-white"
                                 }`}
@@ -3371,7 +3472,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                             <div className="flex items-center justify-between gap-3">
                               <div>
                                 <div className="text-[13px] font-medium text-white">{searchProvider === "exa" ? "Exa API key" : searchProvider === "brave" ? "Brave API key" : "API key"}</div>
-                                <p className="mt-0.5 text-[11px] text-[#8b989e]">Stored in this conversation's settings; sent only to the Verxl search proxy.</p>
+                                <p className="mt-0.5 text-[11px] text-[#8b989e]">Synced to your account, encrypted at rest, and sent only to the Verxl search proxy.</p>
                               </div>
                             </div>
                             <div className="relative mt-3">

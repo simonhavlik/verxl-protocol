@@ -12,7 +12,7 @@ export function setAuthEnv(env: Record<string, any>) {
   if (env) _authEnv = env;
 }
 
-function getJwtSecret(): string {
+export function getJwtSecret(): string {
   const secret = _authEnv?.JWT_SECRET || (globalThis as any)?.process?.env?.JWT_SECRET;
   if (!secret) {
     throw new Error("JWT_SECRET is not configured");
