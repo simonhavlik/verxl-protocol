@@ -35,7 +35,7 @@ export const onRequestGet: PagesFunction<Env> = async () => {
           location: r.id.includes("bulbasaur") ? "Prague, Czechia" : "Global Edge",
           region: "EU-Central",
           endpointUrl: r.base_url || "https://node1.verxl.com/v1",
-          modelIdentifier: firstModel.model_id || "qwen3.5-4b-uncensored-32k",
+          modelIdentifier: firstModel.model_id || firstModel.id || "qwen3.5-4b-uncensored-32k",
           hardware: r.id.includes("bulbasaur") ? "Dedicated Bare-Metal Vulkan GPU" : "Distributed Tensor MoE Cluster",
           latencyMs: r.id.includes("bulbasaur") ? 12 : 28,
           ttftMs: r.id.includes("bulbasaur") ? 38 : 88,
