@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   Key,
@@ -96,6 +96,7 @@ export const Console: React.FC = () => {
     refreshSession,
     setUser,
     setKeys,
+    renameKeyLocal,
   } = useAuth();
   const [loading, setLoading] = useState(false);
   const [usage, setUsage] = useState<UsageItem[]>([]);
@@ -151,6 +152,7 @@ export const Console: React.FC = () => {
 
   // Key Creation Modal
   const [newKeyName, setNewKeyName] = useState("Production Key");
+  const renamedKeyNames = useRef<Record<string, string>>({});
   const [generatedKeySecret, setGeneratedKeySecret] = useState<string | null>(null);
   const [creatingKey, setCreatingKey] = useState(false);
 
@@ -386,7 +388,7 @@ export const Console: React.FC = () => {
       if (res.ok) {
         const data = (await res.json()) as any;
         setUser(data.user);
-        setKeys(data.keys || []);
+        setKeys((data.keys || []).map((k: any) => ({ ...k, name: renamedKeyNames.current[k.id] || k.name })));
         setUsage(
           (data.usage || []).map((u: any) => ({
             ...u,
@@ -783,9 +785,9 @@ export const Console: React.FC = () => {
       });
       const data = (await res.json()) as any;
       if (res.ok) {
-        setKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, name: data.name } : k)));
+        renamedKeyNames.current[keyId] = data.name;
+        renameKeyLocal(keyId, data.name);
         setStatusMsg({ type: "success", text: `Key renamed to “${data.name}”.` });
-        void fetchSessionData(token);
       } else {
         setStatusMsg({ type: "error", text: data.error || "Failed to rename key." });
       }

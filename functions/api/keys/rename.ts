@@ -54,12 +54,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!result || (result as any).changes === 0) {
     return new Response(JSON.stringify({ error: "Key not found" }), {
       status: 404,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...CORS_HEADERS },
     });
   }
 
-  return new Response(JSON.stringify({ success: true, key_id: keyId, name }), {
+  const saved = await db.prepare("SELECT name FROM api_keys WHERE id = ? AND user_id = ?")
+    .bind(keyId, payload.sub)
+    .first<{ name: string }>();
+
+  return new Response(JSON.stringify({ success: true, key_id: keyId, name: saved?.name || name }), {
     status: 200,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...CORS_HEADERS },
   });
 };

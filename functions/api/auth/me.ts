@@ -107,6 +107,6 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         protocol_fee_usd: Number(u.protocol_fee_usd || 0),
       })),
     }),
-    { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...CORS_HEADERS } }
   );
 };

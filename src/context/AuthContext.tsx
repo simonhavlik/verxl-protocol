@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { resetMetaMaskSdk } from "../lib/wallet";
 
 export interface UserProfile {
@@ -40,6 +40,7 @@ interface AuthContextType {
   refreshSession: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
   setKeys: React.Dispatch<React.SetStateAction<ApiKeyItem[]>>;
+  renameKeyLocal: (id: string, name: string) => void;
   customApiKey: string;
   setCustomApiKey: (key: string) => void;
 }
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const renamedKeys = useRef<Record<string, string>>({});
 
   const normalizeUser = (rawUser: any): UserProfile | null => {
     if (!rawUser) return null;
@@ -100,6 +102,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const renameKeyLocal = (id: string, name: string) => {
+    renamedKeys.current[id] = name;
+    setKeys((prev) => prev.map((k) => (k.id === id ? { ...k, name } : k)));
+  };
+
   const setCustomApiKey = (key: string) => {
     setCustomApiKeyState(key);
     if (typeof window !== "undefined") {
@@ -120,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const data = (await res.json()) as any;
         setUser(normalizeUser(data.user));
-        setKeys(normalizeKeys(data.keys));
+        setKeys(normalizeKeys(data.keys).map((k) => ({ ...k, name: renamedKeys.current[k.id] || k.name })));
       } else if (res.status === 401 || res.status === 403) {
         // Only a real auth rejection signs the device out. A transient 5xx or
         // edge error must not make the installed app ask for MetaMask again.
@@ -255,6 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     setCustomApiKeyState("");
     setUser(null);
+    renamedKeys.current = {};
     setKeys([]);
   };
 
@@ -279,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshSession,
         setUser: setSafeUser,
         setKeys: setSafeKeys,
+        renameKeyLocal,
         customApiKey,
         setCustomApiKey,
       }}
