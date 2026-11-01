@@ -533,20 +533,39 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       if (upstreamResponse.ok && upstreamResponse.body) {
         if (stream) {
           let completionTokenCount = 0;
+          let sawFinishReason = false;
+          let sawDone = false;
           const textDecoder = new TextDecoder();
           const textEncoder = new TextEncoder();
           let sseBuffer = "";
 
+          const syntheticFinish = JSON.stringify({
+            id: `chatcmpl_verxl_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
+            object: "chat.completion.chunk",
+            created: Math.floor(Date.now() / 1000),
+            model: requestedModel,
+            choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
+          });
+
           const normalizeStreamEvent = (event: string) => {
             const lines = event.split("\n");
             const out = lines.map((line) => {
-              if (!line.startsWith("data: ") || line === "data: [DONE]") return line;
+              if (line === "data: [DONE]") {
+                sawDone = true;
+                if (!sawFinishReason) {
+                  sawFinishReason = true;
+                  return `data: ${syntheticFinish}\n\ndata: [DONE]`;
+                }
+                return line;
+              }
+              if (!line.startsWith("data: ")) return line;
               try {
                 const obj = JSON.parse(line.slice(6));
                 delete obj.system_fingerprint;
                 delete obj.opencode;
                 if (Array.isArray(obj.choices)) {
                   for (const choice of obj.choices) {
+                    if (choice?.finish_reason) sawFinishReason = true;
                     for (const target of [choice?.delta, choice?.message]) {
                       if (target && target.reasoning && !target.reasoning_content) {
                         target.reasoning_content = target.reasoning;
@@ -577,6 +596,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
               if (sseBuffer.trim()) {
                 controller.enqueue(textEncoder.encode(normalizeStreamEvent(sseBuffer) + "\n\n"));
                 sseBuffer = "";
+              }
+              // Some upstreams close without a terminal choice frame. The OpenAI
+              // SDK treats that as an error ("stream closed before finish_reason").
+              // Guarantee a terminal frame before closing the proxy stream.
+              if (!sawFinishReason) {
+                controller.enqueue(textEncoder.encode(`data: ${syntheticFinish}\n\n`));
+                sawFinishReason = true;
+              }
+              if (!sawDone) {
+                controller.enqueue(textEncoder.encode("data: [DONE]\n\n"));
+                sawDone = true;
               }
               if (authenticatedUser) {
                 const actualTokens = Math.max(4, completionTokenCount);
