@@ -21,6 +21,20 @@ const ipRateLimitMap = new Map<string, RateLimitBucket>();
 const DEMO_RATE_LIMIT_MAX = 40;
 const DEMO_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
+const API_HELP = {
+  summary: "Verxl inference requires a funded API key. There is no free compute tier.",
+  get_key: "https://verxl.com/console",
+  docs: "https://verxl.com/docs",
+  mcp: "https://verxl.com/mcp",
+  public_reads: ["https://verxl.com/v1/models", "https://verxl.com/openapi.json", "https://verxl.com/llms.txt", "https://verxl.com/api/health"],
+  steps: [
+    "Ask the user to open https://verxl.com/console.",
+    "Connect a wallet, deposit USDC on Arbitrum (minimum $1), and create a key.",
+    "Send Authorization: Bearer vrxl_live_... on every completion request.",
+  ],
+  agent_note: "Never invent a key or claim free credits. Public docs and /v1/models need no key; completions always do.",
+};
+
 export const onRequestOptions: PagesFunction<Env> = async () => {
   return new Response(null, {
     status: 204,
@@ -145,6 +159,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             type: "insufficient_quota",
             code: "insufficient_balance",
           },
+          help: API_HELP,
         }),
         { status: 402, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
@@ -215,6 +230,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             type: "insufficient_quota",
             code: "insufficient_balance",
           },
+          help: API_HELP,
         }),
         { status: 402, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
@@ -226,14 +242,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       key_id: null,
     };
   } else if (authHeader !== "Bearer vrxl_testnet_demo_key") {
-    // Missing credentials
+    // Inference is never anonymous. Public docs/models/health are unauthenticated,
+    // but every completion must carry a key or a console session token.
     return new Response(
       JSON.stringify({
         error: {
-          message: "Authentication required. Connect your Verxl session or provide an active API key (Bearer vrxl_live_...) to clear inference payment.",
+          message: "Authentication required. Provide an active API key (Bearer vrxl_live_...) or a Verxl console session token. There is no free compute tier.",
           type: "authentication_error",
           code: "unauthorized",
         },
+        help: API_HELP,
       }),
       { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
@@ -258,6 +276,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             type: "insufficient_quota",
             code: "model_payment_required",
           },
+          help: API_HELP,
         }),
         { status: 402, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );

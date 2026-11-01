@@ -31,4 +31,8 @@
 /terms/ /terms/index.html 200
 /charter /legal/index.html 200
 /mica /legal/index.html 200
+/docs /docs/index.html 200
+/docs/ /docs/index.html 200
+/openapi.json /openapi.json 200
+/llms.txt /llms.txt 200
 /* /index.html 200

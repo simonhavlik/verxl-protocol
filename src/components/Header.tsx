@@ -193,6 +193,12 @@ export const Header: React.FC<HeaderProps> = ({
             />
           )}
           <a
+            href="/docs"
+            className="hidden px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#87959b] transition-colors hover:text-[#b8f6dd] sm:block"
+          >
+            Docs
+          </a>
+          <a
             href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"
             target="_blank"
             rel="noopener noreferrer"

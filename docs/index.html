@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verxl API — OpenAI-compatible inference, cleared at 50 bps</title>
+  <meta name="description" content="Verxl API documentation. OpenAI-compatible chat completions, public model discovery, API-key inference, streaming, errors and non-custodial 50 bps clearing." />
+  <link rel="canonical" href="https://verxl.com/docs" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root{
+      --ink:#070a0f; --ink2:#0b1117; --panel:#0d141b; --line:rgba(255,255,255,.09);
+      --line2:rgba(255,255,255,.055); --mint:#b8f6dd; --sage:#7fae9d; --text:#f3f6f5;
+      --soft:#a9b6bd; --muted:#718079; --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--ink);color-scheme:dark}
+    body{margin:0;background:
+      radial-gradient(ellipse 75% 45% at 85% -8%,rgba(184,246,221,.075),transparent 60%),
+      linear-gradient(180deg,#070a0f 0%,#070a0f 45%,#080c10 100%);
+      color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    code,pre{font-family:var(--mono)}
+    .shell{max-width:1180px;margin:0 auto;padding:0 24px}
+    .top{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);background:rgba(7,10,15,.86);backdrop-filter:blur(18px)}
+    .topin{display:flex;align-items:center;justify-content:space-between;gap:18px;height:58px}
+    .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:-.02em}
+    .brand svg{width:20px;height:20px}
+    .brand small{font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);border:1px solid rgba(184,246,221,.22);padding:2px 5px}
+    .topnav{display:flex;align-items:center;gap:20px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .topnav a:hover{color:var(--mint)}
+    .topnav .status{color:var(--mint)}
+    .topnav .status i{display:inline-block;width:4px;height:4px;background:var(--mint);margin-right:5px;vertical-align:1px}
+    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center;padding:60px 0 38px}
+    .eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+    .eyebrow i{width:5px;height:5px;background:var(--mint);display:block}
+    h1{font-size:clamp(42px,5.8vw,72px);line-height:.95;letter-spacing:-.055em;font-weight:500;margin:14px 0 16px}
+    h1 span{color:var(--sage)}
+    .lede{max-width:540px;font-size:15px;line-height:1.7;color:var(--soft);margin:0}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);padding:9px 12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;transition:.2s;background:transparent;color:var(--soft);cursor:pointer}
+    .btn:hover{border-color:rgba(184,246,221,.45);color:var(--mint)}
+    .btn.p{background:var(--mint);border-color:var(--mint);color:#07110d}
+    .btn.p:hover{background:#d7f8ec;color:#07110d}
+    .badges{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-family:var(--mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+    .badges b{font-weight:400;color:var(--mint)}
+    .quick{border:1px solid var(--line);background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(184,246,221,.02));box-shadow:0 24px 70px -38px #000}
+    .quick-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line2);font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .quick-head span:last-child{color:var(--mint)}
+    .quick pre{margin:0;padding:15px 14px;font-size:9px;line-height:1.8;overflow:auto;color:#c9d4d8;background:#05080b}
+    .quick .hl{color:var(--mint)}.quick .key{color:#8fb8d9}.quick .str{color:#c7a6e8}
+    .note{display:flex;gap:9px;align-items:flex-start;border:1px solid rgba(184,246,221,.22);background:rgba(184,246,221,.045);padding:12px 14px;margin:18px 0 0;font-size:12px;line-height:1.6;color:#c9d4d8}
+    .note b{color:var(--mint);font-weight:500}
+    .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:44px;padding:26px 0 70px}
+    .side{position:sticky;top:82px;align-self:start;font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase}
+    .side p{margin:0 0 8px;color:#4f5b56;font-size:7px;letter-spacing:.14em}
+    .side a{display:block;padding:4px 0 4px 9px;border-left:1px solid var(--line2);color:var(--muted)}
+    .side a:hover{color:var(--mint);border-left-color:var(--mint)}
+    .content{min-width:0}
+    .doc-section{padding:0 0 34px;margin-bottom:32px;border-bottom:1px solid var(--line2);scroll-margin-top:82px}
+    .doc-section:last-child{border-bottom:0}
+    .kicker{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin:0 0 6px}
+    h2{font-size:25px;line-height:1.12;letter-spacing:-.035em;font-weight:500;margin:0 0 8px}
+    h3{font-size:14px;margin:22px 0 7px;font-weight:500;color:#eaf7f1}
+    p{margin:0 0 12px;color:var(--soft);font-size:13px;line-height:1.7}
+    p code,li code,td code{font-size:11px;color:var(--mint);background:rgba(184,246,221,.06);border:1px solid rgba(184,246,221,.1);padding:1px 4px}
+    ul{margin:8px 0 14px;padding-left:18px;color:var(--soft);font-size:13px}
+    li{margin:4px 0}
+    .code{position:relative;border:1px solid var(--line);background:#05080b;margin:10px 0 14px}
+    .code-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line2);padding:6px 9px;font-family:var(--mono);font-size:7px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+    .copy{border:1px solid var(--line);background:none;color:var(--muted);font-family:var(--mono);font-size:7px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;cursor:pointer}
+    .copy:hover{color:var(--mint);border-color:rgba(184,246,221,.4)}
+    pre{margin:0;padding:13px;overflow:auto;font-size:9.5px;line-height:1.75;color:#c9d4d8}
+    .code pre .m{color:var(--mint)}.code pre .s{color:#c7a6e8}.code pre .k{color:#8fb8d9}.code pre .c{color:#4f5b56}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+    .mini{border:1px solid var(--line2);padding:12px;background:rgba(255,255,255,.018)}
+    .mini b{display:block;font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:400}
+    .mini span{font-size:12px;color:var(--text)}
+    table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:11px}
+    th{text-align:left;font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap}
+    td{border-bottom:1px solid var(--line2);padding:8px;color:var(--soft);vertical-align:top}
+    td:first-child{color:var(--text);font-family:var(--mono);font-size:10px}
+    .tag{display:inline-block;border:1px solid rgba(184,246,221,.25);padding:1px 5px;font-family:var(--mono);font-size:6.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mint);white-space:nowrap}
+    .muted{color:var(--muted)}
+    .footer{border-top:1px solid var(--line);padding:18px 0 26px;font-family:var(--mono);font-size:7px;letter-spacing:.05em;color:#4f5b56;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer a:hover{color:var(--mint)}
+    @media(max-width:900px){.hero{grid-template-columns:1fr;gap:26px;padding:38px 0 30px}.layout{grid-template-columns:1fr;gap:22px;padding-top:10px}.side{position:static;display:grid;grid-template-columns:1fr 1fr;gap:0 16px;border-bottom:1px solid var(--line2);padding-bottom:14px}.side p{grid-column:1/-1}.grid2{grid-template-columns:1fr}.topnav{display:none}}
+    @media(max-width:560px){.shell{padding:0 16px}h1{font-size:42px}.quick pre{font-size:8px}.doc-section{margin-bottom:26px;padding-bottom:26px}table{font-size:10px}th,td{padding:6px 5px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="shell topin">
+      <a class="brand" href="/" aria-label="Verxl home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4l9 16 9-16" stroke="#b8f6dd" stroke-width="2"/><path d="M7.5 4L12 12l4.5-8" stroke="#fff" stroke-width="1" opacity=".55"/></svg>
+        <span>Verxl</span><small>API</small>
+      </a>
+      <nav class="topnav" aria-label="API navigation">
+        <a href="#quickstart">Quickstart</a><a href="#models">Models</a><a href="#auth">Auth</a><a href="#errors">Errors</a><a href="/openapi.json">OpenAPI ↗</a><a href="/llms.txt">llms.txt ↗</a><a href="#mcp">MCP</a>
+        <span class="status"><i></i>Sepolia</span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <section class="hero">
+        <div>
+          <div class="eyebrow"><i></i>Inference API <span style="color:#4f5b56">/ v1</span></div>
+          <h1>Inference<br><span>that clears.</span></h1>
+          <p class="lede">One OpenAI-compatible endpoint. Three models. The provider keeps 99.5%; the protocol takes 50 bps. Inspect the models and schema without a key, then authenticate for inference.</p>
+          <div class="actions">
+            <a class="btn p" href="#quickstart">Quickstart <span aria-hidden="true">↓</span></a>
+            <a class="btn" href="/openapi.json">OpenAPI 3.1 ↗</a>
+            <a class="btn" href="/llms.txt">llms.txt ↗</a>
+          </div>
+          <div class="badges"><span><b>50 bps</b> protocol</span><span><b>99.5%</b> provider</span><span><b>USDC</b> Arbitrum</span><span><b>No key</b> for docs</span></div>
+        </div>
+
+        <div class="quick" aria-label="Authenticated curl example">
+          <div class="quick-head"><span>POST /v1/chat/completions</span><span>Bearer auth</span></div>
+<pre><span class="k">curl</span> https://api.verxl.com/v1/chat/completions \
+  -H <span class="str">"Authorization: Bearer $VERXL_API_KEY"</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{
+    "model": "qwen3.5-4b-uncensored-32k",
+    "messages": [{"role":"user","content":"Explain the 50 bps fee in one sentence."}],
+    "max_tokens": 128
+  }'</span></pre>
+        </div>
+      </section>
+
+      <div class="note"><span style="color:var(--mint)">◇</span><div><b>No key to investigate the API.</b> <code>GET /v1/models</code>, <code>GET /openapi.json</code>, <code>GET /llms.txt</code> and <code>GET /api/health</code> are public. Every completion requires a funded <code>vrxl_live_...</code> key; there is no free compute tier.</div></div>
+
+      <div class="layout">
+        <aside class="side" aria-label="On this page">
+          <p>On this page</p>
+          <a href="#quickstart">Quickstart</a>
+          <a href="#auth">Authentication</a>
+          <a href="#models">Models</a>
+          <a href="#chat">Chat completions</a>
+          <a href="#streaming">Streaming</a>
+          <a href="#errors">Errors</a>
+          <a href="#settlement">Settlement</a>
+          <a href="#mcp">MCP</a>
+          <a href="#agents">For agents</a>
+        </aside>
+
+        <article class="content">
+          <section class="doc-section" id="quickstart">
+            <p class="kicker">01 / Quickstart</p>
+            <h2>First request in one line.</h2>
+            <p>No SDK is required. The API accepts standard OpenAI Chat Completions JSON. Both hosts serve the same paths. Every completion requires an API key; the public model list does not.</p>
+            <div class="grid2"><div class="mini"><b>Dedicated API</b><span>https://api.verxl.com</span></div><div class="mini"><b>Apex fallback</b><span>https://verxl.com</span></div></div>
+            <div class="code"><div class="code-head"><span>curl · Authorization required</span><button class="copy" data-copy="curl https://api.verxl.com/v1/chat/completions -H 'Authorization: Bearer $VERXL_API_KEY' -H 'Content-Type: application/json' -d '{&quot;model&quot;:&quot;qwen3.5-4b-uncensored-32k&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Hello.&quot;}],&quot;max_tokens&quot;:128}'">Copy</button></div>
+<pre><span class="k">curl</span> https://api.verxl.com/v1/chat/completions \
+  -H <span class="s">"Authorization: Bearer $VERXL_API_KEY"</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{
+    "model": "qwen3.5-4b-uncensored-32k",
+    "messages": [{"role":"user","content":"Hello."}],
+    "max_tokens": 128
+  }'</span></pre></div>
+            <p>The response is an OpenAI-shaped object. <code>usage</code> reports tokens; the provider is paid from the compute charge, not from the user's deposit.</p>
+            <div class="code"><div class="code-head"><span>200 · application/json</span><button class="copy" data-copy='{"id":"chatcmpl_01JVERXL","object":"chat.completion","created":1762000000,"model":"qwen3.5-4b-uncensored-32k","choices":[{"index":0,"message":{"role":"assistant","content":"..."},"finish_reason":"stop"}],"usage":{"prompt_tokens":24,"completion_tokens":23,"total_tokens":47}}'>Copy</button></div>
+<pre>{
+  <span class="m">"id"</span>: <span class="s">"chatcmpl_01JVERXL"</span>,
+  <span class="m">"object"</span>: <span class="s">"chat.completion"</span>,
+  <span class="m">"created"</span>: 1762000000,
+  <span class="m">"model"</span>: <span class="s">"qwen3.5-4b-uncensored-32k"</span>,
+  <span class="m">"choices"</span>: [{
+    <span class="m">"index"</span>: 0,
+    <span class="m">"message"</span>: {<span class="m">"role"</span>: <span class="s">"assistant"</span>, <span class="m">"content"</span>: <span class="s">"..."</span>},
+    <span class="m">"finish_reason"</span>: <span class="s">"stop"</span>
+  }],
+  <span class="m">"usage"</span>: {<span class="m">"prompt_tokens"</span>: 24, <span class="m">"completion_tokens"</span>: 23, <span class="m">"total_tokens"</span>: 47}
+}</pre></div>
+          </section>
+
+          <section class="doc-section" id="auth">
+            <p class="kicker">02 / Authentication</p>
+            <h2>Public by default. Pay only for frontier.</h2>
+            <p>Documentation and model discovery are public. Inference is never anonymous: every model, including Qwen 3.5 4B, requires a funded key.</p>
+            <table><thead><tr><th>Tier</th><th>Model</th><th>Key</th><th>Limit</th></tr></thead><tbody>
+              <tr><td>Standard</td><td>qwen3.5-4b-uncensored-32k</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
+              <tr><td>Standard</td><td>deepseek-v4.1-flash</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
+              <tr><td>Standard</td><td>mimo-v2.6-flash</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
+            </tbody></table>
+            <p>Send a key only when you use a paid model:</p>
+            <div class="code"><div class="code-head"><span>Authorization header</span></div><pre><span class="m">Authorization</span>: Bearer vrxl_live_...</pre></div>
+            <p>Create and fund keys at <a href="/console" style="color:var(--mint)">verxl.com/console</a>. An invalid key never silently falls back to an unauthenticated route; it returns <code>401</code>.</p>
+          </section>
+
+          <section class="doc-section" id="models">
+            <p class="kicker">03 / Models</p>
+            <h2>Three routes. Published prices.</h2>
+            <p><a href="/v1/models" style="color:var(--mint)">GET /v1/models</a> is public and returns this list with prices and documentation links. Prices are per 1M tokens before the 50 bps protocol fee.</p>
+            <table><thead><tr><th>Model</th><th>Context</th><th>Prompt</th><th>Completion</th><th>Access</th></tr></thead><tbody>
+              <tr><td>qwen3.5-4b-uncensored-32k</td><td>32,768</td><td>$0.05</td><td>$0.10</td><td><span class="tag">Key + balance</span></td></tr>
+              <tr><td>deepseek-v4.1-flash</td><td>1,000,000</td><td>$0.30</td><td>$1.20</td><td><span class="tag">Key + balance</span></td></tr>
+              <tr><td>mimo-v2.6-flash</td><td>1,000,000</td><td>$0.14</td><td>$0.28</td><td><span class="tag">Key + balance</span></td></tr>
+            </tbody></table>
+            <p class="muted">DeepSeek off-peak is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps fee is charged on the compute amount and shown separately from the model price.</p>
+          </section>
+
+          <section class="doc-section" id="chat">
+            <p class="kicker">04 / Chat completions</p>
+            <h2>One request shape. OpenAI compatible.</h2>
+            <p><code>POST /v1/chat/completions</code> accepts <code>model</code>, <code>messages</code>, <code>temperature</code>, <code>max_tokens</code> and <code>stream</code>. <code>messages</code> is required and must not be empty. Send <code>Authorization: Bearer vrxl_live_...</code> on every call.</p>
+            <table><thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead><tbody>
+              <tr><td>model</td><td>string</td><td>Exact id from <code>/v1/models</code>. Unknown ids fall back to the default route.</td></tr>
+              <tr><td>messages</td><td>array</td><td><code>system</code>, <code>user</code>, <code>assistant</code>; at least one.</td></tr>
+              <tr><td>temperature</td><td>number</td><td>0–2, default 0.7.</td></tr>
+              <tr><td>max_tokens</td><td>integer</td><td>Default 8192; capped at 32768.</td></tr>
+              <tr><td>stream</td><td>boolean</td><td>SSE chunks when true.</td></tr>
+            </tbody></table>
+            <h3>Python</h3>
+            <div class="code"><div class="code-head"><span>OpenAI SDK · Authorization required</span><button class="copy" data-copy='import os
+from openai import OpenAI
+c = OpenAI(base_url="https://api.verxl.com/v1", api_key=os.environ["VERXL_API_KEY"])
+r = c.chat.completions.create(model="qwen3.5-4b-uncensored-32k", messages=[{"role":"user","content":"Hello."}], max_tokens=128)
+print(r.choices[0].message.content)'>Copy</button></div>
+<pre><span class="k">import</span> os
+<span class="k">from</span> openai <span class="k">import</span> OpenAI
+c = OpenAI(base_url=<span class="s">"https://api.verxl.com/v1"</span>, api_key=os.environ[<span class="s">"VERXL_API_KEY"</span>])
+r = c.chat.completions.create(
+    model=<span class="s">"qwen3.5-4b-uncensored-32k"</span>,
+    messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Hello."</span>}],
+    max_tokens=<span class="m">128</span>,
+)
+<span class="k">print</span>(r.choices[<span class="m">0</span>].message.content)</pre></div>
+            <p class="muted">Create a key at <a href="/console" style="color:var(--mint)">verxl.com/console</a>. The key is required even for Qwen 3.5 4B; there is no unauthenticated generation tier.</p>
+          </section>
+
+          <section class="doc-section" id="streaming">
+            <p class="kicker">05 / Streaming</p>
+            <h2>Server-sent events, end to end.</h2>
+            <p>Set <code>stream: true</code> and read OpenAI-style <code>data:</code> lines. The stream ends with <code>data: [DONE]</code>.</p>
+            <div class="code"><div class="code-head"><span>SSE</span></div><pre>data: {<span class="m">"choices"</span>:[{<span class="m">"delta"</span>:{<span class="m">"content"</span>:<span class="s">"The fee is "</span>}}]}
+
+data: {<span class="m">"choices"</span>:[{<span class="m">"delta"</span>:{<span class="m">"content"</span>:<span class="s">"50 bps."</span>}}]}
+
+data: [DONE]</pre></div>
+          </section>
+
+          <section class="doc-section" id="errors">
+            <p class="kicker">06 / Errors</p>
+            <h2>Failures are structured.</h2>
+            <p>Every non-2xx response uses the same envelope:</p>
+            <div class="code"><div class="code-head"><span>error envelope</span></div><pre>{<span class="m">"error"</span>:{<span class="m">"message"</span>:<span class="s">"..."</span>,<span class="m">"type"</span>:<span class="s">"invalid_request_error"</span>,<span class="m">"code"</span>:<span class="s">"bad_json"</span>}}</pre></div>
+            <table><thead><tr><th>Status</th><th>Code</th><th>Meaning</th></tr></thead><tbody>
+              <tr><td>400</td><td><code>bad_json</code></td><td>Body is not valid JSON.</td></tr>
+              <tr><td>400</td><td><code>messages_required</code></td><td><code>messages</code> is missing or empty.</td></tr>
+              <tr><td>401</td><td><code>unauthorized</code></td><td>A malformed or unknown Authorization header was sent.</td></tr>
+              <tr><td>402</td><td><code>insufficient_balance</code></td><td>Key has no funded balance for the selected model.</td></tr>
+              <tr><td>429</td><td><code>rate_limited</code></td><td>Request rate exceeded; inspect <code>X-RateLimit-*</code> headers.</td></tr>
+              <tr><td>500</td><td><code>upstream_error</code></td><td>Provider or routing failure; safe to retry idempotently.</td></tr>
+            </tbody></table>
+          </section>
+
+          <section class="doc-section" id="settlement">
+            <p class="kicker">07 / Settlement</p>
+            <h2>50 bps, not a subscription.</h2>
+            <p>Verxl is non-custodial. The protocol fee is 50 bps of the compute charge (0.5%). The provider receives 99.5% in USDC on Arbitrum. There is no monthly platform fee and no minimum deposit.</p>
+            <div class="grid2"><div class="mini"><b>Protocol fee</b><span>50 bps · 0.5%</span></div><div class="mini"><b>Provider share</b><span>99.5% · USDC / Arbitrum</span></div></div>
+            <p class="muted">Sepolia is a test deployment. Mainnet production is out of scope for this build.</p>
+          </section>
+
+          <section class="doc-section" id="mcp">
+            <p class="kicker">08 / MCP</p>
+            <h2>Agent-native setup.</h2>
+            <p>Verxl exposes a remote MCP server at <code>https://verxl.com/mcp</code>. It is designed for an AI agent to discover the API, explain the paid setup to its user, and then call inference once the user supplies a funded key.</p>
+            <table><thead><tr><th>Tool</th><th>Key</th><th>What it does</th></tr></thead><tbody>
+              <tr><td>verxl_get_started</td><td>none</td><td>Returns the exact three-step setup, public URLs and the no-free-compute policy.</td></tr>
+              <tr><td>verxl_list_models</td><td>none</td><td>Returns the public model list and prices.</td></tr>
+              <tr><td>verxl_get_api_key</td><td>none</td><td>Returns the console URL and user steps; the user approves the wallet deposit.</td></tr>
+              <tr><td>verxl_payment_instructions</td><td>none</td><td>Returns the treasury, chain, token and minimum for a user-signed deposit.</td></tr>
+              <tr><td>verxl_chat</td><td>vrxl_live_...</td><td>Runs one completion. The key is passed as a tool argument; there is no free tier.</td></tr>
+            </tbody></table>
+            <p>The MCP server never holds funds, private keys or API keys. It cannot sign a deposit or mint a funded key; it gets the agent to the exact console step and then the user approves. An inference call without a key returns <code>401</code> with a machine-readable <code>help</code> object pointing back to the console, docs and MCP.</p>
+            <div class="code"><div class="code-head"><span>MCP endpoint</span></div><pre>https://verxl.com/mcp
+transport: streamable-http
+auth: none for setup/discovery; vrxl_live_... for verxl_chat</pre></div>
+          </section>
+
+          <section class="doc-section" id="agents">
+            <p class="kicker">09 / For agents</p>
+            <h2>Read the spec, not the SPA.</h2>
+            <p>Agent-facing resources are static, public and do not need a browser:</p>
+            <table><thead><tr><th>Resource</th><th>URL</th><th>Auth</th></tr></thead><tbody>
+              <tr><td>OpenAPI 3.1</td><td><a href="/openapi.json" style="color:var(--mint)">/openapi.json</a></td><td>none</td></tr>
+              <tr><td>LLM index</td><td><a href="/llms.txt" style="color:var(--mint)">/llms.txt</a></td><td>none</td></tr>
+              <tr><td>Models</td><td><a href="/v1/models" style="color:var(--mint)">/v1/models</a></td><td>none</td></tr>
+              <tr><td>Health</td><td><a href="/api/health" style="color:var(--mint)">/api/health</a></td><td>none</td></tr>
+              <tr><td>MCP</td><td><a href="https://verxl.com/mcp" style="color:var(--mint)">/mcp</a></td><td>none for setup; key for chat</td></tr>
+              <tr><td>Chat</td><td><code>POST /v1/chat/completions</code></td><td>Bearer key required</td></tr>
+            </tbody></table>
+            <p>The API returns CORS <code>*</code> and supports browser clients. Public reads need no key; inference always does. Do not send a placeholder key unless your SDK requires a non-empty value.</p>
+          </section>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer class="shell footer">
+    <div>Verxl Protocol · API v1 · Sepolia test run</div>
+    <div><a href="/">Home</a> · <a href="/products">Products</a> · <a href="/chat">Chat</a> · <a href="/openapi.json">OpenAPI</a> · <a href="/llms.txt">llms.txt</a> · <a href="/privacy">Privacy</a></div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.copy').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var text = btn.getAttribute('data-copy') || '';
+        if (navigator.clipboard && text) {
+          navigator.clipboard.writeText(text).then(function(){
+            var old = btn.textContent;
+            btn.textContent = 'Copied';
+            setTimeout(function(){ btn.textContent = old; }, 1200);
+          }).catch(function(){});
+        }
+      });
+    });
+  </script>
+</body>
+</html>

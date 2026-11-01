@@ -1,0 +1,118 @@
+# Verxl Protocol — Inference API
+
+> OpenAI-compatible inference routing and non-custodial clearing. The protocol takes 50 bps; the provider keeps 99.5%, settled in USDC on Arbitrum. Documentation, model discovery and health are public. Every inference request requires `Authorization: Bearer vrxl_live_...` and a funded balance; there is no free compute tier.
+
+## Start here (no authentication)
+
+- Docs: https://verxl.com/docs
+- OpenAPI 3.1: https://verxl.com/openapi.json
+- Models: https://verxl.com/v1/models
+- Health: https://verxl.com/api/health
+- API host: https://api.verxl.com (same paths)
+- Apex host: https://verxl.com
+
+## Public discovery (no key)
+
+These resources are public and safe for an AI agent to inspect:
+
+- `GET https://verxl.com/v1/models` — model ids, context, published prices, docs links
+- `GET https://verxl.com/openapi.json` — OpenAPI 3.1
+- `GET https://verxl.com/llms.txt` — this file
+- `GET https://verxl.com/api/health` — edge + protocol health
+
+No key is required for these reads. No completion request is free.
+
+## Authentication for inference
+
+```
+Authorization: Bearer vrxl_live_...
+```
+
+Every completion requires a key and a funded balance. Create and fund one at https://verxl.com/console. A missing or invalid key returns `401`. Models:
+- `deepseek-v4.1-flash` — 1M context, official bridge
+- `mimo-v2.6-flash` — 1M context, official bridge
+
+## Models
+
+| id | context | prompt $/1M | completion $/1M | access |
+|---|---:|---:|---:|---|
+| qwen3.5-4b-uncensored-32k | 32,768 | 0.05 | 0.10 | key + balance |
+| deepseek-v4.1-flash | 1,000,000 | 0.30 | 1.20 | key + balance |
+| mimo-v2.6-flash | 1,000,000 | 0.14 | 0.28 | key + balance |
+
+DeepSeek off-peak pricing is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps protocol fee is separate and is deducted from the compute charge.
+
+## Request shape
+
+```json
+{
+  "model": "qwen3.5-4b-uncensored-32k",
+  "messages": [
+    {"role": "system", "content": "Answer directly."},
+    {"role": "user", "content": "Hello."}
+  ],
+  "temperature": 0.7,
+  "max_tokens": 128,
+  "stream": false
+}
+```
+
+`messages`, `model`, `temperature`, `max_tokens` and `stream` follow the OpenAI Chat Completions API. Use an exact model id from `/v1/models`; unknown ids fall back to the default route.
+
+## Response shape
+
+```json
+{
+  "id": "chatcmpl_01JVERXL",
+  "object": "chat.completion",
+  "created": 1762000000,
+  "model": "qwen3.5-4b-uncensored-32k",
+  "choices": [{
+    "index": 0,
+    "message": {"role": "assistant", "content": "..."},
+    "finish_reason": "stop"
+  }],
+  "usage": {"prompt_tokens": 24, "completion_tokens": 23, "total_tokens": 47}
+}
+```
+
+SSE responses use OpenAI `data:` chunks and terminate with `data: [DONE]`.
+
+## Errors
+
+All non-2xx responses use:
+
+```json
+{"error":{"message":"...","type":"invalid_request_error","code":"bad_json"}}
+```
+
+Common statuses: `400` invalid request, `401` missing/invalid Authorization, `402` insufficient balance, `429` rate limit, `500` upstream failure.
+
+## MCP
+
+Remote MCP server: `https://verxl.com/mcp` (Streamable HTTP, JSON responses).
+
+Tools:
+- `verxl_get_started` — no key; exact paid setup and URLs
+- `verxl_list_models` — no key
+- `verxl_get_api_key` — no key; returns console URL and user steps; cannot create/fund a key
+- `verxl_payment_instructions` — no key; treasury, chain, token, minimum; cannot sign
+- `verxl_chat` — requires a funded `vrxl_live_...` key passed as an argument
+
+The server never holds funds, keys or private keys. The user approves the wallet deposit in the console. There is no free compute tier.
+
+## CORS and agents
+
+- `Access-Control-Allow-Origin: *`
+- `GET`/`OPTIONS` on `/v1/models`
+- `POST`/`OPTIONS` on `/v1/chat/completions`
+- Every inference request needs a key; the public reads above do not.
+- For agent use, read `/openapi.json` first and call `/v1/models`; do not scrape the SPA.
+- Settlement is non-custodial; Verxl does not hold user funds.
+
+## Human links
+
+- Product: https://verxl.com
+- Chat: https://verxl.com/chat
+- Console: https://verxl.com/console
+- Source: https://github.com/simonhavlik/verxl-protocol

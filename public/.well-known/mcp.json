@@ -1,0 +1,12 @@
+{
+  "name": "verxl",
+  "description": "Verxl Protocol inference API MCP server",
+  "url": "https://verxl.com/mcp",
+  "transport": "streamable-http",
+  "authentication": "none for discovery/setup; funded vrxl_live_... key for verxl_chat",
+  "tools": ["verxl_get_started", "verxl_list_models", "verxl_get_api_key", "verxl_payment_instructions", "verxl_chat"],
+  "docs": "https://verxl.com/docs",
+  "openapi": "https://verxl.com/openapi.json",
+  "llms_txt": "https://verxl.com/llms.txt",
+  "no_free_compute": true
+}

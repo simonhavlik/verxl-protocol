@@ -92,6 +92,15 @@ export const onRequestGet: PagesFunction<Env> = async () => {
           governance_token: "0x8F590f2098D71A8253ad50450D7A73F3201402F0",
           dao_vault: "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
         },
+        verxl_docs: {
+          docs: "https://verxl.com/docs",
+          openapi: "https://verxl.com/openapi.json",
+          llms_txt: "https://verxl.com/llms.txt",
+          health: "https://verxl.com/api/health",
+          mcp: "https://verxl.com/mcp",
+          authentication: "All inference requires Authorization: Bearer vrxl_live_... . Documentation, models and health are public.",
+          inference_auth_required: true,
+        },
       },
       null,
       2
