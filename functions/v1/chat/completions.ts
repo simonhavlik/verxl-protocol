@@ -519,21 +519,50 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         if (stream) {
           let completionTokenCount = 0;
           const textDecoder = new TextDecoder();
+          const textEncoder = new TextEncoder();
+          let sseBuffer = "";
+
+          const normalizeStreamEvent = (event: string) => {
+            const lines = event.split("\n");
+            const out = lines.map((line) => {
+              if (!line.startsWith("data: ") || line === "data: [DONE]") return line;
+              try {
+                const obj = JSON.parse(line.slice(6));
+                delete obj.system_fingerprint;
+                delete obj.opencode;
+                if (Array.isArray(obj.choices)) {
+                  for (const choice of obj.choices) {
+                    for (const target of [choice?.delta, choice?.message]) {
+                      if (target && target.reasoning && !target.reasoning_content) {
+                        target.reasoning_content = target.reasoning;
+                      }
+                      if (target) delete target.reasoning;
+                    }
+                  }
+                }
+                completionTokenCount++;
+                return `data: ${JSON.stringify(obj)}`;
+              } catch {
+                return line;
+              }
+            });
+            return out.join("\n");
+          };
 
           const transformStream = new TransformStream({
             transform(chunk, controller) {
-              controller.enqueue(chunk);
-              try {
-                const text = textDecoder.decode(chunk, { stream: true });
-                const lines = text.split("\n");
-                for (const line of lines) {
-                  if (line.startsWith("data: ") && line !== "data: [DONE]") {
-                    completionTokenCount++;
-                  }
-                }
-              } catch {}
+              sseBuffer += textDecoder.decode(chunk, { stream: true });
+              const events = sseBuffer.split("\n\n");
+              sseBuffer = events.pop() || "";
+              for (const event of events) {
+                controller.enqueue(textEncoder.encode(normalizeStreamEvent(event) + "\n\n"));
+              }
             },
-            flush() {
+            flush(controller) {
+              if (sseBuffer.trim()) {
+                controller.enqueue(textEncoder.encode(normalizeStreamEvent(sseBuffer) + "\n\n"));
+                sseBuffer = "";
+              }
               if (authenticatedUser) {
                 const actualTokens = Math.max(4, completionTokenCount);
                 const computeCost =
