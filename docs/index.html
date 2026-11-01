@@ -203,6 +203,7 @@
               <tr><td>mimo-v2.6-flash</td><td>1,000,000</td><td>$0.14</td><td>$0.28</td><td><span class="tag">Key + balance</span></td></tr>
             </tbody></table>
             <p class="muted">For OpenAI-compatible clients, the same context limit is returned as <code>context_window</code>, <code>context_length</code> and <code>max_model_len</code>, so generic model-list discovery does not fall back to 128K. DeepSeek off-peak is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps fee is charged on the compute amount and shown separately from the model price.</p>
+            <p class="muted"><strong style="color:var(--text);font-weight:500">Qwen output floor.</strong> Qwen 3.5 4B uses an internal thinking pass. Requests with <code>max_tokens</code> below 256 are raised to 256 before dispatch so callers do not receive an empty <code>content</code> string with <code>finish_reason: "length"</code>. The effective value is returned in <code>verxl_clearing.effective_max_tokens</code> and <code>X-Verxl-Effective-Max-Tokens</code>.</p>
           </section>
 
           <section class="doc-section" id="chat">
@@ -213,7 +214,7 @@
               <tr><td>model</td><td>string</td><td>Exact id from <code>/v1/models</code>. Unknown ids fall back to the default route.</td></tr>
               <tr><td>messages</td><td>array</td><td><code>system</code>, <code>user</code>, <code>assistant</code>; at least one.</td></tr>
               <tr><td>temperature</td><td>number</td><td>0–2, default 0.7.</td></tr>
-              <tr><td>max_tokens</td><td>integer</td><td>Default 8192; capped at 32768.</td></tr>
+              <tr><td>max_tokens</td><td>integer</td><td>Default 8192; capped at 32768. Qwen is floored at 256 output tokens because of its reasoning pass.</td></tr>
               <tr><td>stream</td><td>boolean</td><td>SSE chunks when true.</td></tr>
             </tbody></table>
             <h3>Python</h3>

@@ -106,7 +106,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const stream = Boolean(body.stream);
   const temperature = typeof body.temperature === "number" ? body.temperature : 0.7;
-  const maxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 32768) : 8192;
+  const requestedMaxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 32768) : 8192;
+  // Qwen 3.5 4B spends the first ~200 tokens on its thinking pass. Below 256
+  // output tokens the caller can get an empty content string with
+  // finish_reason=length even though the request "succeeded". Apply a floor
+  // before the upstream call so small max_tokens values cannot silently empty.
+  const QWEN_MIN_OUTPUT_TOKENS = 256;
+  const minTokensApplied = requestedModel === "qwen3.5-4b-uncensored-32k" && requestedMaxTokens < QWEN_MIN_OUTPUT_TOKENS;
+  const maxTokens = minTokensApplied ? QWEN_MIN_OUTPUT_TOKENS : requestedMaxTokens;
 
   if (messages.length === 0) {
     return new Response(
@@ -413,6 +420,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     "X-Verxl-Protocol-Fee-Bps": "50",
     "X-Verxl-Router-Latency-Ms": "4",
     "X-Verxl-Provider-Id": providerId,
+    "X-Verxl-Requested-Max-Tokens": String(requestedMaxTokens),
+    "X-Verxl-Effective-Max-Tokens": String(maxTokens),
+    "X-Verxl-Min-Tokens-Applied": minTokensApplied ? "true" : "false",
     "X-Verxl-Clearing-Status": "SETTLED",
     "X-Verxl-DAO-Vault": "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
     ...demoRateLimitHeaders,
@@ -760,6 +770,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
               cost_usd: totalDeduction,
               prompt_tokens: promptTokens,
               completion_tokens: completionTokens,
+              requested_max_tokens: requestedMaxTokens,
+              effective_max_tokens: maxTokens,
+              min_tokens_applied: minTokensApplied,
             },
           };
           delete normalized.system_fingerprint;

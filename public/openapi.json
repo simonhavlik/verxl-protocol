@@ -7,7 +7,8 @@
     "contact": {
       "name": "Verxl",
       "url": "https://verxl.com/docs"
-    }
+    },
+    "x-verxl-qwen-output-floor": 256
   },
   "servers": [
     {
@@ -315,7 +316,11 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 32768,
-            "default": 8192
+            "default": 8192,
+            "description": "Default 8192, capped at 32768. Qwen 3.5 4B is floored at 256 effective output tokens to avoid an empty reasoning-only response.",
+            "x-verxl-min-output-tokens": {
+              "qwen3.5-4b-uncensored-32k": 256
+            }
           },
           "stream": {
             "type": "boolean",
