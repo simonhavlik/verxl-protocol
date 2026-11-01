@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
 import { useAuth } from "../context/AuthContext";
+import { ButtonColorful } from "./ui/button-colorful";
 import {
   Play,
   Square,
@@ -634,10 +635,14 @@ main();`,
               <span>Halt stream</span>
             </button>
           ) : (
-            <button onClick={handleRunInference} className="hero-btn hero-btn--primary w-full justify-center !py-2">
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Execute on {activeModel.short}</span>
-            </button>
+            <ButtonColorful
+              label={`Execute on ${activeModel.short}`}
+              appearance="solid"
+              icon={Play}
+              showArrow={false}
+              onClick={handleRunInference}
+              className="w-full justify-center !py-2 h-9 text-[11px]"
+            />
           )}
 
           <div className="border border-slate-800 bg-[#05070b] px-2.5 py-1.5">
