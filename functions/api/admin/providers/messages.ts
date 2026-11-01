@@ -110,10 +110,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const { provider_id, recipient_email, subject, message } = body;
+  const { provider_id, subject } = body;
+  // Accept both the API names and the older compose-form names so a stale
+  // client cannot fail with a false "required" error.
+  const recipient_email = body.recipient_email || body.recipient;
+  const message = body.message || body.body;
   if (!recipient_email || !message) {
     return new Response(
-      JSON.stringify({ error: "recipient_email and message are required" }),
+      JSON.stringify({
+        error: "recipient_email and message are required",
+        received: {
+          recipient_email: Boolean(recipient_email),
+          message: Boolean(message),
+        },
+      }),
       { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
     );
   }

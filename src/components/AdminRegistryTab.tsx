@@ -107,9 +107,9 @@ export const AdminRegistryTab: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          recipient: mailForm.recipient,
+          recipient_email: mailForm.recipient,
           subject: mailForm.subject,
-          body: mailForm.body,
+          message: mailForm.body,
           provider_id: mailForm.providerId || undefined,
         }),
       });
