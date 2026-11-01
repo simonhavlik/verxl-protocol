@@ -515,15 +515,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         ...(typeof (body as any).tool_choice === "string"
           ? { tool_choice: (body as any).tool_choice }
           : {}),
-        // Qwen 3.5 4B is a reasoning model: on this host the thinking pass can
-        // starve the output budget and make clients time out before a content
-        // token. Serve Qwen with thinking disabled so content streams
-        // immediately; the frontier bridges still receive the caller's level.
-        ...(requestedModel === "qwen3.5-4b-uncensored-64k"
-          ? { reasoning_effort: "none" }
-          : typeof (body as any).reasoning_effort === "string"
-            ? { reasoning_effort: (body as any).reasoning_effort }
-            : {}),
+        // Thinking is caller-controlled. Never override reasoning_effort here;
+        // Qwen and the frontier bridges receive exactly what the user selected.
+        ...(typeof (body as any).reasoning_effort === "string"
+          ? { reasoning_effort: (body as any).reasoning_effort }
+          : {}),
       });
 
       const upstreamResponse = await fetch(ep.url, {
