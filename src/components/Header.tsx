@@ -3,6 +3,7 @@ import { ExternalLink, Wallet, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { connectMetaMask } from "../lib/wallet";
 import { preloadRoute } from "../lib/routePreload";
+import { ButtonColorful } from "./ui/button-colorful";
 
 interface HeaderProps {
   activeTab: string;
@@ -180,14 +181,16 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
           ) : (
-            <button
+            <ButtonColorful
+              label={connectingWallet ? "Connecting" : "Connect"}
+              appearance="transparent"
+              size="sm"
+              showArrow={false}
+              icon={Wallet}
               onClick={handleConnectWalletClick}
               disabled={connectingWallet}
-              className="flex items-center gap-1.5 border border-[#b8f6dd]/30 px-2.5 py-1.5 text-[11px] text-[#dff8ef] transition-colors hover:border-[#b8f6dd]/70 disabled:opacity-50"
-            >
-              <Wallet className="h-3.5 w-3.5" />
-              <span>{connectingWallet ? "Connecting" : "Connect"}</span>
-            </button>
+              className="h-8 px-2.5 text-[11px]"
+            />
           )}
           <a
             href="https://app.aragon.org/dao/ethereum-sepolia/0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a"

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
 import { ProductGlassRail } from "./ProductGlassRail";
+import { ButtonColorful } from "./ui/button-colorful";
 const Playground = lazy(() => import("./Playground").then((m) => ({ default: m.Playground })));
 const RouteMap = lazy(() => import("./RouteMap").then((m) => ({ default: m.RouteMap })));
 const EfficiencyFrontier = lazy(() => import("./EfficiencyFrontier").then((m) => ({ default: m.EfficiencyFrontier })));
@@ -417,26 +418,23 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </p>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <button
+              <ButtonColorful
+                label="Run a request"
+                appearance="solid"
                 onClick={handleTryPlayground}
-                className="inline-flex items-center gap-2 border border-[#b8f6dd]/35 bg-[#b8f6dd]/10 px-4 py-2.5 text-[12px] font-medium text-[#dff8ef] transition-colors hover:border-[#b8f6dd]/70 hover:bg-[#b8f6dd]/15"
-              >
-                Run a request
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
+              />
+              <ButtonColorful
+                label="Read the API"
+                appearance="transparent"
                 onClick={() => onNavigate("console")}
-                className="inline-flex items-center gap-2 border border-white/12 px-4 py-2.5 text-[12px] font-medium text-[#c9d4d8] transition-colors hover:border-white/25 hover:text-white"
-              >
-                Read the API
-              </button>
-              <button
+                showArrow={false}
+              />
+              <ButtonColorful
+                label="Become a provider"
+                appearance="ghost"
                 onClick={() => onNavigate("registry")}
-                className="inline-flex items-center gap-1 px-1 py-2.5 text-[11px] font-mono text-[#87959b] transition-colors hover:text-[#b8f6dd]"
-              >
-                Become a provider
-                <ArrowRight className="h-3 w-3" />
-              </button>
+                size="sm"
+              />
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-[#7d8a92]">
