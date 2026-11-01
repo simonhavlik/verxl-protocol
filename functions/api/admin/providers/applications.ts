@@ -19,7 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const { results } = await db
       .prepare(
-        "SELECT id, name, operator_address, endpoint_url, model_identifier, hardware, location, region, price_prompt_usd, price_completion_usd, website, contact_email, message, status, created_at FROM provider_applications ORDER BY created_at DESC"
+        "SELECT id, name, operator_address, endpoint_url, model_identifier, hardware, location, region, price_prompt_usd, price_completion_usd, cached_prompt_usd, context_window, allow_thinking, allow_temperature, allow_tools, website, contact_email, message, status, created_at FROM provider_applications ORDER BY created_at DESC"
       )
       .all();
 
@@ -88,9 +88,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         model_id: app.model_identifier,
         prompt_rate: Number(app.price_prompt_usd) || 0.05,
         completion_rate: Number(app.price_completion_usd) || 0.10,
-        cached_prompt_rate: 0.010,
-        context_window: 1000000,
-        context_display: "1,000,000 tokens (1M)",
+        cached_prompt_rate: Number(app.cached_prompt_usd) || 0.01,
+        context_window: Math.max(1, Number(app.context_window) || 32768),
+        context_display: Number(app.context_window) >= 1000000
+          ? `${(Number(app.context_window) / 1000000).toFixed(0)},000,000 tokens (${(Number(app.context_window) / 1000000).toFixed(0)}M)`
+          : `${Number(app.context_window || 32768).toLocaleString()} tokens (${Math.round(Number(app.context_window || 32768) / 1024)}K)`,
+        allow_thinking: app.allow_thinking === true,
+        allow_temperature: app.allow_temperature !== false,
+        allow_tools: app.allow_tools === true,
         special_hours_description: null,
         special_hours_prompt_rate: null,
         special_hours_completion_rate: null,

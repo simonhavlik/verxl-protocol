@@ -3,6 +3,7 @@
 // Supports Bearer vrxl_live_... (API Keys) and Bearer vtok_... (Console / Chat Session Tokens)
 import { hashSha256, verifySessionToken } from "../../api/lib/auth";
 import { db } from "../../api/lib/db";
+import { findCatalogModel, providerChatUrl, type CatalogModel } from "../../api/lib/modelCatalog";
 
 interface Env {}
 
@@ -94,29 +95,32 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const rawModel = inputModel === "qwen3.5-4b-uncensored-32k"
     ? "qwen3.5-4b-uncensored-64k"
     : inputModel;
-  if (body.model !== undefined && !SUPPORTED_MODELS.includes(rawModel)) {
-    return new Response(
-      JSON.stringify({
-        error: {
-          message: `Unknown model '${rawModel}'. No substitution was made and nothing was billed.`,
-          type: "invalid_request_error",
-          param: "model",
-          code: "model_not_found",
-        },
-        available_models: SUPPORTED_MODELS,
-        docs: "https://verxl.com/docs",
-      }),
-      { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS, "X-Verxl-Model-Fallback": "none" } }
-    );
-  }
-  const lowerModel = rawModel.toLowerCase();
+  const isBuiltin = SUPPORTED_MODELS.includes(rawModel);
+  let dynamicModel: CatalogModel | null = null;
   let requestedModel = "qwen3.5-4b-uncensored-64k";
-  if (lowerModel.includes("deepseek")) {
-    requestedModel = "deepseek-v4.1-flash";
-  } else if (lowerModel.includes("mimo") || lowerModel.includes("xiaomi")) {
-    requestedModel = "mimo-v2.6-flash";
-  } else {
-    requestedModel = "qwen3.5-4b-uncensored-64k";
+  if (isBuiltin) {
+    const lowerModel = rawModel.toLowerCase();
+    if (lowerModel.includes("deepseek")) requestedModel = "deepseek-v4.1-flash";
+    else if (lowerModel.includes("mimo") || lowerModel.includes("xiaomi")) requestedModel = "mimo-v2.6-flash";
+    else requestedModel = "qwen3.5-4b-uncensored-64k";
+  } else if (body.model !== undefined) {
+    dynamicModel = await findCatalogModel(rawModel);
+    if (!dynamicModel) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: `Unknown model '${rawModel}'. No substitution was made and nothing was billed.`,
+            type: "invalid_request_error",
+            param: "model",
+            code: "model_not_found",
+          },
+          available_models: SUPPORTED_MODELS,
+          docs: "https://verxl.com/docs",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS, "X-Verxl-Model-Fallback": "none" } }
+      );
+    }
+    requestedModel = dynamicModel.id;
   }
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
@@ -150,6 +154,43 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
   }
   const requestedReasoningEffort = normalizedThink ?? normalizedReasoningEffort;
+
+  if (dynamicModel) {
+    if (requestedReasoningEffort && requestedReasoningEffort !== "none" && !dynamicModel.allowThinking) {
+      return new Response(JSON.stringify({
+        error: {
+          message: `Provider does not allow thinking for '${dynamicModel.id}'. Omit think/reasoning_effort.`,
+          type: "invalid_request_error",
+          param: "think",
+          code: "thinking_not_supported",
+        },
+        docs: "https://verxl.com/docs",
+      }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+    if (body.temperature !== undefined && !dynamicModel.allowTemperature) {
+      return new Response(JSON.stringify({
+        error: {
+          message: `Provider does not allow temperature for '${dynamicModel.id}'. Omit temperature.`,
+          type: "invalid_request_error",
+          param: "temperature",
+          code: "temperature_not_supported",
+        },
+        docs: "https://verxl.com/docs",
+      }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+    if (Array.isArray(body.tools) && body.tools.length > 0 && !dynamicModel.allowTools) {
+      return new Response(JSON.stringify({
+        error: {
+          message: `Provider does not allow tools for '${dynamicModel.id}'.`,
+          type: "invalid_request_error",
+          param: "tools",
+          code: "tools_not_supported",
+        },
+        docs: "https://verxl.com/docs",
+      }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }
+
   const requestedMaxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 32768) : 8192;
   // Qwen 3.5 4B spends the first ~200 tokens on its thinking pass. Below 256
   // output tokens the caller can get an empty content string with
@@ -443,7 +484,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   let promptRatePerM = 0.05;
   let completionRatePerM = 0.10;
 
-  if (requestedModel.includes("mimo")) {
+  if (dynamicModel) {
+    providerId = dynamicModel.providerId;
+    promptRatePerM = dynamicModel.promptRate;
+    completionRatePerM = dynamicModel.completionRate;
+  } else if (requestedModel.includes("mimo")) {
     providerId = "xiao-mimo-bridge-01";
     promptRatePerM = 0.14;
     completionRatePerM = 0.28;
@@ -499,7 +544,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   let upstreamEndpoints: Array<{ url: string; headers: Record<string, string>; modelName: string; timeoutMs?: number }> = [];
 
-  if (requestedModel.includes("mimo") || requestedModel.includes("deepseek")) {
+  if (dynamicModel) {
+    const url = providerChatUrl(dynamicModel.baseUrl);
+    if (!url) {
+      return new Response(JSON.stringify({
+        error: {
+          message: `Provider '${dynamicModel.providerName}' has no endpoint configured.`,
+          type: "api_error",
+          code: "provider_endpoint_missing",
+        },
+        docs: "https://verxl.com/docs",
+      }), { status: 502, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (dynamicModel.apiKey) headers.Authorization = `Bearer ${dynamicModel.apiKey}`;
+    upstreamEndpoints = [{
+      url,
+      headers,
+      modelName: dynamicModel.modelId,
+      timeoutMs: 120000,
+    }];
+  } else if (requestedModel.includes("mimo") || requestedModel.includes("deepseek")) {
     const upstreamModel = requestedModel.includes("mimo")
       ? "mimo-v2.6-flash"
       : "deepseek-v4.1-flash";
@@ -548,16 +613,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       const upstreamPayload = JSON.stringify({
         model: ep.modelName,
         messages,
-        temperature,
+        ...(!dynamicModel || dynamicModel.allowTemperature ? { temperature } : {}),
         max_tokens: maxTokens,
         stream,
-        ...(Array.isArray((body as any).tools) ? { tools: (body as any).tools } : {}),
-        ...(typeof (body as any).tool_choice === "string"
+        ...(Array.isArray((body as any).tools) && (!dynamicModel || dynamicModel.allowTools) ? { tools: (body as any).tools } : {}),
+        ...(typeof (body as any).tool_choice === "string" && (!dynamicModel || dynamicModel.allowTools)
           ? { tool_choice: (body as any).tool_choice }
           : {}),
         // Thinking is caller-controlled through think, enable_thinking or
         // reasoning_effort. Normalize aliases without overriding a user value.
-        ...(requestedReasoningEffort ? { reasoning_effort: requestedReasoningEffort } : {}),
+        ...(requestedReasoningEffort && (!dynamicModel || dynamicModel.allowThinking)
+          ? { reasoning_effort: requestedReasoningEffort }
+          : {}),
       });
 
       const upstreamResponse = await fetch(ep.url, {

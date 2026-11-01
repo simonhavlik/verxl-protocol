@@ -203,6 +203,7 @@
               <tr><td>mimo-v2.6-flash</td><td>1,000,000</td><td>$0.14</td><td>$0.28</td><td><span class="tag">Key + balance</span></td></tr>
             </tbody></table>
             <p class="muted">For OpenAI-compatible clients, the same context limit is returned as <code>context_window</code>, <code>context_length</code> and <code>max_model_len</code>, so generic model-list discovery does not fall back to 128K. DeepSeek off-peak is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps fee is charged on the compute amount and shown separately from the model price.</p>
+            <p class="muted">Approved provider models appear in <code>/v1/models</code> automatically. Each row declares which parameters the provider allows (<code>capabilities.reasoning</code>, <code>capabilities.temperature</code>, <code>capabilities.tools</code>); sending a parameter the provider disallows returns <code>400</code> with a specific code instead of silently dropping it.</p>
             <p class="muted"><strong style="color:var(--text);font-weight:500">Qwen output floor.</strong> Qwen 3.5 4B uses an internal thinking pass. Requests with <code>max_tokens</code> below 256 are raised to 256 before dispatch so callers do not receive an empty <code>content</code> string with <code>finish_reason: "length"</code>. The effective value is returned in <code>verxl_clearing.effective_max_tokens</code> and <code>X-Verxl-Effective-Max-Tokens</code>. Thinking itself is controlled by the caller through <code>think</code> / <code>reasoning_effort</code>; Verxl does not override it.</p>
           </section>
 
@@ -263,6 +264,9 @@ data: [DONE]</pre></div>
             <table><thead><tr><th>Status</th><th>Code</th><th>Meaning</th></tr></thead><tbody>
               <tr><td>400</td><td><code>bad_json</code></td><td>Body is not valid JSON.</td></tr>
               <tr><td>400</td><td><code>messages_required</code></td><td><code>messages</code> is missing or empty.</td></tr>
+              <tr><td>400</td><td><code>thinking_not_supported</code></td><td>The provider did not allow thinking for this model.</td></tr>
+              <tr><td>400</td><td><code>temperature_not_supported</code></td><td>The provider did not allow temperature for this model.</td></tr>
+              <tr><td>400</td><td><code>tools_not_supported</code></td><td>The provider did not allow tools for this model.</td></tr>
               <tr><td>401</td><td><code>unauthorized</code></td><td>A malformed or unknown Authorization header was sent.</td></tr>
               <tr><td>402</td><td><code>insufficient_balance</code></td><td>Key has no funded balance for the selected model.</td></tr>
               <tr><td>429</td><td><code>rate_limited</code></td><td>Request rate exceeded; inspect <code>X-RateLimit-*</code> headers.</td></tr>

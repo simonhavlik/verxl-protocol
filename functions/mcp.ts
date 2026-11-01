@@ -70,7 +70,7 @@ const TOOLS = [
       type: "object",
       properties: {
         api_key: { type: "string", description: "The user's funded Verxl API key (vrxl_live_...). Never invent one." },
-        model: { type: "string", enum: ["qwen3.5-4b-uncensored-64k", "deepseek-v4.1-flash", "mimo-v2.6-flash"] },
+        model: { type: "string", description: "Exact model id from /v1/models, including approved provider models." },
         messages: {
           type: "array",
           minItems: 1,

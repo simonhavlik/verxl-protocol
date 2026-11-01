@@ -148,6 +148,9 @@ export const onRequestGet: PagesFunction<Env> = async () => {
         seen.add(id);
         const rawContext = Number(m.context_window ?? m.context_length ?? m.max_model_len ?? 0);
         const context = Number.isFinite(rawContext) && rawContext > 0 ? Math.floor(rawContext) : 128000;
+        const allowThinking = m.allow_thinking === true || m.allowThinking === true;
+        const allowTemperature = m.allow_temperature !== false && m.allowTemperature !== false;
+        const allowTools = m.allow_tools === true || m.allowTools === true;
         dynamic.push({
           id,
           object: "model",
@@ -161,8 +164,19 @@ export const onRequestGet: PagesFunction<Env> = async () => {
           context_display: context >= 1000000 ? `${(context / 1000000).toFixed(0)},000,000 tokens (${(context / 1000000).toFixed(0)}M)` : `${context.toLocaleString()} tokens (${Math.round(context / 1024)}K)`,
           tier: (row as any).is_official_bridge ? "Official Bridge" : "Community Provider",
           is_official_bridge: Boolean((row as any).is_official_bridge),
-          capabilities: MODEL_CAPABILITIES,
-          parameters: MODEL_PARAMETERS,
+          capabilities: {
+            ...MODEL_CAPABILITIES,
+            temperature: allowTemperature,
+            supports_temperature: allowTemperature,
+            reasoning: allowThinking,
+            supports_reasoning: allowThinking,
+            tools: allowTools,
+            supports_tools: allowTools,
+          },
+          parameters: {
+            ...(allowTemperature ? { temperature: MODEL_PARAMETERS.temperature } : {}),
+            ...(allowThinking ? { think: MODEL_PARAMETERS.think, reasoning_effort: MODEL_PARAMETERS.reasoning_effort } : {}),
+          },
           provider_id: (row as any).id,
           pricing: {
             prompt_usd_per_1m: Number(m.price_prompt_usd ?? m.prompt_rate ?? 0),

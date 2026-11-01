@@ -42,6 +42,10 @@ Every completion requires a key and a funded balance. Create and fund one at htt
 
 DeepSeek off-peak pricing is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps protocol fee is separate and is deducted from the compute charge.
 
+## Provider models
+
+Approved provider models are added to `/v1/models` automatically after admin approval. Each model's `capabilities` declares `reasoning`, `temperature` and `tools`; only those parameters are forwarded. Unsupported parameters return `400` with `thinking_not_supported`, `temperature_not_supported` or `tools_not_supported`.
+
 ## Request shape
 
 ```json

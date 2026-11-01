@@ -38,10 +38,14 @@ export const Registry: React.FC<RegistryProps> = ({
     region: "EU-Central",
     hardware: "Dedicated Bare-Metal GPU Pod",
     modelIdentifier: "qwen3.5-4b-uncensored-64k",
-    contextWindow: "1000000",
+    contextWindow: "65536",
     endpointUrl: "https://node.cluster.network/v1",
     pricePromptUsd: "0.05",
     priceCompletionUsd: "0.10",
+    cachedPromptUsd: "0.01",
+    allowThinking: false,
+    allowTemperature: true,
+    allowTools: false,
     website: "",
     contactEmail: "",
     message: "",
@@ -78,7 +82,8 @@ export const Registry: React.FC<RegistryProps> = ({
           ...regForm,
           pricePromptUsd: parseFloat(regForm.pricePromptUsd) || 0.05,
           priceCompletionUsd: parseFloat(regForm.priceCompletionUsd) || 0.10,
-          contextWindow: parseInt(regForm.contextWindow) || 1000000,
+          contextWindow: parseInt(regForm.contextWindow) || 65536,
+          cachedPromptUsd: parseFloat(regForm.cachedPromptUsd) || 0.01,
         }),
       });
 
@@ -102,7 +107,7 @@ export const Registry: React.FC<RegistryProps> = ({
         lastAuditScore: probeResult?.score || 99.8,
         uptimePercent: 100.0,
         providerType: "COMMUNITY_NODE",
-        contextWindow: parseInt(regForm.contextWindow) || 1000000,
+        contextWindow: parseInt(regForm.contextWindow) || 65536,
         operatorAddress: regForm.operatorAddress || walletAddress || "0x0000000000000000000000000000000000000000",
       };
 
@@ -128,7 +133,7 @@ export const Registry: React.FC<RegistryProps> = ({
         lastAuditScore: 99.8,
         uptimePercent: 100.0,
         providerType: "COMMUNITY_NODE",
-        contextWindow: parseInt(regForm.contextWindow) || 1000000,
+        contextWindow: parseInt(regForm.contextWindow) || 65536,
         operatorAddress: regForm.operatorAddress || walletAddress || "0x0000000000000000000000000000000000000000",
       };
 
@@ -543,6 +548,25 @@ export const Registry: React.FC<RegistryProps> = ({
                       onChange={(e) => setRegForm({ ...regForm, contactEmail: e.target.value })}
                       className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
                     />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-400 mb-1 text-[10px] uppercase">Provider-supported parameters</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <label className="flex items-center gap-2 border border-slate-800 bg-[#05070b] px-2.5 py-2 text-[10px] text-slate-300">
+                        <input type="checkbox" checked={regForm.allowThinking} onChange={(e) => setRegForm({ ...regForm, allowThinking: e.target.checked })} />
+                        Allow thinking
+                      </label>
+                      <label className="flex items-center gap-2 border border-slate-800 bg-[#05070b] px-2.5 py-2 text-[10px] text-slate-300">
+                        <input type="checkbox" checked={regForm.allowTemperature} onChange={(e) => setRegForm({ ...regForm, allowTemperature: e.target.checked })} />
+                        Allow temperature
+                      </label>
+                      <label className="flex items-center gap-2 border border-slate-800 bg-[#05070b] px-2.5 py-2 text-[10px] text-slate-300">
+                        <input type="checkbox" checked={regForm.allowTools} onChange={(e) => setRegForm({ ...regForm, allowTools: e.target.checked })} />
+                        Allow tools
+                      </label>
+                    </div>
+                    <p className="text-[9px] text-slate-500 mt-1">Only checked capabilities are exposed for this model and forwarded to your endpoint.</p>
                   </div>
 
                   <div className="sm:col-span-2">

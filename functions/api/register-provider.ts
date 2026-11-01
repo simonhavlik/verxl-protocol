@@ -42,6 +42,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     region = "EU-Central",
     pricePromptUsd = 0.05,
     priceCompletionUsd = 0.10,
+    cachedPromptUsd = 0.01,
+    contextWindow = 32768,
+    allowThinking = false,
+    allowTemperature = true,
+    allowTools = false,
     website = null,
     contactEmail = null,
     message = null,
@@ -66,8 +71,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       `INSERT INTO provider_applications (
         id, name, operator_address, endpoint_url, model_identifier,
         hardware, location, region, price_prompt_usd, price_completion_usd,
+        cached_prompt_usd, context_window, allow_thinking, allow_temperature, allow_tools,
         website, contact_email, message, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_REVIEW', CURRENT_TIMESTAMP)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_REVIEW', CURRENT_TIMESTAMP)`
     )
       .bind(
         applicationId,
@@ -80,6 +86,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         region.trim(),
         Number(pricePromptUsd) || 0.05,
         Number(priceCompletionUsd) || 0.10,
+        Number(cachedPromptUsd) || 0.01,
+        Math.max(1, Number(contextWindow) || 32768),
+        allowThinking === true,
+        allowTemperature !== false,
+        allowTools === true,
         website ? website.trim() : null,
         contactEmail ? contactEmail.trim().toLowerCase() : null,
         message ? message.trim() : null
@@ -102,6 +113,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             region,
             pricePromptUsd,
             priceCompletionUsd,
+            cachedPromptUsd,
+            contextWindow,
+            allowThinking,
+            allowTemperature,
+            allowTools,
             website,
             contactEmail,
             message,
