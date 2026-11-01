@@ -22,6 +22,9 @@ export interface ApiKeyItem {
   name: string;
   is_active: number;
   created_at: string;
+  total_spent_usd?: number;
+  total_tokens?: number;
+  request_count?: number;
 }
 
 interface AuthContextType {

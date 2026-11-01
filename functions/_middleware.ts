@@ -3,6 +3,9 @@ import { setAuthEnv } from "./api/lib/auth";
 
 export const onRequest: PagesFunction<{ HYPERDRIVE?: any }> = async (context) => {
   const url = new URL(context.request.url);
+  if (url.hostname === "api.verxl.com" && (url.pathname === "/" || url.pathname === "")) {
+    return Response.redirect("https://verxl.com/docs/", 302);
+  }
   if (url.hostname === "docs.verxl.com") {
     const target = new URL("https://verxl.com/docs/");
     if (url.pathname !== "/" && url.pathname !== "") target.hash = url.hash;

@@ -227,6 +227,12 @@
                 "type": "integer"
               }
             }
+          },
+          "context_length": {
+            "type": "integer"
+          },
+          "max_model_len": {
+            "type": "integer"
           }
         }
       },

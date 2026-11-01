@@ -21,6 +21,19 @@ const ipRateLimitMap = new Map<string, RateLimitBucket>();
 const DEMO_RATE_LIMIT_MAX = 40;
 const DEMO_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
+const SUPPORTED_MODELS = [
+  "qwen3.5-4b-uncensored-32k",
+  "deepseek-v4.1-flash",
+  "mimo-v2.6-flash",
+];
+
+function keyFingerprint(authHeader: string | null) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7).trim();
+  if (!token) return null;
+  return token.length > 16 ? `${token.slice(0, 10)}…${token.slice(-6)}` : "…";
+}
+
 const API_HELP = {
   summary: "Verxl inference requires a funded API key. There is no free compute tier.",
   get_key: "https://verxl.com/console",
@@ -64,6 +77,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   // Strict Model Selection: Only Bulbasaur Qwen 3.5, DeepSeek V4.1 Flash, and Xiaomi MiMo 2.6 Flash
   const rawModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-32k";
+  if (body.model !== undefined && !SUPPORTED_MODELS.includes(rawModel)) {
+    return new Response(
+      JSON.stringify({
+        error: {
+          message: `Unknown model '${rawModel}'. No substitution was made and nothing was billed.`,
+          type: "invalid_request_error",
+          param: "model",
+          code: "model_not_found",
+        },
+        available_models: SUPPORTED_MODELS,
+        docs: "https://verxl.com/docs",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS, "X-Verxl-Model-Fallback": "none" } }
+    );
+  }
   const lowerModel = rawModel.toLowerCase();
   let requestedModel = "qwen3.5-4b-uncensored-32k";
   if (lowerModel.includes("deepseek")) {
@@ -129,6 +157,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             type: "authentication_error",
             code: "invalid_api_key",
           },
+          key_fingerprint: keyFingerprint(authHeader),
+          help: API_HELP,
         }),
         { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
@@ -241,16 +271,29 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       balance_usd: Number(userRecord.balance_usd),
       key_id: null,
     };
-  } else if (authHeader !== "Bearer vrxl_testnet_demo_key") {
-    // Inference is never anonymous. Public docs/models/health are unauthenticated,
-    // but every completion must carry a key or a console session token.
+  } else if (!authHeader) {
+    // Missing key: distinct from a supplied-but-wrong key.
     return new Response(
       JSON.stringify({
         error: {
-          message: "Authentication required. Provide an active API key (Bearer vrxl_live_...) or a Verxl console session token. There is no free compute tier.",
+          message: "Missing Authorization header. This endpoint has no anonymous or free inference tier.",
           type: "authentication_error",
-          code: "unauthorized",
+          code: "missing_api_key",
         },
+        help: API_HELP,
+      }),
+      { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  } else if (authHeader !== "Bearer vrxl_testnet_demo_key") {
+    // A credential was supplied but did not match any active key/session.
+    return new Response(
+      JSON.stringify({
+        error: {
+          message: "Invalid or unrecognized Verxl credential. The token was supplied but rejected; this is not a missing-key case.",
+          type: "authentication_error",
+          code: "invalid_api_key",
+        },
+        key_fingerprint: keyFingerprint(authHeader),
         help: API_HELP,
       }),
       { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
@@ -649,27 +692,49 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             }
           }
 
-          return new Response(
-            JSON.stringify({
-              ...json,
-              model: requestedModel || "qwen3.5-4b-uncensored-32k",
-              verxl_clearing: {
-                protocol_fee_bps: 50,
-                clearing_status: "SETTLED",
-                selected_node: providerId,
-                cost_usd: totalDeduction,
-                prompt_tokens: promptTokens,
-                completion_tokens: completionTokens,
-              },
-            }),
-            {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                ...protocolHeaders,
-              },
-            }
-          );
+          const normalizedChoices = Array.isArray(json.choices)
+            ? json.choices.map((choice: any) => {
+                const message = choice?.message || {};
+                const { reasoning, ...restMessage } = message;
+                return {
+                  ...choice,
+                  message: {
+                    ...restMessage,
+                    ...(message.reasoning_content ? { reasoning_content: message.reasoning_content } : reasoning ? { reasoning_content: reasoning } : {}),
+                  },
+                };
+              })
+            : json.choices;
+
+          const normalized: any = {
+            ...json,
+            model: requestedModel,
+            choices: normalizedChoices,
+            usage: {
+              ...(json.usage || {}),
+              cost: totalDeduction,
+              cost_usd: totalDeduction,
+              currency: "USD",
+            },
+            verxl_clearing: {
+              protocol_fee_bps: 50,
+              clearing_status: "SETTLED",
+              selected_node: providerId,
+              cost_usd: totalDeduction,
+              prompt_tokens: promptTokens,
+              completion_tokens: completionTokens,
+            },
+          };
+          delete normalized.system_fingerprint;
+          delete normalized.opencode;
+
+          return new Response(JSON.stringify(normalized), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              ...protocolHeaders,
+            },
+          });
         }
       }
     } catch (err: any) {

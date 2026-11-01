@@ -53,7 +53,16 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const requirePasswordWithEmail = await getRequirePasswordWithEmail(user.id);
 
   const keys = await db.prepare(
-    "SELECT id, key_prefix, name, is_active, created_at FROM api_keys WHERE user_id = ? ORDER BY created_at DESC"
+    `SELECT k.id, k.key_prefix, k.name, k.is_active, k.created_at,
+            k.total_spent_usd,
+            COUNT(u.id) AS request_count,
+            COALESCE(SUM(u.prompt_tokens + u.completion_tokens), 0) AS total_tokens,
+            COALESCE(SUM(u.total_cost_usd), 0) AS usage_spent_usd
+     FROM api_keys k
+     LEFT JOIN usage_records u ON u.api_key_id = k.id
+     WHERE k.user_id = ?
+     GROUP BY k.id, k.key_prefix, k.name, k.is_active, k.created_at, k.total_spent_usd
+     ORDER BY k.created_at DESC`
   )
     .bind(user.id)
     .all();
@@ -86,8 +95,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       keys: keys.results.map((k: any) => ({
         ...k,
         spend_limit_usd: Number(k.spend_limit_usd || 0),
-        total_spent_usd: Number(k.total_spent_usd || 0),
+        total_spent_usd: Number(k.usage_spent_usd || k.total_spent_usd || 0),
         total_tokens: Number(k.total_tokens || 0),
+        request_count: Number(k.request_count || 0),
       })),
       usage: recentUsage.results.map((u: any) => ({
         ...u,

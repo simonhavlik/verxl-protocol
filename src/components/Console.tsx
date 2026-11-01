@@ -769,6 +769,29 @@ export const Console: React.FC = () => {
     }
   };
 
+  // Handlers: Rename Key
+  const handleRenameKey = async (keyId: string, currentName: string) => {
+    if (!token) return;
+    const nextName = window.prompt("Name this API key", currentName);
+    if (!nextName || !nextName.trim() || nextName.trim() === currentName) return;
+    try {
+      const res = await fetch("/api/keys/rename", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ key_id: keyId, name: nextName.trim() }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok) {
+        fetchSessionData(token);
+        setStatusMsg({ type: "success", text: `Key renamed to “${data.name}”.` });
+      } else {
+        setStatusMsg({ type: "error", text: data.error || "Failed to rename key." });
+      }
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error renaming key." });
+    }
+  };
+
   // Handlers: Revoke Key
   const handleRevokeKey = async (keyId: string) => {
     if (!token) return;
@@ -1921,9 +1944,12 @@ main();`,
                 <tr>
                   <th className="py-2 px-3">Name</th>
                   <th className="py-2 px-3">Key Prefix</th>
+                  <th className="py-2 px-3 text-right">Requests</th>
+                  <th className="py-2 px-3 text-right">Tokens</th>
+                  <th className="py-2 px-3 text-right">Spent</th>
                   <th className="py-2 px-3">Created</th>
                   <th className="py-2 px-3">Status</th>
-                  <th className="py-2 px-3 text-right">Action</th>
+                  <th className="py-2 px-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -1931,6 +1957,9 @@ main();`,
                   <tr key={k.id} className="hover:bg-slate-900/40">
                     <td className="py-2.5 px-3 font-semibold text-white">{k.name}</td>
                     <td className="py-2.5 px-3 text-blue-400">{k.key_prefix}</td>
+                    <td className="py-2.5 px-3 text-right text-slate-300">{(k.request_count || 0).toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-right text-slate-300">{(k.total_tokens || 0).toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-right text-emerald-400">${Number(k.total_spent_usd || 0).toFixed(4)}</td>
                     <td className="py-2.5 px-3 text-slate-400 text-[11px]">
                       {new Date(k.created_at).toLocaleDateString()}
                     </td>
@@ -1945,14 +1974,22 @@ main();`,
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 text-right">
+                    <td className="py-2.5 px-3 text-right whitespace-nowrap">
                       {k.is_active === 1 && (
-                        <button
-                          onClick={() => handleRevokeKey(k.id)}
-                          className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider hover:underline"
-                        >
-                          Revoke
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleRenameKey(k.id, k.name)}
+                            className="text-[10px] text-slate-300 hover:text-white font-bold uppercase tracking-wider hover:underline mr-3"
+                          >
+                            Rename
+                          </button>
+                          <button
+                            onClick={() => handleRevokeKey(k.id)}
+                            className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider hover:underline"
+                          >
+                            Revoke
+                          </button>
+                        </>
                       )}
                     </td>
                   </tr>
