@@ -18,6 +18,7 @@ interface RateLimitBucket {
   resetAt: number;
 }
 const ipRateLimitMap = new Map<string, RateLimitBucket>();
+let upstreamGatewayKeyCache: { value: string; expiresAt: number } | null = null;
 const DEMO_RATE_LIMIT_MAX = 40;
 const DEMO_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
@@ -422,11 +423,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // 4. Upstream Endpoints (Dynamically retrieved from secure PostgreSQL providers table)
   let upstreamGatewayKey = (context.env as any)?.UPSTREAM_GATEWAY_KEY || "";
   if (!upstreamGatewayKey) {
-    try {
-      const row = await db.prepare("SELECT api_key FROM providers WHERE id = 'deepseek-v4-bridge-01'").first<{ api_key: string }>();
-      upstreamGatewayKey = row?.api_key || "";
-    } catch {
-      // fallback
+    if (upstreamGatewayKeyCache && upstreamGatewayKeyCache.expiresAt > Date.now()) {
+      upstreamGatewayKey = upstreamGatewayKeyCache.value;
+    } else {
+      try {
+        const row = await db.prepare("SELECT api_key FROM providers WHERE id = 'deepseek-v4-bridge-01'").first<{ api_key: string }>();
+        upstreamGatewayKey = row?.api_key || "";
+        if (upstreamGatewayKey) {
+          upstreamGatewayKeyCache = { value: upstreamGatewayKey, expiresAt: Date.now() + 300_000 };
+        }
+      } catch {
+        // fallback
+      }
     }
   }
   const rawSession = request.headers.get("x-opencode-session");

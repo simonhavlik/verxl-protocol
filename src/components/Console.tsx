@@ -32,7 +32,8 @@ import { Portal } from "./Portal";
 import { connectMetaMask } from "../lib/wallet";
 
 export interface ProviderModelConfig {
-  id: string;
+  id?: string;
+  model_id?: string;
   name: string;
   context_window?: number;
   price_prompt_usd?: number;
@@ -782,8 +783,9 @@ export const Console: React.FC = () => {
       });
       const data = (await res.json()) as any;
       if (res.ok) {
-        fetchSessionData(token);
+        setKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, name: data.name } : k)));
         setStatusMsg({ type: "success", text: `Key renamed to “${data.name}”.` });
+        void fetchSessionData(token);
       } else {
         setStatusMsg({ type: "error", text: data.error || "Failed to rename key." });
       }
@@ -876,7 +878,7 @@ export const Console: React.FC = () => {
       } catch {
         parsedModels = [
           {
-            id: nodeForm.name.toLowerCase().includes("deepseek")
+            model_id: nodeForm.name.toLowerCase().includes("deepseek")
               ? "deepseek-v4.1-flash"
               : nodeForm.name.toLowerCase().includes("mimo")
               ? "mimo-v2.6-flash"
@@ -3100,7 +3102,7 @@ main();`,
                         ...nodeForm,
                         models_config_str: JSON.stringify([
                           {
-                            id: "qwen3.5-4b-uncensored-32k",
+                            model_id: "qwen3.5-4b-uncensored-32k",
                             name: "Bulbasaur Qwen 3.5 4B Uncensored (32K)",
                             context_window: 32768,
                             price_prompt_usd: 0.05,
@@ -3108,7 +3110,7 @@ main();`,
                             price_cached_prompt_usd: 0.010,
                           },
                           {
-                            id: "deepseek-v4.1-flash",
+                            model_id: "deepseek-v4.1-flash",
                             name: "DeepSeek V4.1 Flash (1M)",
                             context_window: 1000000,
                             price_prompt_usd: 0.30,
@@ -3117,7 +3119,7 @@ main();`,
                             special_hours_discount: "50% Off-Peak ($0.15 / $0.60, Cache $0.003) outside 01:00-04:00 & 06:00-10:00 UTC"
                           },
                           {
-                            id: "mimo-v2.6-flash",
+                            model_id: "mimo-v2.6-flash",
                             name: "Xiaomi MiMo v2.6 Flash (1M)",
                             context_window: 1000000,
                             price_prompt_usd: 0.14,

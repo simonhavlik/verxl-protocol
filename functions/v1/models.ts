@@ -94,6 +94,7 @@ export const onRequestGet: PagesFunction<Env> = async () => {
   // the console) supplies the context window and price; the static list above is
   // only a resilience fallback when the database is unavailable.
   let models = fallbackModels;
+  let modelsSource = "fallback";
   try {
     const { results: providerRows } = await db.prepare(
       "SELECT id, name, is_official_bridge, models_config FROM providers WHERE status = 'ACTIVE' ORDER BY is_official_bridge DESC, created_at ASC"
@@ -111,7 +112,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
         continue;
       }
       for (const m of configs) {
-        const id = typeof m?.id === "string" && m.id.trim() ? m.id.trim() : "";
+        const rawId = typeof m?.model_id === "string" ? m.model_id : m?.id;
+        const id = typeof rawId === "string" && rawId.trim() ? rawId.trim() : "";
         if (!id || seen.has(id)) continue;
         seen.add(id);
         const rawContext = Number(m.context_window ?? m.context_length ?? m.max_model_len ?? 0);
@@ -140,7 +142,10 @@ export const onRequestGet: PagesFunction<Env> = async () => {
         });
       }
     }
-    if (dynamic.length > 0) models = dynamic;
+    if (dynamic.length > 0) {
+      models = dynamic;
+      modelsSource = "provider_registry";
+    }
   } catch {
     // Keep the static fallback; /v1/models must remain usable if the DB is down.
   }
@@ -150,6 +155,7 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       {
         object: "list",
         data: models,
+        source: modelsSource,
         verxl_clearing: {
           protocol_fee_bps: 50,
           governance_token: "0x8F590f2098D71A8253ad50450D7A73F3201402F0",
@@ -172,6 +178,7 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       status: 200,
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=10, s-maxage=10, stale-while-revalidate=30",
         ...CORS_HEADERS,
       },
     }
