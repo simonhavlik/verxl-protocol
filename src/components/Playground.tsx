@@ -1008,15 +1008,14 @@ main();`,
             {/* Run / Stop Button — Strictly Square, No Pills */}
             <div className="pt-1">
               {!isStreaming ? (
-                <button
+                <ButtonColorful
+                  label={`Execute ${model.includes("qwen") || model.includes("uncensored") ? "Bulbasaur" : model.includes("deepseek") ? "DeepSeek V4.1" : "MiMo 2.6"} Live Stream`}
+                  appearance="solid"
+                  icon={Play}
+                  showArrow={false}
                   onClick={handleRunInference}
-                  className="w-full hero-btn hero-btn--primary !justify-center !py-2.5"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>
-                    Execute {model.includes("qwen") || model.includes("uncensored") ? "Bulbasaur" : model.includes("deepseek") ? "DeepSeek V4.1" : "MiMo 2.6"} Live Stream
-                  </span>
-                </button>
+                  className="w-full justify-center !py-2.5 h-10 text-[11px]"
+                />
               ) : (
                 <button
                   onClick={handleStop}

@@ -51,14 +51,14 @@ export function ButtonColorful({
             ? "opacity-0 group-hover:opacity-35"
             : appearance === "transparent"
               ? "opacity-0 group-hover:opacity-45"
-              : "opacity-30 group-hover:opacity-75",
+              : "opacity-45 group-hover:opacity-90",
         )}
       />
       <span
         aria-hidden="true"
         className={cn(
           "pointer-events-none absolute inset-0 transition-colors duration-300",
-          appearance === "solid" && "bg-[#080d12]/55 group-hover:bg-[#080d12]/20",
+          appearance === "solid" && "bg-[#080d12]/40 group-hover:bg-[#080d12]/15",
           appearance === "transparent" && "bg-[#05070b]/10 group-hover:bg-transparent",
           appearance === "outline" && "bg-[#05070b]/20 group-hover:bg-[#05070b]/5",
         )}
