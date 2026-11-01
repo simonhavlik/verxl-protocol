@@ -57,7 +57,7 @@ DeepSeek off-peak pricing is 50% off outside 01:00–04:00 and 06:00–10:00 UTC
 }
 ```
 
-`messages`, `model`, `temperature`, `max_tokens` and `stream` follow the OpenAI Chat Completions API. Use an exact model id from `/v1/models`; unknown ids fall back to the default route.
+`messages`, `model`, `temperature`, `max_tokens` and `stream` follow the OpenAI Chat Completions API. The API also accepts `think` (boolean or off/low/medium/high/max), `enable_thinking` (boolean alias), and `reasoning_effort` (none/minimal/low/medium/high/xhigh/max). Thinking is caller-controlled; Verxl does not override it. Temperature is supported, range 0–2, default 0.7. Use an exact model id from `/v1/models`.
 
 ## Response shape
 

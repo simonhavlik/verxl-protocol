@@ -28,6 +28,17 @@ const SUPPORTED_MODELS = [
   "mimo-v2.6-flash",
 ];
 
+function normalizeReasoning(value: unknown): string | undefined {
+  if (value === false) return "none";
+  if (value === true) return "medium";
+  if (typeof value !== "string") return undefined;
+  const v = value.trim().toLowerCase();
+  if (["off", "none", "false", "0", "disabled"].includes(v)) return "none";
+  if (["on", "true", "auto", "enabled"].includes(v)) return "medium";
+  if (["minimal", "low", "medium", "high", "xhigh", "max"].includes(v)) return v;
+  return undefined;
+}
+
 function keyFingerprint(authHeader: string | null) {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7).trim();
@@ -110,7 +121,35 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const stream = Boolean(body.stream);
-  const temperature = typeof body.temperature === "number" ? body.temperature : 0.7;
+  const temperature = typeof body.temperature === "number"
+    ? Math.min(2, Math.max(0, body.temperature))
+    : 0.7;
+  const thinkValue = body.think !== undefined ? body.think : body.enable_thinking;
+  const normalizedThink = normalizeReasoning(thinkValue);
+  const normalizedReasoningEffort = normalizeReasoning(body.reasoning_effort);
+  if (thinkValue !== undefined && normalizedThink === undefined) {
+    return new Response(JSON.stringify({
+      error: {
+        message: "Invalid 'think' value. Use true/false or one of: off, low, medium, high, max.",
+        type: "invalid_request_error",
+        param: "think",
+        code: "invalid_reasoning",
+      },
+      docs: "https://verxl.com/docs",
+    }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }
+  if (body.reasoning_effort !== undefined && normalizedReasoningEffort === undefined) {
+    return new Response(JSON.stringify({
+      error: {
+        message: "Invalid 'reasoning_effort'. Use one of: none, minimal, low, medium, high, xhigh, max.",
+        type: "invalid_request_error",
+        param: "reasoning_effort",
+        code: "invalid_reasoning",
+      },
+      docs: "https://verxl.com/docs",
+    }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }
+  const requestedReasoningEffort = normalizedThink ?? normalizedReasoningEffort;
   const requestedMaxTokens = typeof body.max_tokens === "number" ? Math.min(body.max_tokens, 32768) : 8192;
   // Qwen 3.5 4B spends the first ~200 tokens on its thinking pass. Below 256
   // output tokens the caller can get an empty content string with
@@ -428,6 +467,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     "X-Verxl-Requested-Max-Tokens": String(requestedMaxTokens),
     "X-Verxl-Effective-Max-Tokens": String(maxTokens),
     "X-Verxl-Min-Tokens-Applied": minTokensApplied ? "true" : "false",
+    "X-Verxl-Reasoning-Effort": requestedReasoningEffort || "default",
     "X-Verxl-Clearing-Status": "SETTLED",
     "X-Verxl-DAO-Vault": "0xf0e51fB0FFBD8ef36281b6f643E0f7953BD5111a",
     ...demoRateLimitHeaders,
@@ -515,11 +555,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         ...(typeof (body as any).tool_choice === "string"
           ? { tool_choice: (body as any).tool_choice }
           : {}),
-        // Thinking is caller-controlled. Never override reasoning_effort here;
-        // Qwen and the frontier bridges receive exactly what the user selected.
-        ...(typeof (body as any).reasoning_effort === "string"
-          ? { reasoning_effort: (body as any).reasoning_effort }
-          : {}),
+        // Thinking is caller-controlled through think, enable_thinking or
+        // reasoning_effort. Normalize aliases without overriding a user value.
+        ...(requestedReasoningEffort ? { reasoning_effort: requestedReasoningEffort } : {}),
       });
 
       const upstreamResponse = await fetch(ep.url, {
@@ -809,6 +847,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
               requested_max_tokens: requestedMaxTokens,
               effective_max_tokens: maxTokens,
               min_tokens_applied: minTokensApplied,
+              reasoning_effort: requestedReasoningEffort || "default",
             },
           };
           delete normalized.system_fingerprint;

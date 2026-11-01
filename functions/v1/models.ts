@@ -5,6 +5,30 @@ import { db } from "../api/lib/db";
 
 interface Env {}
 
+const MODEL_PARAMETERS = {
+  temperature: { type: "number", minimum: 0, maximum: 2, default: 0.7 },
+  think: {
+    type: "boolean | string",
+    values: ["off", "low", "medium", "high", "max"],
+    aliases: ["enable_thinking", "reasoning_effort"],
+    description: "Caller-controlled thinking. false/off disables; true/medium enables.",
+  },
+  reasoning_effort: {
+    type: "string",
+    values: ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+    description: "Alias for think; passed through to the model.",
+  },
+};
+
+const MODEL_CAPABILITIES = {
+  chat: true,
+  streaming: true,
+  temperature: true,
+  reasoning: true,
+  supports_temperature: true,
+  supports_reasoning: true,
+};
+
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -33,6 +57,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       context_display: "65,536 tokens (64K)",
       tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 64K Context Resident)",
       is_official_bridge: false,
+      capabilities: MODEL_CAPABILITIES,
+      parameters: MODEL_PARAMETERS,
       pricing: {
         prompt_usd_per_1m: 0.05,
         cached_prompt_usd_per_1m: 0.010,
@@ -54,6 +80,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       context_display: "1,000,000 tokens (1M)",
       tier: "Official Bridge to Public API",
       is_official_bridge: true,
+      capabilities: MODEL_CAPABILITIES,
+      parameters: MODEL_PARAMETERS,
       pricing: {
         prompt_usd_per_1m: 0.30,
         cached_prompt_usd_per_1m: 0.006,
@@ -80,6 +108,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
       context_display: "1,000,000 tokens (1M)",
       tier: "Official Bridge to Public API",
       is_official_bridge: true,
+      capabilities: MODEL_CAPABILITIES,
+      parameters: MODEL_PARAMETERS,
       pricing: {
         prompt_usd_per_1m: 0.14,
         cached_prompt_usd_per_1m: 0.0028,
@@ -131,6 +161,8 @@ export const onRequestGet: PagesFunction<Env> = async () => {
           context_display: context >= 1000000 ? `${(context / 1000000).toFixed(0)},000,000 tokens (${(context / 1000000).toFixed(0)}M)` : `${context.toLocaleString()} tokens (${Math.round(context / 1024)}K)`,
           tier: (row as any).is_official_bridge ? "Official Bridge" : "Community Provider",
           is_official_bridge: Boolean((row as any).is_official_bridge),
+          capabilities: MODEL_CAPABILITIES,
+          parameters: MODEL_PARAMETERS,
           provider_id: (row as any).id,
           pricing: {
             prompt_usd_per_1m: Number(m.price_prompt_usd ?? m.prompt_rate ?? 0),

@@ -8,7 +8,25 @@
       "name": "Verxl",
       "url": "https://verxl.com/docs"
     },
-    "x-verxl-qwen-output-floor": 256
+    "x-verxl-qwen-output-floor": 256,
+    "x-verxl-parameters": {
+      "think": [
+        "boolean",
+        "off",
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "reasoning_effort": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "temperature": "0\u20132"
+    }
   },
   "servers": [
     {
@@ -234,6 +252,14 @@
           },
           "max_model_len": {
             "type": "integer"
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
           }
         }
       },
@@ -325,6 +351,41 @@
           "stream": {
             "type": "boolean",
             "default": false
+          },
+          "think": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "off",
+                  "low",
+                  "medium",
+                  "high",
+                  "max"
+                ]
+              }
+            ],
+            "description": "Caller-controlled thinking. false/off disables; true/medium enables. Alias: enable_thinking."
+          },
+          "enable_thinking": {
+            "type": "boolean",
+            "description": "Alias for think."
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "Thinking level. Passed through; think/enable_thinking take precedence."
           }
         }
       },

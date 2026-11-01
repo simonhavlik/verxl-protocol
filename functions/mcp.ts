@@ -86,6 +86,8 @@ const TOOLS = [
         },
         max_tokens: { type: "integer", minimum: 1, maximum: 32768, default: 512 },
         temperature: { type: "number", minimum: 0, maximum: 2, default: 0.7 },
+        think: { oneOf: [{ type: "boolean" }, { type: "string", enum: ["off", "low", "medium", "high", "max"] }], description: "Caller-controlled thinking. false/off disables; true/medium enables." },
+        reasoning_effort: { type: "string", enum: ["none", "minimal", "low", "medium", "high", "xhigh", "max"], description: "Alias for think; think takes precedence." },
       },
       required: ["api_key", "model", "messages"],
       additionalProperties: false,
@@ -172,6 +174,8 @@ async function callTool(name: string, args: any) {
         messages: args.messages,
         max_tokens: args.max_tokens ?? 512,
         temperature: args.temperature ?? 0.7,
+        ...(args.think !== undefined ? { think: args.think } : {}),
+        ...(typeof args.reasoning_effort === "string" ? { reasoning_effort: args.reasoning_effort } : {}),
         stream: false,
       }),
     });

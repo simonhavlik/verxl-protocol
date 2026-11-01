@@ -203,20 +203,29 @@
               <tr><td>mimo-v2.6-flash</td><td>1,000,000</td><td>$0.14</td><td>$0.28</td><td><span class="tag">Key + balance</span></td></tr>
             </tbody></table>
             <p class="muted">For OpenAI-compatible clients, the same context limit is returned as <code>context_window</code>, <code>context_length</code> and <code>max_model_len</code>, so generic model-list discovery does not fall back to 128K. DeepSeek off-peak is 50% off outside 01:00–04:00 and 06:00–10:00 UTC Monday–Friday, and all weekend. The 50 bps fee is charged on the compute amount and shown separately from the model price.</p>
-            <p class="muted"><strong style="color:var(--text);font-weight:500">Qwen output floor.</strong> Qwen 3.5 4B uses an internal thinking pass. Requests with <code>max_tokens</code> below 256 are raised to 256 before dispatch so callers do not receive an empty <code>content</code> string with <code>finish_reason: "length"</code>. The effective value is returned in <code>verxl_clearing.effective_max_tokens</code> and <code>X-Verxl-Effective-Max-Tokens</code>.</p>
+            <p class="muted"><strong style="color:var(--text);font-weight:500">Qwen output floor.</strong> Qwen 3.5 4B uses an internal thinking pass. Requests with <code>max_tokens</code> below 256 are raised to 256 before dispatch so callers do not receive an empty <code>content</code> string with <code>finish_reason: "length"</code>. The effective value is returned in <code>verxl_clearing.effective_max_tokens</code> and <code>X-Verxl-Effective-Max-Tokens</code>. Thinking itself is controlled by the caller through <code>think</code> / <code>reasoning_effort</code>; Verxl does not override it.</p>
           </section>
 
           <section class="doc-section" id="chat">
             <p class="kicker">04 / Chat completions</p>
             <h2>One request shape. OpenAI compatible.</h2>
-            <p><code>POST /v1/chat/completions</code> accepts <code>model</code>, <code>messages</code>, <code>temperature</code>, <code>max_tokens</code> and <code>stream</code>. <code>messages</code> is required and must not be empty. Send <code>Authorization: Bearer vrxl_live_...</code> on every call.</p>
+            <p><code>POST /v1/chat/completions</code> accepts <code>model</code>, <code>messages</code>, <code>temperature</code>, <code>max_tokens</code>, <code>stream</code>, <code>think</code> and <code>reasoning_effort</code>. <code>messages</code> is required and must not be empty. Send <code>Authorization: Bearer vrxl_live_...</code> on every call.</p>
             <table><thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead><tbody>
               <tr><td>model</td><td>string</td><td>Exact id from <code>/v1/models</code>. Unknown ids fall back to the default route.</td></tr>
               <tr><td>messages</td><td>array</td><td><code>system</code>, <code>user</code>, <code>assistant</code>; at least one.</td></tr>
-              <tr><td>temperature</td><td>number</td><td>0–2, default 0.7.</td></tr>
+              <tr><td>temperature</td><td>number</td><td><strong>Supported.</strong> 0–2, default 0.7; forwarded to the model.</td></tr>
+              <tr><td>think</td><td>boolean or string</td><td><strong>Supported.</strong> <code>false</code>/<code>off</code> disables thinking; <code>true</code>/<code>medium</code> enables it; also <code>low</code>, <code>high</code>, <code>max</code>. Alias: <code>enable_thinking</code>.</td></tr>
+              <tr><td>reasoning_effort</td><td>string</td><td><strong>Supported.</strong> <code>none</code>, <code>minimal</code>, <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code>, <code>max</code>. <code>think</code> takes precedence when both are sent.</td></tr>
               <tr><td>max_tokens</td><td>integer</td><td>Default 8192; capped at 32768. Qwen is floored at 256 output tokens. Reasoning is caller-controlled: Verxl passes the user's `reasoning_effort` through unchanged and does not disable thinking server-side.</td></tr>
               <tr><td>stream</td><td>boolean</td><td>SSE chunks when true.</td></tr>
             </tbody></table>
+            <div class="code"><div class="code-head"><span>thinking controls</span></div><pre>{
+  <span class="m">"model"</span>: <span class="s">"qwen3.5-4b-uncensored-64k"</span>,
+  <span class="m">"messages"</span>: [{<span class="m">"role"</span>: <span class="s">"user"</span>, <span class="m">"content"</span>: <span class="s">"Explain the fee."</span>}],
+  <span class="m">"think"</span>: <span class="s">"high"</span>,
+  <span class="m">"temperature"</span>: <span class="m">0.7</span>
+}</pre></div>
+            <p class="muted"><code>think: false</code> is the direct equivalent of <code>reasoning_effort: "none"</code>. <code>think: true</code> maps to <code>medium</code>. The API echoes the selected level in <code>X-Verxl-Reasoning-Effort</code> and <code>verxl_clearing.reasoning_effort</code>.</p>
             <h3>Python</h3>
             <div class="code"><div class="code-head"><span>OpenAI SDK · Authorization required</span><button class="copy" data-copy='import os
 from openai import OpenAI
