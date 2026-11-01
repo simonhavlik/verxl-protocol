@@ -191,7 +191,7 @@ const readLocalChatSessions = (): ChatSession[] => {
       .map((s: any) => ({
         id: s.id,
         title: typeof s.title === "string" ? s.title : "New Chat",
-        model: typeof s.model === "string" ? s.model : "qwen3.5-4b-uncensored-32k",
+        model: typeof s.model === "string" ? s.model : "qwen3.5-4b-uncensored-64k",
         messages: s.messages,
         createdAt: Number(s.createdAt) || Date.now(),
         updatedAt: Number(s.updatedAt) || Date.now(),
@@ -222,8 +222,8 @@ export interface ModelConfig {
 
 export const AVAILABLE_MODELS: ModelConfig[] = [
   {
-    id: "qwen3.5-4b-uncensored-32k",
-    name: "Bulbasaur Qwen 3.5 4B Uncensored (32K)",
+    id: "qwen3.5-4b-uncensored-64k",
+    name: "Bulbasaur Qwen 3.5 4B Uncensored (64K)",
     tag: "Bare-Metal Resident Node",
     category: "bare-metal",
     promptRate: 0.05,
@@ -232,8 +232,8 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     specialHoursPromptRate: null,
     specialHoursCompletionRate: null,
     specialHoursDesc: null,
-    context: "32,768 tokens (32K)",
-    contextTokens: 32768,
+    context: "65,536 tokens (64K)",
+    contextTokens: 65536,
     speed: "~52 TPS",
     provider: "Prague Node 01 (Bulbasaur Bare-Metal)",
     isOfficialBridge: false,
@@ -428,7 +428,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
   const createBlankSession = (): ChatSession => ({
     id: `chat_${Date.now()}`,
     title: "New Chat",
-    model: "qwen3.5-4b-uncensored-32k",
+    model: "qwen3.5-4b-uncensored-64k",
     temperature:
       typeof window !== "undefined" && localStorage.getItem("vrxl_chat_temperature") !== null
         ? Number(localStorage.getItem("vrxl_chat_temperature"))
@@ -626,7 +626,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
         if (stored) return JSON.parse(stored);
       } catch {}
     }
-    return ["qwen3.5-4b-uncensored-32k", "deepseek-v4.1-flash"];
+    return ["qwen3.5-4b-uncensored-64k", "deepseek-v4.1-flash"];
   });
 
   const selectModel = (modelId: string) => {
@@ -685,7 +685,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
           decrypted.push({
             id: row.id,
             title: payload.title || "Encrypted chat",
-            model: payload.model || "qwen3.5-4b-uncensored-32k",
+            model: payload.model || "qwen3.5-4b-uncensored-64k",
             messages: Array.isArray(payload.messages) ? (payload.messages as ChatMessage[]) : [],
             createdAt: row.createdAt || Date.now(),
             updatedAt: row.updatedAt || Date.now(),
@@ -1078,7 +1078,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
   // Create New Chat Session
   const createNewSession = () => {
     const newSession = createBlankSession();
-    newSession.model = activeSession?.model || "qwen3.5-4b-uncensored-32k";
+    newSession.model = activeSession?.model || "qwen3.5-4b-uncensored-64k";
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInputPrompt("");
@@ -1324,7 +1324,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
     messages: ChatMessage[],
     model: ModelConfig
   ): ChatSession => {
-    // Large-context bridges (1M) keep full history; compaction is for the 32K Qwen.
+    // Large-context bridges (1M) keep full history; compaction is for the 64K Qwen.
     if (model.contextTokens >= 40_000) return session;
     const outputReserve = model.isOfficialBridge ? 32768 : 4096;
     const safety = Math.max(2048, (session.searchBudget || 512) + 512);
@@ -1518,7 +1518,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
       newTitle = promptText.slice(0, 32) + (promptText.length > 32 ? "..." : "");
     }
 
-    const currentModel = targetSession.model || "qwen3.5-4b-uncensored-32k";
+    const currentModel = targetSession.model || "qwen3.5-4b-uncensored-64k";
     const selectedModelConfig =
       AVAILABLE_MODELS.find((m) => m.id === currentModel) || AVAILABLE_MODELS[0];
     const maxOutputTokens = selectedModelConfig.isOfficialBridge ? 32768 : 4096;
@@ -2897,7 +2897,7 @@ export const Chat: React.FC<ChatProps> = ({ onNavigate, appMode = false }) => {
                         <span>
                           {isSearching
                             ? "Searching the web for sources..."
-                            : currentModelConfig.id === "qwen3.5-4b-uncensored-32k"
+                            : currentModelConfig.id === "qwen3.5-4b-uncensored-64k"
                             ? "Waiting for Qwen. A cold start can take ~20-30s before the first token."
                             : `Waiting for ${currentModelConfig.name} to return the first token...`}
                         </span>

@@ -62,15 +62,15 @@ interface CatalogEntry {
 
 const MODEL_CATALOG: CatalogEntry[] = [
   {
-    id: "qwen3.5-4b-uncensored-32k",
+    id: "qwen3.5-4b-uncensored-64k",
     short: "Qwen 3.5 4B",
     tag: "UNCENSORED · BARE-METAL",
     route: "Prague bare-metal",
-    detail: "32k resident context · uncensored Qwen 3.5 4B · Vulkan host",
+    detail: "64k resident context · uncensored Qwen 3.5 4B · Vulkan host",
     prompt: 0.05,
     completion: 0.1,
     cached: 0.01,
-    context: "32k",
+    context: "64k",
     free: true,
   },
   {
@@ -101,7 +101,7 @@ const MODEL_CATALOG: CatalogEntry[] = [
 
 export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "full" }) => {
   const { user, token, customApiKey, keys } = useAuth();
-  const [model, setModel] = useState("qwen3.5-4b-uncensored-32k");
+  const [model, setModel] = useState("qwen3.5-4b-uncensored-64k");
   const [systemPrompt, setSystemPrompt] = useState(
     "Answer directly and concisely."
   );
@@ -130,7 +130,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ onNavigate, variant = "f
     completionTokens: 0,
     protocolFeeUsd: 0,
     traditionalSaaSUsd: 0,
-    provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 32k)",
+    provider: "Prague Bare-Metal Cluster 01 (Bulbasaur / Qwen 3.5 4B Uncensored 64k)",
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -802,7 +802,7 @@ main();`,
         <div className="flex min-w-0 items-baseline gap-3">
           <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#8b989e]">Playground</span>
           <span className="hidden truncate font-mono text-[9px] text-[#65737b] sm:inline">
-            {model === "qwen3.5-4b-uncensored-32k" ? "Qwen 3.5 4B · Prague bare metal" : model === "deepseek-v4.1-flash" ? "DeepSeek V4.1 Flash · official bridge" : "MiMo 2.6 Flash · official bridge"}
+            {model === "qwen3.5-4b-uncensored-64k" ? "Qwen 3.5 4B · Prague bare metal" : model === "deepseek-v4.1-flash" ? "DeepSeek V4.1 Flash · official bridge" : "MiMo 2.6 Flash · official bridge"}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-4">
@@ -838,7 +838,7 @@ main();`,
           </div>
           <div className="text-[11px] leading-relaxed text-slate-300 space-y-1.5">
             <p>
-              <strong>Deterministic Research Parity:</strong> Verxl Protocol provides decentralized, permissionless inference clearing. This terminal connects directly to our bare-metal Prague cluster (Bulbasaur) serving <strong>Qwen 3.5 4B Uncensored (32k Context)</strong> as-is without corporate guardrail filtering or synthetic alignment penalties, intended for deterministic benchmarking and open research.
+              <strong>Deterministic Research Parity:</strong> Verxl Protocol provides decentralized, permissionless inference clearing. This terminal connects directly to our bare-metal Prague cluster (Bulbasaur) serving <strong>Qwen 3.5 4B Uncensored (64k Context)</strong> as-is without corporate guardrail filtering or synthetic alignment penalties, intended for deterministic benchmarking and open research.
             </p>
             <p className="text-slate-400">
               <strong>Precaution Notice:</strong> If Verxl Protocol receives verified notification of harmful, unlawful, or malicious exploitation violating statutory regulations or network safety standards, node routing guarantees will be revoked and node operators remain subject to automated 10% collateral slashing via Aragon DAO governance (VIP-1). The protocol operates in parity with open-source model repositories (Hugging Face / Apache 2.0).
@@ -864,7 +864,7 @@ main();`,
                 </label>
                 <span className="text-[10px] font-mono text-emerald-400">
                   {model.includes("qwen") || model.includes("uncensored")
-                    ? "PRAGUE BARE-METAL: BULBASAUR (32K)"
+                    ? "PRAGUE BARE-METAL: BULBASAUR (64K)"
                     : model.includes("deepseek")
                     ? "OFFICIAL BRIDGE: DEEPSEEK V4.1 FLASH (1M)"
                     : "OFFICIAL BRIDGE: XIAOMI MIMO 2.6 FLASH (1M)"}
@@ -875,8 +875,8 @@ main();`,
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full bg-[#05070b] border border-slate-800 rounded-[3px] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500 transition"
               >
-                <option value="qwen3.5-4b-uncensored-32k">
-                  qwen3.5-4b-uncensored-32k · Bulbasaur Prague Node (Bare-Metal · Free Demo)
+                <option value="qwen3.5-4b-uncensored-64k">
+                  qwen3.5-4b-uncensored-64k · Bulbasaur Prague Node (Bare-Metal · Free Demo)
                 </option>
                 <option value="deepseek-v4.1-flash">
                   deepseek-v4.1-flash · DeepSeek V4.1 Flash (1M Context · Bridge) {user ? `[UNLOCKED · $${Number(user.balance_usd || 0).toFixed(2)} USD]` : `[Sign in to Run · Snippets Unlocked]`}
@@ -1101,13 +1101,13 @@ main();`,
               ) : isStreaming ? (
                 <div className="flex items-center gap-2 text-blue-400 text-xs py-2">
                   <span className="w-2 h-2 rounded-[1px] bg-blue-400 animate-pulse" />
-                  <span>Streaming token stream from Prague 32k cluster...</span>
+                  <span>Streaming token stream from Prague 64k cluster...</span>
                 </div>
               ) : !reasoningOutput ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
                   <Terminal className="w-8 h-8 opacity-30 text-blue-400" />
                   <p className="text-xs font-mono text-slate-400">
-                    Terminal idle. Press "Execute Bulbasaur Live Stream" to query Qwen 3.5 4B Uncensored (32k Context).
+                    Terminal idle. Press "Execute Bulbasaur Live Stream" to query Qwen 3.5 4B Uncensored (64k Context).
                   </p>
                 </div>
               ) : null}

@@ -125,7 +125,7 @@
   -H <span class="str">"Authorization: Bearer $VERXL_API_KEY"</span> \
   -H <span class="str">"Content-Type: application/json"</span> \
   -d <span class="str">'{
-    "model": "qwen3.5-4b-uncensored-32k",
+    "model": "qwen3.5-4b-uncensored-64k",
     "messages": [{"role":"user","content":"Explain the 50 bps fee in one sentence."}],
     "max_tokens": 128
   }'</span></pre>
@@ -154,22 +154,22 @@
             <h2>First request in one line.</h2>
             <p>No SDK is required. The API accepts standard OpenAI Chat Completions JSON. Both hosts serve the same paths. Every completion requires an API key; the public model list does not.</p>
             <div class="grid2"><div class="mini"><b>Dedicated API</b><span>https://api.verxl.com</span></div><div class="mini"><b>Apex fallback</b><span>https://verxl.com</span></div></div>
-            <div class="code"><div class="code-head"><span>curl · Authorization required</span><button class="copy" data-copy="curl https://api.verxl.com/v1/chat/completions -H 'Authorization: Bearer $VERXL_API_KEY' -H 'Content-Type: application/json' -d '{&quot;model&quot;:&quot;qwen3.5-4b-uncensored-32k&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Hello.&quot;}],&quot;max_tokens&quot;:128}'">Copy</button></div>
+            <div class="code"><div class="code-head"><span>curl · Authorization required</span><button class="copy" data-copy="curl https://api.verxl.com/v1/chat/completions -H 'Authorization: Bearer $VERXL_API_KEY' -H 'Content-Type: application/json' -d '{&quot;model&quot;:&quot;qwen3.5-4b-uncensored-64k&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Hello.&quot;}],&quot;max_tokens&quot;:128}'">Copy</button></div>
 <pre><span class="k">curl</span> https://api.verxl.com/v1/chat/completions \
   -H <span class="s">"Authorization: Bearer $VERXL_API_KEY"</span> \
   -H <span class="s">"Content-Type: application/json"</span> \
   -d <span class="s">'{
-    "model": "qwen3.5-4b-uncensored-32k",
+    "model": "qwen3.5-4b-uncensored-64k",
     "messages": [{"role":"user","content":"Hello."}],
     "max_tokens": 128
   }'</span></pre></div>
             <p>The response is an OpenAI-shaped object. <code>usage</code> reports tokens; the provider is paid from the compute charge, not from the user's deposit.</p>
-            <div class="code"><div class="code-head"><span>200 · application/json</span><button class="copy" data-copy='{"id":"chatcmpl_01JVERXL","object":"chat.completion","created":1762000000,"model":"qwen3.5-4b-uncensored-32k","choices":[{"index":0,"message":{"role":"assistant","content":"..."},"finish_reason":"stop"}],"usage":{"prompt_tokens":24,"completion_tokens":23,"total_tokens":47}}'>Copy</button></div>
+            <div class="code"><div class="code-head"><span>200 · application/json</span><button class="copy" data-copy='{"id":"chatcmpl_01JVERXL","object":"chat.completion","created":1762000000,"model":"qwen3.5-4b-uncensored-64k","choices":[{"index":0,"message":{"role":"assistant","content":"..."},"finish_reason":"stop"}],"usage":{"prompt_tokens":24,"completion_tokens":23,"total_tokens":47}}'>Copy</button></div>
 <pre>{
   <span class="m">"id"</span>: <span class="s">"chatcmpl_01JVERXL"</span>,
   <span class="m">"object"</span>: <span class="s">"chat.completion"</span>,
   <span class="m">"created"</span>: 1762000000,
-  <span class="m">"model"</span>: <span class="s">"qwen3.5-4b-uncensored-32k"</span>,
+  <span class="m">"model"</span>: <span class="s">"qwen3.5-4b-uncensored-64k"</span>,
   <span class="m">"choices"</span>: [{
     <span class="m">"index"</span>: 0,
     <span class="m">"message"</span>: {<span class="m">"role"</span>: <span class="s">"assistant"</span>, <span class="m">"content"</span>: <span class="s">"..."</span>},
@@ -184,7 +184,7 @@
             <h2>Public by default. Pay only for frontier.</h2>
             <p>Documentation and model discovery are public. Inference is never anonymous: every model, including Qwen 3.5 4B, requires a funded key.</p>
             <table><thead><tr><th>Tier</th><th>Model</th><th>Key</th><th>Limit</th></tr></thead><tbody>
-              <tr><td>Standard</td><td>qwen3.5-4b-uncensored-32k</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
+              <tr><td>Standard</td><td>qwen3.5-4b-uncensored-64k</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
               <tr><td>Standard</td><td>deepseek-v4.1-flash</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
               <tr><td>Standard</td><td>mimo-v2.6-flash</td><td><code>vrxl_live_...</code></td><td>funded account balance</td></tr>
             </tbody></table>
@@ -198,7 +198,7 @@
             <h2>Three routes. Published prices.</h2>
             <p><a href="/v1/models" style="color:var(--mint)">GET /v1/models</a> is public and returns this list with prices and documentation links. Prices are per 1M tokens before the 50 bps protocol fee.</p>
             <table><thead><tr><th>Model</th><th>Context</th><th>Prompt</th><th>Completion</th><th>Access</th></tr></thead><tbody>
-              <tr><td>qwen3.5-4b-uncensored-32k</td><td>32,768</td><td>$0.05</td><td>$0.10</td><td><span class="tag">Key + balance</span></td></tr>
+              <tr><td>qwen3.5-4b-uncensored-64k</td><td>65,536</td><td>$0.05</td><td>$0.10</td><td><span class="tag">Key + balance</span></td></tr>
               <tr><td>deepseek-v4.1-flash</td><td>1,000,000</td><td>$0.30</td><td>$1.20</td><td><span class="tag">Key + balance</span></td></tr>
               <tr><td>mimo-v2.6-flash</td><td>1,000,000</td><td>$0.14</td><td>$0.28</td><td><span class="tag">Key + balance</span></td></tr>
             </tbody></table>
@@ -221,13 +221,13 @@
             <div class="code"><div class="code-head"><span>OpenAI SDK · Authorization required</span><button class="copy" data-copy='import os
 from openai import OpenAI
 c = OpenAI(base_url="https://api.verxl.com/v1", api_key=os.environ["VERXL_API_KEY"])
-r = c.chat.completions.create(model="qwen3.5-4b-uncensored-32k", messages=[{"role":"user","content":"Hello."}], max_tokens=128)
+r = c.chat.completions.create(model="qwen3.5-4b-uncensored-64k", messages=[{"role":"user","content":"Hello."}], max_tokens=128)
 print(r.choices[0].message.content)'>Copy</button></div>
 <pre><span class="k">import</span> os
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
 c = OpenAI(base_url=<span class="s">"https://api.verxl.com/v1"</span>, api_key=os.environ[<span class="s">"VERXL_API_KEY"</span>])
 r = c.chat.completions.create(
-    model=<span class="s">"qwen3.5-4b-uncensored-32k"</span>,
+    model=<span class="s">"qwen3.5-4b-uncensored-64k"</span>,
     messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Hello."</span>}],
     max_tokens=<span class="m">128</span>,
 )

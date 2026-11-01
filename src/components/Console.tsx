@@ -884,9 +884,9 @@ export const Console: React.FC = () => {
               ? "deepseek-v4.1-flash"
               : nodeForm.name.toLowerCase().includes("mimo")
               ? "mimo-v2.6-flash"
-              : "qwen3.5-4b-uncensored-32k",
+              : "qwen3.5-4b-uncensored-64k",
             name: nodeForm.name,
-            context_window: nodeForm.name.toLowerCase().includes("deepseek") || nodeForm.name.toLowerCase().includes("mimo") ? 1000000 : 32768,
+            context_window: nodeForm.name.toLowerCase().includes("deepseek") || nodeForm.name.toLowerCase().includes("mimo") ? 1000000 : 65536,
             price_prompt_usd: nodeForm.name.toLowerCase().includes("deepseek")
               ? 0.30
               : nodeForm.name.toLowerCase().includes("mimo")
@@ -1246,7 +1246,7 @@ export const Console: React.FC = () => {
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer ${activeKeyDisplay}" \\
   -d '{
-    "model": "qwen3.5-4b-uncensored-32k",
+    "model": "qwen3.5-4b-uncensored-64k",
     "messages": [{"role": "user", "content": "Explain Verxl 50 bps clearing switch"}],
     "temperature": 0.7
   }'`,
@@ -1258,7 +1258,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="qwen3.5-4b-uncensored-32k",
+    model="qwen3.5-4b-uncensored-64k",
     messages=[{"role": "user", "content": "Compute clearing proof"}],
 )
 print(response.choices[0].message.content)`,
@@ -1271,7 +1271,7 @@ const client = new OpenAI({
 
 async function main() {
   const completion = await client.chat.completions.create({
-    model: "qwen3.5-4b-uncensored-32k",
+    model: "qwen3.5-4b-uncensored-64k",
     messages: [{ role: "user", content: "Deterministic seed=42 verification" }],
   });
   console.log(completion.choices[0].message.content);
@@ -2271,9 +2271,9 @@ main();`,
                     status: "ACTIVE",
                     models_config_str: JSON.stringify([
                       {
-                        id: "qwen-3.5-4b-uncensored-32k",
-                        name: "Qwen 3.5 4B Uncensored (32K Context)",
-                        context_window: 32768,
+                        id: "qwen-3.5-4b-uncensored-64k",
+                        name: "Qwen 3.5 4B Uncensored (64K Context)",
+                        context_window: 65536,
                         price_prompt_usd: 0.05,
                         price_completion_usd: 0.10,
                         price_cached_prompt_usd: 0.010,
@@ -3104,9 +3104,9 @@ main();`,
                         ...nodeForm,
                         models_config_str: JSON.stringify([
                           {
-                            model_id: "qwen3.5-4b-uncensored-32k",
-                            name: "Bulbasaur Qwen 3.5 4B Uncensored (32K)",
-                            context_window: 32768,
+                            model_id: "qwen3.5-4b-uncensored-64k",
+                            name: "Bulbasaur Qwen 3.5 4B Uncensored (64K)",
+                            context_window: 65536,
                             price_prompt_usd: 0.05,
                             price_completion_usd: 0.10,
                             price_cached_prompt_usd: 0.010,

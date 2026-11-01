@@ -36,7 +36,7 @@ Every completion requires a key and a funded balance. Create and fund one at htt
 
 | id | context | prompt $/1M | completion $/1M | access |
 |---|---:|---:|---:|---|
-| qwen3.5-4b-uncensored-32k | 32,768 | 0.05 | 0.10 | key + balance |
+| qwen3.5-4b-uncensored-64k | 65,536 | 0.05 | 0.10 | key + balance |
 | deepseek-v4.1-flash | 1,000,000 | 0.30 | 1.20 | key + balance |
 | mimo-v2.6-flash | 1,000,000 | 0.14 | 0.28 | key + balance |
 
@@ -46,7 +46,7 @@ DeepSeek off-peak pricing is 50% off outside 01:00–04:00 and 06:00–10:00 UTC
 
 ```json
 {
-  "model": "qwen3.5-4b-uncensored-32k",
+  "model": "qwen3.5-4b-uncensored-64k",
   "messages": [
     {"role": "system", "content": "Answer directly."},
     {"role": "user", "content": "Hello."}
@@ -66,7 +66,7 @@ DeepSeek off-peak pricing is 50% off outside 01:00–04:00 and 06:00–10:00 UTC
   "id": "chatcmpl_01JVERXL",
   "object": "chat.completion",
   "created": 1762000000,
-  "model": "qwen3.5-4b-uncensored-32k",
+  "model": "qwen3.5-4b-uncensored-64k",
   "choices": [{
     "index": 0,
     "message": {"role": "assistant", "content": "..."},

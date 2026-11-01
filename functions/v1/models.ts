@@ -21,17 +21,17 @@ export const onRequestOptions: PagesFunction<Env> = async () => {
 export const onRequestGet: PagesFunction<Env> = async () => {
   const fallbackModels = [
     {
-      id: "qwen3.5-4b-uncensored-32k",
+      id: "qwen3.5-4b-uncensored-64k",
       object: "model",
       created: 1730000000,
       owned_by: "verxl-team-bulbasaur",
       permission: [],
-      root: "qwen3.5-4b-uncensored-32k",
-      context_window: 32768,
-      context_length: 32768,
-      max_model_len: 32768,
-      context_display: "32,768 tokens (32K)",
-      tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 32K Context Resident)",
+      root: "qwen3.5-4b-uncensored-64k",
+      context_window: 65536,
+      context_length: 65536,
+      max_model_len: 65536,
+      context_display: "65,536 tokens (64K)",
+      tier: "Inference Terminal Live Host (Bulbasaur Bare-Metal · 64K Context Resident)",
       is_official_bridge: false,
       pricing: {
         prompt_usd_per_1m: 0.05,

@@ -32,7 +32,7 @@ const MODELS = [
     name: "Qwen 3.5 4B Uncensored",
     role: "Resident / uncensored",
     body: "Uncensored and deliberately small: 4B parameters, under the 20B ceiling. It answers every question within that limit; frontier-scale work routes to DeepSeek and MiMo.",
-    data: "4B · 32K · Prague",
+    data: "4B · 64K · Prague",
   },
   {
     n: "02",

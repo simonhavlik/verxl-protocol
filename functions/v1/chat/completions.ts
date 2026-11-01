@@ -23,7 +23,7 @@ const DEMO_RATE_LIMIT_MAX = 40;
 const DEMO_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
 const SUPPORTED_MODELS = [
-  "qwen3.5-4b-uncensored-32k",
+  "qwen3.5-4b-uncensored-64k",
   "deepseek-v4.1-flash",
   "mimo-v2.6-flash",
 ];
@@ -77,7 +77,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   // Strict Model Selection: Only Bulbasaur Qwen 3.5, DeepSeek V4.1 Flash, and Xiaomi MiMo 2.6 Flash
-  const rawModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-32k";
+  const inputModel = typeof body.model === "string" ? body.model : "qwen3.5-4b-uncensored-64k";
+  // Backwards compatibility for clients that saved the old 32k id. The model
+  // served is the 64k build; the legacy id never appears in /v1/models.
+  const rawModel = inputModel === "qwen3.5-4b-uncensored-32k"
+    ? "qwen3.5-4b-uncensored-64k"
+    : inputModel;
   if (body.model !== undefined && !SUPPORTED_MODELS.includes(rawModel)) {
     return new Response(
       JSON.stringify({
@@ -94,13 +99,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
   const lowerModel = rawModel.toLowerCase();
-  let requestedModel = "qwen3.5-4b-uncensored-32k";
+  let requestedModel = "qwen3.5-4b-uncensored-64k";
   if (lowerModel.includes("deepseek")) {
     requestedModel = "deepseek-v4.1-flash";
   } else if (lowerModel.includes("mimo") || lowerModel.includes("xiaomi")) {
     requestedModel = "mimo-v2.6-flash";
   } else {
-    requestedModel = "qwen3.5-4b-uncensored-32k";
+    requestedModel = "qwen3.5-4b-uncensored-64k";
   }
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
@@ -112,7 +117,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // finish_reason=length even though the request "succeeded". Apply a floor
   // before the upstream call so small max_tokens values cannot silently empty.
   const QWEN_MIN_OUTPUT_TOKENS = 256;
-  const minTokensApplied = requestedModel === "qwen3.5-4b-uncensored-32k" && requestedMaxTokens < QWEN_MIN_OUTPUT_TOKENS;
+  const minTokensApplied = requestedModel === "qwen3.5-4b-uncensored-64k" && requestedMaxTokens < QWEN_MIN_OUTPUT_TOKENS;
   const maxTokens = minTokensApplied ? QWEN_MIN_OUTPUT_TOKENS : requestedMaxTokens;
 
   if (messages.length === 0) {
@@ -323,7 +328,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return new Response(
         JSON.stringify({
           error: {
-            message: `Model '${rawModel}' requires an authenticated Verxl account with paid USDC balance. The free Playground is reserved strictly for 'qwen3.5-4b-uncensored-32k'. Deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat to access DeepSeek V4.1 Flash and Xiaomi MiMo 2.6 Flash.`,
+            message: `Model '${rawModel}' requires an authenticated Verxl account with paid USDC balance. The free Playground is reserved strictly for 'qwen3.5-4b-uncensored-64k'. Deposit USDC at https://verxl.com/console or use Verxl Chat at https://verxl.com/chat to access DeepSeek V4.1 Flash and Xiaomi MiMo 2.6 Flash.`,
             type: "insufficient_quota",
             code: "model_payment_required",
           },
@@ -482,14 +487,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
     ];
   } else {
-    // Bulbasaur / Qwen resident 32k cluster — Dedicated Bare-Metal Bulbasaur Node via direct Edge Tunnel
+    // Bulbasaur / Qwen resident 64k cluster — Dedicated Bare-Metal Bulbasaur Node via direct Edge Tunnel
     upstreamEndpoints = [
       {
         url: "https://node1.verxl.com/v1/chat/completions",
         headers: {
           "Content-Type": "application/json",
         },
-        modelName: "qwen3.5-4b-uncensored-32k:latest",
+        modelName: "qwen3.5-4b-uncensored-64k:latest",
         timeoutMs: 60000,
       },
     ];

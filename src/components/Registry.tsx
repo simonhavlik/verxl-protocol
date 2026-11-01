@@ -37,7 +37,7 @@ export const Registry: React.FC<RegistryProps> = ({
     location: "Prague, Czechia",
     region: "EU-Central",
     hardware: "Dedicated Bare-Metal GPU Pod",
-    modelIdentifier: "qwen3.5-4b-uncensored-32k",
+    modelIdentifier: "qwen3.5-4b-uncensored-64k",
     contextWindow: "1000000",
     endpointUrl: "https://node.cluster.network/v1",
     pricePromptUsd: "0.05",
@@ -485,14 +485,14 @@ export const Registry: React.FC<RegistryProps> = ({
                       <input
                         type="text"
                         required
-                        placeholder="e.g. qwen3.5-4b-uncensored-32k"
+                        placeholder="e.g. qwen3.5-4b-uncensored-64k"
                         value={regForm.modelIdentifier}
                         onChange={(e) => setRegForm({ ...regForm, modelIdentifier: e.target.value })}
                         className="col-span-2 bg-[#05070b] border border-slate-800 rounded-[3px] px-2.5 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"
                       />
                       <input
                         type="number"
-                        placeholder="32768"
+                        placeholder="65536"
                         value={regForm.contextWindow}
                         onChange={(e) => setRegForm({ ...regForm, contextWindow: e.target.value })}
                         className="bg-[#05070b] border border-slate-800 rounded-[3px] px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500"

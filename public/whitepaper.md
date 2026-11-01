@@ -145,7 +145,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="qwen3.5-4b-uncensored-32k",
+    model="qwen3.5-4b-uncensored-64k",
     messages=[{"role": "user", "content": "Explain Verxl Protocol non-custodial clearing."}],
     stream=True
 )
@@ -173,7 +173,7 @@ Because database reads are cached in Cloudflare Workers KV with 60-second TTLs, 
 ### 3.1 The Model Spoofing Problem in Decentralized Compute
 
 In decentralized networks without quality auditing, malicious GPU operators face a lucrative arbitrage opportunity:
-* **The Exploit:** An operator advertises an authentic, unquantized model (`qwen3.5-4b-uncensored-32k`, charging \$0.10/1M tokens) but secretly routes requests to a degraded 4-bit quantized version or downsized model.
+* **The Exploit:** An operator advertises an authentic, unquantized model (`qwen3.5-4b-uncensored-64k`, charging \$0.10/1M tokens) but secretly routes requests to a degraded 4-bit quantized version or downsized model.
 * **The Consequence:** The developer pays for precision reasoning but receives hallucination-prone, degraded completions; centralized aggregators conceal this because they run proprietary black-box nodes.
 
 ### 3.2 Seed-Locked Deterministic Probing Architecture
@@ -184,7 +184,7 @@ Verxl introduces deterministic Canary Probing executed by autonomous edge worker
 [ Scheduled Oracle Worker ]
             │
             │ Dispatches Seed-Locked Probe:
-            │ { model: "qwen3.5-4b-uncensored-32k", temperature: 0.0, seed: 42, prompt: P_canary }
+            │ { model: "qwen3.5-4b-uncensored-64k", temperature: 0.0, seed: 42, prompt: P_canary }
             ▼
 [ Target Provider Endpoint ] ─────────────────────────► Returns Output R_probe
                                                                │

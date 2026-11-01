@@ -49,7 +49,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   // Live token stream animation state in Stage 3
   const [streamedText, setStreamedText] = useState("");
   const fullSampleText =
-    "Stream open. Cloudflare Edge routed the request to the Prague bare-metal Vulkan host. Qwen 3.5 4B, 32k resident context, FP16 linear decode at 52.4 TPS. Seed-42 canary matched at 99.8% fidelity. 50 bps clearing fee booked to the Aragon vault.";
+    "Stream open. Cloudflare Edge routed the request to the Prague bare-metal Vulkan host. Qwen 3.5 4B, 64k resident context, FP16 linear decode at 52.4 TPS. Seed-42 canary matched at 99.8% fidelity. 50 bps clearing fee booked to the Aragon vault.";
 
   const handleTryPlayground = () => {
     const el = document.getElementById("live-playground");
