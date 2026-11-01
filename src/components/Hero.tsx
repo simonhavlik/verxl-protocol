@@ -10,6 +10,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { INITIAL_PROVIDERS, INITIAL_AUDIT_LOGS } from "../data/mockData";
+import { ProductGlassRail } from "./ProductGlassRail";
 const Playground = lazy(() => import("./Playground").then((m) => ({ default: m.Playground })));
 const RouteMap = lazy(() => import("./RouteMap").then((m) => ({ default: m.RouteMap })));
 const EfficiencyFrontier = lazy(() => import("./EfficiencyFrontier").then((m) => ({ default: m.EfficiencyFrontier })));
@@ -764,6 +765,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      <ProductGlassRail onNavigate={onNavigate} />
 
       {/* =========================================================================
           Live Inference Console (embedded, dense variant of the Playground)
